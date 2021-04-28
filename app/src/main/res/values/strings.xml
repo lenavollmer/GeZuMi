@@ -2,11 +2,7 @@
     <string name="app_name">GeZuMi</string>
     <string name="action_settings">Settings</string>
     <!-- Strings used for fragments for navigation -->
-    <string name="main_label">Main Fragment</string>
-    <string name="host_label">Host Fragment</string>
     <string name="host">Host</string>
     <string name="join">Join</string>
-
-    <string name="main_fragment">Hello Main Fragment</string>
-    <string name="host_fragment">Hello second fragment. Arg: %1$s</string>
+    <string name="main_fragment">Welcome to GeZuMi</string>
 </resources>
