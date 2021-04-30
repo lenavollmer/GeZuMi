@@ -5,6 +5,8 @@
     <string name="host">Host</string>
     <string name="join">Join</string>
 
+    <string name="distance">Distance: %f</string>
+
     <string name="main_label">Main-Fragment</string>
     <string name="host_label">Host-Fragment</string>
     <string name="join_label">Join-Fragment</string>

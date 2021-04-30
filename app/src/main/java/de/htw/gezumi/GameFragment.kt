@@ -5,7 +5,7 @@ import android.os.Bundle
 import android.view.*
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import de.htw.gezumi.databinding.FragmentGameBinding
 import de.htw.gezumi.model.DeviceViewModel
 import java.util.*
@@ -16,7 +16,7 @@ import java.util.*
  */
 class GameFragment : Fragment() {
     private var mRssiTimer = Timer()
-    private val deviceModel: DeviceViewModel by activityViewModels()
+    private val deviceModel: DeviceViewModel by viewModels()
 
     private lateinit var gatt : BluetoothGatt
     private lateinit var currentDevice: BluetoothDevice
@@ -30,20 +30,17 @@ class GameFragment : Fragment() {
         gatt = currentDevice.connectGatt(activity, false, gattCallback)
         gatt.connect()
 
+        deviceModel.setName(currentDevice.name)
+
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_game, container, false)
+
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        deviceModel.setName("teateatea")
-
-        binding.apply {
-            lifecycleOwner = viewLifecycleOwner
-            deviceModel = deviceModel
-            gameFragment = this@GameFragment
-        }
+        binding.lifecycleOwner = viewLifecycleOwner
+        binding.deviceModel = deviceModel
     }
 
     override fun onPause() {

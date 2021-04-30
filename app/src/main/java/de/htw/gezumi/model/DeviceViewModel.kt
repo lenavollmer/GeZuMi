@@ -7,20 +7,21 @@ import kotlin.math.pow
 
 class DeviceViewModel : ViewModel() {
     private val _name = MutableLiveData("Unknown")
-    val name: LiveData<String> = _name
+    val name: LiveData<String> get() = _name
 
     private val _distance = MutableLiveData(0.0)
-    val distance: LiveData<Double> = _distance
+    val distance: LiveData<Double> get() = _distance
 
     private val _values = mutableListOf<Int>()
 
     fun setName(name: String) {
-        _name.value = name
+        // postValue makes it possible to post from other threads
+        _name.postValue(name)
     }
 
     fun addRSSI(value: Int){
         _values.add(value)
-        _distance.value = calculateRSSI(value.toDouble())
+        _distance.postValue(calculateRSSI(value.toDouble()))
     }
     fun clearList(){
         _values.clear()
