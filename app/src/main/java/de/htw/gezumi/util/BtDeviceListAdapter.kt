@@ -2,18 +2,19 @@ package de.htw.gezumi.util
 
 import android.bluetooth.BluetoothDevice
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.TextView
 import androidx.core.os.bundleOf
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import de.htw.gezumi.R
+import de.htw.gezumi.databinding.ItemBtDeviceBinding
+
 
 // Create the basic adapter extending from RecyclerView.Adapter
 // Note that we specify the custom ViewHolder which gives us access to our views
+/*
 class BtDeviceListAdapter : RecyclerView.Adapter<BtDeviceListAdapter.ViewHolder>() {
+
 
     private val mBtDevices: ArrayList<BluetoothDevice> = ArrayList()
 
@@ -31,42 +32,89 @@ class BtDeviceListAdapter : RecyclerView.Adapter<BtDeviceListAdapter.ViewHolder>
         mBtDevices.clear()
     }
 
-    // Provide a direct reference to each of the views within a data item
-    // Used to cache the views within the item layout for fast access
-    inner class ViewHolder(listItemView: View) : RecyclerView.ViewHolder(listItemView) {
-        // Your holder should contain and initialize a member variable
-        // for any view that will be set as you render a row
-        val nameTextView: TextView = itemView.findViewById(R.id.contact_name)
-        val messageButton: Button = itemView.findViewById(R.id.message_button)
+    class ViewHolder private constructor(private val binding: ItemBtDeviceBinding) :
+        RecyclerView.ViewHolder(binding.root) {
+        fun bind(device: BluetoothDevice) {
+
+            binding.contactName.text = device.name
+            val button = binding.messageButton
+            button.setText(R.string.connect)
+            button.setOnClickListener {
+                itemView.findNavController().navigate(R.id.action_HostFragment_to_Game, bundleOf("device" to device))
+            }
+            // make sure to include this so your view will be updated
+            binding.executePendingBindings()
+        }
+
+        companion object {
+            fun from(parent: ViewGroup): ViewHolder {
+                val layoutInflater = LayoutInflater.from(parent.context)
+                val binding = ItemBtDeviceBinding.inflate(layoutInflater, parent, false)
+
+                return ViewHolder(binding)
+            }
+        }
     }
 
     // ... constructor and member variables
     // Usually involves inflating a layout from XML and returning the holder
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BtDeviceListAdapter.ViewHolder {
-        val context = parent.context
-        val inflater = LayoutInflater.from(context)
-        // Inflate the custom layout
-        val contactView = inflater.inflate(R.layout.item_bt_device, parent, false)
-        // Return a new holder instance
-        return ViewHolder(contactView)
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+        return ViewHolder.from(parent)
     }
 
     // Involves populating data into the item through holder
-    override fun onBindViewHolder(viewHolder: BtDeviceListAdapter.ViewHolder, position: Int) {
+    override fun onBindViewHolder(viewHolder: ViewHolder, position: Int) {
         // Get the data model based on position
         val device: BluetoothDevice = mBtDevices[position]
-        // Set item views based on your views and data model
-        val textView = viewHolder.nameTextView
-        textView.text = device.name
-        val button = viewHolder.messageButton
-        button.setText(R.string.connect)
-        button.setOnClickListener {
-            viewHolder.itemView.findNavController().navigate(R.id.action_HostFragment_to_Game, bundleOf("device" to device))
-        }
+        viewHolder.bind(device)
     }
 
     // Returns the total count of items in the list
     override fun getItemCount(): Int {
         return mBtDevices.size
+    }
+}
+*/
+
+class BtDeviceListAdapter() : RecyclerView.Adapter<BtDeviceListAdapter.MyViewHolder>() {
+
+    private val items: ArrayList<BluetoothDevice> = ArrayList()
+
+    inner class MyViewHolder(b: ItemBtDeviceBinding) : RecyclerView.ViewHolder(b.root) {
+        var binding: ItemBtDeviceBinding = b
+
+    }
+
+    fun addDevice(device: BluetoothDevice) {
+        if (!items.contains(device)) {
+            items.add(device)
+        }
+    }
+
+    fun getDevice(position: Int): BluetoothDevice {
+        return items[position]
+    }
+
+    fun clear() {
+        items.clear()
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
+        return MyViewHolder(ItemBtDeviceBinding.inflate(LayoutInflater.from(parent.context)))
+    }
+
+    override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
+        val device = items[position]
+        //An example of how to use the bindings
+        holder.binding.contactName.text = device.name
+        val button = holder.binding.messageButton
+        button.setText(R.string.connect)
+        button.setOnClickListener {
+            holder.itemView.findNavController().navigate(R.id.action_HostFragment_to_Game, bundleOf("device" to device))
+        }
+    }
+
+    override fun getItemCount(): Int {
+        return items.size
     }
 }

@@ -3,9 +3,7 @@ package de.htw.gezumi
 import android.Manifest
 import android.app.Activity
 import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothGatt
 import android.bluetooth.le.*
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.*
 import android.util.Log
@@ -13,11 +11,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.app.ActivityCompat
+import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import de.htw.gezumi.databinding.FragmentHostBinding
 import de.htw.gezumi.util.BtDeviceListAdapter
-import kotlin.math.pow
 
 
 private const val REQUEST_ENABLE_BT = 1
@@ -30,39 +28,27 @@ private const val SCAN_PERIOD = 10000L
 class HostFragment : Fragment() {
 
     private val btAdapter = BluetoothAdapter.getDefaultAdapter()
-    private var binding: FragmentHostBinding? = null
+
     private val bluetoothLeScanner: BluetoothLeScanner? = btAdapter.bluetoothLeScanner
     // Stops scanning after 10 seconds.
     private var scanning = false
     private val deviceListAdapter: BtDeviceListAdapter = BtDeviceListAdapter()
 
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        if (btAdapter?.isEnabled == false) {
-            val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
-            startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT)
-        }
-    }
+    private lateinit var binding: FragmentHostBinding
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        // Inflate the layout for this fragment
-        val fragmentBinding = FragmentHostBinding.inflate(inflater, container, false)
-        binding = fragmentBinding
-
-        return fragmentBinding.root
-        //return inflater.inflate(R.layout.fragment_host, container, false)
+        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_host, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding?.btDevices?.adapter = deviceListAdapter
-        binding?.btDevices?.layoutManager = LinearLayoutManager(activity)
+        binding.btDevices.adapter = deviceListAdapter
+        binding.btDevices.layoutManager = LinearLayoutManager(activity)
         checkPermission()
-        binding?.button?.setOnClickListener {
-            scanforDevice()
+        binding.button.setOnClickListener {
+            scanForDevice()
         }
     }
 
@@ -71,7 +57,7 @@ class HostFragment : Fragment() {
         deviceListAdapter.clear()
     }
 
-    private fun scanforDevice() {
+    private fun scanForDevice() {
         val filter = ScanFilter.Builder().setServiceUuid(
             ParcelUuid.fromString("00001805-0000-1000-8000-00805f9b34fb"),
         ).build()
@@ -96,6 +82,7 @@ class HostFragment : Fragment() {
     private val leScanCallback: ScanCallback = object : ScanCallback() {
         override fun onScanResult(callbackType: Int, result: ScanResult) {
             super.onScanResult(callbackType, result)
+            Log.d("Test", result.rssi.toString())
             deviceListAdapter.addDevice(result.device)
             deviceListAdapter.notifyDataSetChanged()
         }

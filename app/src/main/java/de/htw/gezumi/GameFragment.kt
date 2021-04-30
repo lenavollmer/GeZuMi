@@ -3,6 +3,7 @@ package de.htw.gezumi
 import android.bluetooth.*
 import android.os.Bundle
 import android.view.*
+import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import de.htw.gezumi.databinding.FragmentGameBinding
@@ -20,7 +21,7 @@ class GameFragment : Fragment() {
 
     private lateinit var gatt : BluetoothGatt
     private lateinit var currentDevice: BluetoothDevice
-    private var binding: FragmentGameBinding? = null
+    private lateinit var binding: FragmentGameBinding
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -30,18 +31,15 @@ class GameFragment : Fragment() {
         gatt = currentDevice.connectGatt(activity, false, gattCallback)
         gatt.connect()
 
-        val fragmentBinding = FragmentGameBinding.inflate(inflater, container, false)
-        binding = fragmentBinding
-
-
-        return fragmentBinding.root
+        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_game, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding?.device?.text = currentDevice.name
-        binding?.rssi?.text = distanceModel.distance.toString()
+        binding.device.text = currentDevice.name
+        binding.rssi.text = distanceModel.distance.toString()
 
     }
 
