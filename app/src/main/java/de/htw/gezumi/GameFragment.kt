@@ -1,18 +1,13 @@
 package de.htw.gezumi
 
-import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothDevice
-import android.bluetooth.BluetoothGatt
-import android.bluetooth.BluetoothGattCallback
-import android.bluetooth.le.ScanCallback
-import android.bluetooth.le.ScanResult
+import android.bluetooth.*
 import android.os.Bundle
-import android.util.Log
 import android.view.*
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import de.htw.gezumi.databinding.FragmentGameBinding
 import de.htw.gezumi.util.DistanceCalculationModel
+import java.util.*
 
 
 /**
@@ -20,10 +15,11 @@ import de.htw.gezumi.util.DistanceCalculationModel
  */
 class GameFragment : Fragment() {
     private val btAdapter = BluetoothAdapter.getDefaultAdapter()
-
+    private var mRssiTimer = Timer()
     private val distanceModel: DistanceCalculationModel by activityViewModels()
 
-    private lateinit var currentDevice : BluetoothDevice
+    private lateinit var gatt : BluetoothGatt
+    private lateinit var currentDevice: BluetoothDevice
     private var binding: FragmentGameBinding? = null
 
     override fun onCreateView(
@@ -31,10 +27,12 @@ class GameFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         currentDevice = arguments?.getParcelable("device")!!
-
+        gatt = currentDevice.connectGatt(activity, false, gattCallback)
+        gatt.connect()
 
         val fragmentBinding = FragmentGameBinding.inflate(inflater, container, false)
         binding = fragmentBinding
+
 
         return fragmentBinding.root
     }
@@ -42,17 +40,37 @@ class GameFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        currentDevice.connectGatt(activity, true, gattCallback)
+        binding?.device?.text = currentDevice.name
+        binding?.rssi?.text = distanceModel.distance.toString()
 
+    }
 
-        binding?.textView?.text = currentDevice.name
+    override fun onPause() {
+        super.onPause()
+        gatt.disconnect()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        gatt.connect()
     }
 
     private val gattCallback: BluetoothGattCallback = object : BluetoothGattCallback() {
+        override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
+            if (newState == BluetoothProfile.STATE_CONNECTED) {
+                val task: TimerTask = object : TimerTask() {
+                    override fun run() {
+                        gatt?.readRemoteRssi()
+                    }
+                }
+                mRssiTimer.schedule(task, 1000, 1000)
+            } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+                mRssiTimer.cancel()
+            }
+        }
         override fun onReadRemoteRssi(gatt: BluetoothGatt?, rssi: Int, status: Int) {
             super.onReadRemoteRssi(gatt, rssi, status)
-            Log.d("D/GameFragment", rssi.toString())
+            distanceModel.addRSSI(rssi)
         }
-
     }
 }

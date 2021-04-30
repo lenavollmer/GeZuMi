@@ -10,11 +10,11 @@ class DistanceCalculationModel : ViewModel() {
     private val _distance = MutableLiveData<Double>()
     val distance: LiveData<Double> = _distance
 
-    private val _values = mutableListOf<Double>()
+    private val _values = mutableListOf<Int>()
 
-    fun addValue(value: Double){
+    fun addRSSI(value: Int){
         _values.add(value)
-        _distance.value = calculateRSSI(value)
+        _distance.value = calculateRSSI(value.toDouble())
     }
     fun clearList(){
         _values.clear()
