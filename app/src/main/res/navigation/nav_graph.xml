@@ -18,12 +18,24 @@
             android:id="@+id/Host"
             android:name="de.htw.gezumi.HostFragment"
             android:label="@string/host_label"
-            tools:layout="@layout/fragment_host"/>
+            tools:layout="@layout/fragment_host">
+        <action android:id="@+id/action_HostFragment_to_Game" app:destination="@id/Game"/>
+    </fragment>
 
     <fragment
             android:id="@+id/Join"
             android:name="de.htw.gezumi.JoinFragment"
-            android:label="@string/host_label"
+            android:label="@string/join_label"
             tools:layout="@layout/fragment_join">
+    </fragment>
+
+    <fragment
+            android:id="@+id/Game"
+            android:name="de.htw.gezumi.GameFragment"
+            android:label="@string/game_label"
+            tools:layout="@layout/fragment_game">
+        <argument
+                android:name="device"
+                app:argType="android.bluetooth.BluetoothDevice" />
     </fragment>
 </navigation>

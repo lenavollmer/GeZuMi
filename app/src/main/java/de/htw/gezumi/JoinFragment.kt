@@ -1,17 +1,26 @@
 package de.htw.gezumi
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import androidx.navigation.fragment.findNavController
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import de.htw.gezumi.gatt.GattServer
+
 
 /**
  * A simple [Fragment] subclass as the default destination in the navigation.
  */
 class JoinFragment : Fragment() {
+
+    private val bluetoothModel: GattServer by activityViewModels()
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        bluetoothModel.createViewModel()
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -21,11 +30,18 @@ class JoinFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_join, container, false)
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
+    override fun onStart() {
+        super.onStart()
+        bluetoothModel.startViewModel()
+    }
 
-//        view.findViewById<Button>(R.id.button_host).setOnClickListener {
-//            findNavController().navigate(R.id.action_FirstFragment_to_SecondFragment)
-//        }
+    override fun onStop() {
+        super.onStop()
+        bluetoothModel.stopViewModel()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        bluetoothModel.destroyViewModel()
     }
 }
