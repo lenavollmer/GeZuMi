@@ -3,6 +3,7 @@ package de.htw.gezumi
 import android.Manifest
 import android.app.Activity
 import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothDevice
 import android.bluetooth.le.*
 import android.content.pm.PackageManager
 import android.os.*
@@ -13,12 +14,10 @@ import android.view.ViewGroup
 import androidx.core.app.ActivityCompat
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
-import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.DividerItemDecoration
 import de.htw.gezumi.databinding.FragmentHostBinding
 import de.htw.gezumi.util.BtDeviceListAdapter
 
-
-private const val REQUEST_ENABLE_BT = 1
 private const val SCAN_PERIOD = 10000L
 
 
@@ -28,8 +27,8 @@ private const val SCAN_PERIOD = 10000L
 class HostFragment : Fragment() {
 
     private val btAdapter = BluetoothAdapter.getDefaultAdapter()
-
     private val bluetoothLeScanner: BluetoothLeScanner? = btAdapter.bluetoothLeScanner
+
     // Stops scanning after 10 seconds.
     private var scanning = false
     private val deviceListAdapter: BtDeviceListAdapter = BtDeviceListAdapter()
@@ -44,11 +43,16 @@ class HostFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.btDevices.adapter = deviceListAdapter
-        binding.btDevices.layoutManager = LinearLayoutManager(activity)
         checkPermission()
         binding.button.setOnClickListener {
             scanForDevice()
+        }
+
+
+        binding.lifecycleOwner = activity
+        binding.btDevices.adapter = deviceListAdapter
+        binding.btDevices.apply {
+            addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
         }
     }
 
@@ -84,10 +88,8 @@ class HostFragment : Fragment() {
             super.onScanResult(callbackType, result)
             Log.d("Test", result.rssi.toString())
             deviceListAdapter.addDevice(result.device)
-            deviceListAdapter.notifyDataSetChanged()
         }
     }
-
 
 
     private fun checkPermission() {

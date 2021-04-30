@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android">
-<ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
+
+
+    <data>
+        <variable
+                name="item"
+                type="android.bluetooth.BluetoothDevice"/>
+    </data>
 
     <LinearLayout
             android:orientation="horizontal"
@@ -11,14 +15,12 @@
             android:paddingTop="10dp"
             android:paddingBottom="10dp"
     >
-
         <TextView
                 android:id="@+id/contact_name"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
         />
-
         <Button
                 android:id="@+id/message_button"
                 android:layout_width="wrap_content"
@@ -28,5 +30,4 @@
                 android:textSize="12sp"
         />
     </LinearLayout>
-</ScrollView>
 </layout>

@@ -15,7 +15,6 @@ import java.util.*
  * A simple [Fragment] subclass as the default destination in the navigation.
  */
 class GameFragment : Fragment() {
-    private val btAdapter = BluetoothAdapter.getDefaultAdapter()
     private var mRssiTimer = Timer()
     private val distanceModel: DistanceCalculationModel by activityViewModels()
 
