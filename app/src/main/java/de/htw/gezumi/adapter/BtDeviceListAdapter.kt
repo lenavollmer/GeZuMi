@@ -1,8 +1,6 @@
-package de.htw.gezumi.util
+package de.htw.gezumi.adapter
 
 import android.bluetooth.BluetoothDevice
-import android.content.Context
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.os.bundleOf
@@ -18,8 +16,8 @@ class BtDeviceListAdapter() : RecyclerView.Adapter<BtDeviceListAdapter.ViewHolde
     fun addDevice(device: BluetoothDevice) {
         if (!_btDevices.contains(device)) {
             _btDevices.add(device)
+            notifyDataSetChanged()
         }
-        notifyDataSetChanged()
     }
 
     fun clear() {

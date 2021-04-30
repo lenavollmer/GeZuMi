@@ -3,11 +3,9 @@ package de.htw.gezumi
 import android.Manifest
 import android.app.Activity
 import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothDevice
 import android.bluetooth.le.*
 import android.content.pm.PackageManager
 import android.os.*
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,7 +14,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.DividerItemDecoration
 import de.htw.gezumi.databinding.FragmentHostBinding
-import de.htw.gezumi.util.BtDeviceListAdapter
+import de.htw.gezumi.adapter.BtDeviceListAdapter
 
 private const val SCAN_PERIOD = 10000L
 

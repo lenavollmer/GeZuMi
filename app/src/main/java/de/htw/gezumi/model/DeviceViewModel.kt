@@ -1,16 +1,22 @@
-package de.htw.gezumi.util
+package de.htw.gezumi.model
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import kotlin.math.pow
 
-class DistanceCalculationModel : ViewModel() {
+class DeviceViewModel : ViewModel() {
+    private val _name = MutableLiveData("Unknown")
+    val name: LiveData<String> = _name
 
-    private val _distance = MutableLiveData<Double>()
+    private val _distance = MutableLiveData(0.0)
     val distance: LiveData<Double> = _distance
 
     private val _values = mutableListOf<Int>()
+
+    fun setName(name: String) {
+        _name.value = name
+    }
 
     fun addRSSI(value: Int){
         _values.add(value)

@@ -7,7 +7,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import de.htw.gezumi.databinding.FragmentGameBinding
-import de.htw.gezumi.util.DistanceCalculationModel
+import de.htw.gezumi.model.DeviceViewModel
 import java.util.*
 
 
@@ -16,7 +16,7 @@ import java.util.*
  */
 class GameFragment : Fragment() {
     private var mRssiTimer = Timer()
-    private val distanceModel: DistanceCalculationModel by activityViewModels()
+    private val deviceModel: DeviceViewModel by activityViewModels()
 
     private lateinit var gatt : BluetoothGatt
     private lateinit var currentDevice: BluetoothDevice
@@ -37,9 +37,13 @@ class GameFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.device.text = currentDevice.name
-        binding.rssi.text = distanceModel.distance.toString()
+        deviceModel.setName("teateatea")
 
+        binding.apply {
+            lifecycleOwner = viewLifecycleOwner
+            deviceModel = deviceModel
+            gameFragment = this@GameFragment
+        }
     }
 
     override fun onPause() {
@@ -67,7 +71,7 @@ class GameFragment : Fragment() {
         }
         override fun onReadRemoteRssi(gatt: BluetoothGatt?, rssi: Int, status: Int) {
             super.onReadRemoteRssi(gatt, rssi, status)
-            distanceModel.addRSSI(rssi)
+            deviceModel.addRSSI(rssi)
         }
     }
 }
