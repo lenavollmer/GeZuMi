@@ -125,11 +125,4 @@ class HostFragment : Fragment() {
         }
     }
 
-
-
-    override fun onDestroy() {
-        super.onDestroy()
-        // Don't forget to unregister the ACTION_FOUND receiver.
-    }
-
 }

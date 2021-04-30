@@ -17,7 +17,7 @@ import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import java.util.*
 
-
+// https://github.com/androidthings/sample-bluetooth-le-gattserver
 private const val TAG = "GattServer"
 
 // todo maybe refactor to service
