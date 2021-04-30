@@ -29,9 +29,6 @@ class BtDeviceListAdapter() : RecyclerView.Adapter<BtDeviceListAdapter.ViewHolde
     class ViewHolder(private val binding: ItemBtDeviceBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(device: BluetoothDevice) {
-
-
-            Log.d("test","test")
             // todo move to item_bt_device per data binding
             binding.contactName.text = device.name
             val button = binding.messageButton
