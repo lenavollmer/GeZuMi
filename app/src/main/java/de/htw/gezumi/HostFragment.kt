@@ -86,7 +86,6 @@ class HostFragment : Fragment() {
     private val leScanCallback: ScanCallback = object : ScanCallback() {
         override fun onScanResult(callbackType: Int, result: ScanResult) {
             super.onScanResult(callbackType, result)
-            Log.d("Test", result.rssi.toString())
             deviceListAdapter.addDevice(result.device)
         }
     }

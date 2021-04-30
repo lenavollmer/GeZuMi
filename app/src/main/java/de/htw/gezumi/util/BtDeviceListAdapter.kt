@@ -1,6 +1,7 @@
 package de.htw.gezumi.util
 
 import android.bluetooth.BluetoothDevice
+import android.content.Context
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -12,13 +13,13 @@ import de.htw.gezumi.databinding.ItemBtDeviceBinding
 
 class BtDeviceListAdapter() : RecyclerView.Adapter<BtDeviceListAdapter.ViewHolder>() {
 
-
     private val _btDevices: ArrayList<BluetoothDevice> = ArrayList()
 
     fun addDevice(device: BluetoothDevice) {
         if (!_btDevices.contains(device)) {
             _btDevices.add(device)
         }
+        notifyDataSetChanged()
     }
 
     fun clear() {
