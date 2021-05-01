@@ -15,32 +15,34 @@ import java.util.*
  * A simple [Fragment] subclass as the default destination in the navigation.
  */
 class GameFragment : Fragment() {
-    private var mRssiTimer = Timer()
-    private val deviceModel: DeviceViewModel by viewModels()
 
-    private lateinit var gatt : BluetoothGatt
-    private lateinit var currentDevice: BluetoothDevice
     private lateinit var binding: FragmentGameBinding
+    private val deviceViewModel: DeviceViewModel by viewModels()
+
+    private lateinit var gatt: BluetoothGatt
+    private lateinit var currentDevice: BluetoothDevice
+    private var _rssiTimer = Timer()
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        currentDevice = arguments?.getParcelable("device")!!
+        gatt = currentDevice.connectGatt(activity, false, gattCallback)
+        gatt.connect()
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        currentDevice = arguments?.getParcelable("device")!!
-        gatt = currentDevice.connectGatt(activity, false, gattCallback)
-        gatt.connect()
-
-        deviceModel.setName(currentDevice.name)
-
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_game, container, false)
-
+        deviceViewModel.setName(currentDevice.name)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.lifecycleOwner = viewLifecycleOwner
-        binding.deviceModel = deviceModel
+        binding.deviceViewModel = deviceViewModel
     }
 
     override fun onPause() {
@@ -61,14 +63,15 @@ class GameFragment : Fragment() {
                         gatt?.readRemoteRssi()
                     }
                 }
-                mRssiTimer.schedule(task, 1000, 1000)
+                _rssiTimer.schedule(task, 1000, 1000)
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-                mRssiTimer.cancel()
+                _rssiTimer.cancel()
             }
         }
+
         override fun onReadRemoteRssi(gatt: BluetoothGatt?, rssi: Int, status: Int) {
             super.onReadRemoteRssi(gatt, rssi, status)
-            deviceModel.addRSSI(rssi)
+            deviceViewModel.addRSSI(rssi)
         }
     }
 }

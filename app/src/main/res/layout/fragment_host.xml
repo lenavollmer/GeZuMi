@@ -15,7 +15,7 @@
                 app:layout_constraintEnd_toEndOf="parent" android:layout_marginTop="16dp"/>
 
         <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/btDevices"
+                android:id="@+id/recycler_bt_devices"
                 android:layout_width="0dp"
                 android:layout_height="0dp"
                 android:scrollbars="vertical"

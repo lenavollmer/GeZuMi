@@ -32,7 +32,7 @@ class GattServer(application: Application) : AndroidViewModel(application) {
     private var _bluetoothGattServer: BluetoothGattServer? = null
 
     /* Collection of notification subscribers */
-    // todo set to livedata and make accessable
+    // todo set to livedata and make accessible
     private val _registeredDevices = mutableSetOf<BluetoothDevice>()
 
     // A variable to help us not setup twice

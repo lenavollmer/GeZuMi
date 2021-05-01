@@ -2,7 +2,6 @@ package de.htw.gezumi
 
 import android.Manifest
 import android.app.Activity
-import android.bluetooth.BluetoothAdapter
 import android.bluetooth.le.*
 import android.content.pm.PackageManager
 import android.os.*
@@ -16,7 +15,6 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import de.htw.gezumi.databinding.FragmentHostBinding
 import de.htw.gezumi.adapter.BtDeviceListAdapter
 
-private const val SCAN_PERIOD = 10000L
 
 
 /**
@@ -24,14 +22,10 @@ private const val SCAN_PERIOD = 10000L
  */
 class HostFragment : Fragment() {
 
-    private val btAdapter = BluetoothAdapter.getDefaultAdapter()
-    private val bluetoothLeScanner: BluetoothLeScanner? = btAdapter.bluetoothLeScanner
-
-    // Stops scanning after 10 seconds.
-    private var scanning = false
-    private val deviceListAdapter: BtDeviceListAdapter = BtDeviceListAdapter()
-
     private lateinit var binding: FragmentHostBinding
+
+    private val bluetoothController: BluetoothController = BluetoothController(this)
+    private val deviceListAdapter: BtDeviceListAdapter = BtDeviceListAdapter(bluetoothController.btDevices)
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_host, container, false)
@@ -40,54 +34,29 @@ class HostFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        checkPermission()
-        binding.button.setOnClickListener {
-            scanForDevice()
-        }
-
-
-        binding.lifecycleOwner = activity
-        binding.btDevices.adapter = deviceListAdapter
-        binding.btDevices.apply {
+        binding.lifecycleOwner = viewLifecycleOwner
+        binding.recyclerBtDevices.adapter = deviceListAdapter
+        binding.recyclerBtDevices.apply {
+            setHasFixedSize(true)
             addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
         }
+        binding.button.setOnClickListener {
+            bluetoothController.scanForDevices()
+        }
+
+        checkPermission()
     }
 
     override fun onPause() {
         super.onPause()
-        deviceListAdapter.clear()
+        //deviceListAdapter.clear() should we really clear all bluetooth devices here?
+        // TODO maybe stop bluetooth scanning or smth
+        updateBtDeviceListAdapter();
     }
 
-    private fun scanForDevice() {
-        val filter = ScanFilter.Builder().setServiceUuid(
-            ParcelUuid.fromString("00001805-0000-1000-8000-00805f9b34fb"),
-        ).build()
-        val scanSettings = ScanSettings.Builder().build()
-
-        bluetoothLeScanner?.let { scanner ->
-            if (!scanning) { // Stops scanning after a pre-defined scan period.
-                Handler(Looper.getMainLooper()).postDelayed({
-                    scanning = false
-                    scanner.stopScan(leScanCallback)
-                }, SCAN_PERIOD)
-                scanning = true
-                scanner.startScan(listOf(filter), scanSettings, leScanCallback)
-            } else {
-                scanning = false
-                scanner.stopScan(leScanCallback)
-            }
-        }
+    fun updateBtDeviceListAdapter() {
+        deviceListAdapter.notifyDataSetChanged()
     }
-
-    // Device scan callback.
-    private val leScanCallback: ScanCallback = object : ScanCallback() {
-        override fun onScanResult(callbackType: Int, result: ScanResult) {
-            super.onScanResult(callbackType, result)
-            deviceListAdapter.addDevice(result.device)
-        }
-    }
-
 
     private fun checkPermission() {
         if (Build.VERSION.SDK_INT >= 23) {

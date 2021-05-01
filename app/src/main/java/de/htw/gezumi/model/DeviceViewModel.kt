@@ -19,11 +19,12 @@ class DeviceViewModel : ViewModel() {
         _name.postValue(name)
     }
 
-    fun addRSSI(value: Int){
+    fun addRSSI(value: Int) {
         _values.add(value)
         _distance.postValue(calculateRSSI(value.toDouble()))
     }
-    fun clearList(){
+
+    fun clearList() {
         _values.clear()
     }
 
