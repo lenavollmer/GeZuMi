@@ -48,7 +48,7 @@ class BluetoothController(private val _hostFragment: ConnectionFragment) {
                 .build()
         else
             ScanFilter.Builder()
-                .setServiceUuid( ParcelUuid.fromString("00002a2b-0000-1000-8000-00805f9b34f0"))
+                .setServiceUuid( ParcelUuid.fromString("00001805-0000-1000-8000-00805f9b34fc"))
                 .build()
         val scanSettings = ScanSettings.Builder().setCallbackType(ScanSettings.CALLBACK_TYPE_ALL_MATCHES).build()
 

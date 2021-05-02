@@ -15,7 +15,6 @@ import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.DividerItemDecoration
 import de.htw.gezumi.adapter.BtDeviceListAdapter
 import de.htw.gezumi.databinding.FragmentConnectionBinding
-import de.htw.gezumi.gatt.GattServer
 
 
 /**
@@ -25,16 +24,16 @@ class ConnectionFragment : Fragment() {
 
     private lateinit var binding: FragmentConnectionBinding
 
-    private val bluetoothGattServer: GattServer by activityViewModels()
     private val bluetoothController: BluetoothController = BluetoothController(this)
     private val deviceListAdapter: BtDeviceListAdapter = BtDeviceListAdapter(bluetoothController.btDevices)
+    private lateinit var gattServer: GattServer
 
     private var _isHost: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         _isHost = arguments?.getBoolean("isHost")!!
-        bluetoothGattServer.createViewModel(_isHost)
+        gattServer = GattServer(requireContext(), _isHost)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -59,17 +58,17 @@ class ConnectionFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
-        bluetoothGattServer.startViewModel()
+        //gattServer.startViewModel()
     }
 
     override fun onStop() {
         super.onStop()
-        bluetoothGattServer.stopViewModel()
+        //gattServer.stopViewModel()
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        bluetoothGattServer.destroyViewModel()
+        //gattServer.destroyViewModel()
     }
 
     override fun onPause() {
