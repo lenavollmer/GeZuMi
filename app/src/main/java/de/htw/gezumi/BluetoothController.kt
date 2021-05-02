@@ -2,28 +2,32 @@ package de.htw.gezumi
 
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
+import android.bluetooth.BluetoothManager
 import android.bluetooth.le.*
+import android.content.Context
+import android.content.pm.PackageManager
 import android.os.Handler
 import android.os.Looper
 import android.os.ParcelUuid
 import android.util.Log
-import java.nio.channels.ScatteringByteChannel
-import java.util.*
 import kotlin.collections.ArrayList
 
 private const val SCAN_PERIOD = 10000L
+private const val TAG = "BTController"
 
-class BluetoothController(private val _hostFragment: ConnectionFragment) {
+class BluetoothController(private val _connectionFragment: ConnectionFragment) {
 
-    private val TAG = "BTController"
-
-    private val _btAdapter = BluetoothAdapter.getDefaultAdapter()
-    private val _bluetoothLeScanner: BluetoothLeScanner? = _btAdapter.bluetoothLeScanner
+    private val _bluetoothAdapter: BluetoothAdapter = BluetoothAdapter.getDefaultAdapter() // TODO clean up nullables and do proper bt support checking
+    private val _bluetoothLeScanner: BluetoothLeScanner? = _bluetoothAdapter.bluetoothLeScanner
 
     private val _btDevices: ArrayList<BluetoothDevice> = ArrayList()
     val btDevices: List<BluetoothDevice> get() = _btDevices
 
     private var scanning = false
+
+    init {
+        checkBluetoothSupport()
+    }
 
     private val leScanCallback: ScanCallback = object : ScanCallback() {
         override fun onScanResult(callbackType: Int, result: ScanResult) {
@@ -37,7 +41,7 @@ class BluetoothController(private val _hostFragment: ConnectionFragment) {
                     Log.d(TAG, "lost " + result.device.name)
                 }
             }
-            _hostFragment.updateBtDeviceListAdapter()
+            _connectionFragment.updateBtDeviceListAdapter()
         }
     }
 
@@ -68,5 +72,30 @@ class BluetoothController(private val _hostFragment: ConnectionFragment) {
         }
     }
 
+    fun enableBluetooth() {
+        _bluetoothAdapter.enable()
+    }
+
+    fun isBluetoothEnabled(): Boolean {
+        return _bluetoothAdapter.isEnabled
+    }
+
+    /**
+     * Verify the level of Bluetooth support provided by the hardware.
+     * @return true if Bluetooth is properly supported, false otherwise.
+     */
+    private fun checkBluetoothSupport(): Boolean {
+
+        if (_bluetoothAdapter == null) {
+            Log.w(TAG, "Bluetooth is not supported")
+            return false
+        }
+        //!_connectionFragment.requireContext().packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)
+        if (_bluetoothLeScanner == null) {
+            Log.w(TAG, "Bluetooth LE is not supported")
+            return false
+        }
+        return true
+    }
 
 }

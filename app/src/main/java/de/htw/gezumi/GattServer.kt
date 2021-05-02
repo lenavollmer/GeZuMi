@@ -1,7 +1,5 @@
 package de.htw.gezumi
 
-import android.annotation.SuppressLint
-import android.app.Application
 import android.bluetooth.*
 import android.bluetooth.le.AdvertiseCallback
 import android.bluetooth.le.AdvertiseData
@@ -11,17 +9,16 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.content.pm.PackageManager
 import android.os.ParcelUuid
 import android.util.Log
 import de.htw.gezumi.gatt.TimeProfile
 
 private const val TAG = "GattServer"
 
-class GattServer(private val _context: Context, private val _isHost: Boolean) {
+class GattServer(private val _context: Context, private val _isHost: Boolean, private val _bluetoothController: BluetoothController) {
 
-    private var _bluetoothManager = _context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
     var bluetoothGattServer: BluetoothGattServer? = null
+    private val _bluetoothManager = _context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
 
     /* Collection of notification subscribers */
     // todo set to livedata and make accessible
@@ -60,14 +57,13 @@ class GattServer(private val _context: Context, private val _isHost: Boolean) {
     }
 
     init {
-        checkBluetoothSupport(_bluetoothManager.adapter)
 
         // Register for system Bluetooth events
         val filter = IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED)
         _context.registerReceiver(bluetoothReceiver, filter)
-        if (!_bluetoothManager.adapter.isEnabled) {
+        if (!_bluetoothController.isBluetoothEnabled()) {
             Log.d(TAG, "Bluetooth is currently disabled...enabling")
-            _bluetoothManager.adapter.enable()
+            _bluetoothController.enableBluetooth()
         } else {
             Log.d(TAG, "Bluetooth enabled...starting services")
             startAdvertising()
@@ -174,22 +170,5 @@ class GattServer(private val _context: Context, private val _isHost: Boolean) {
 
 
 
-    /**
-     * Verify the level of Bluetooth support provided by the hardware.
-     * @return true if Bluetooth is properly supported, false otherwise.
-     */
-    private fun checkBluetoothSupport(adapter: BluetoothAdapter?): Boolean {
-
-        if (adapter == null) {
-            Log.w(TAG, "Bluetooth is not supported")
-            return false
-        }
-
-        if (!_context.packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
-            Log.w(TAG, "Bluetooth LE is not supported")
-            return false
-        }
-        return true
-    }
 
 }

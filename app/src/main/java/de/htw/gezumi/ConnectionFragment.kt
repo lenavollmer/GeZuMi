@@ -33,7 +33,7 @@ class ConnectionFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         _isHost = arguments?.getBoolean("isHost")!!
-        gattServer = GattServer(requireContext(), _isHost)
+        gattServer = GattServer(requireContext(), _isHost, bluetoothController)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
