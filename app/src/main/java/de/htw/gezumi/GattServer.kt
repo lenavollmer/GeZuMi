@@ -24,6 +24,12 @@ class GattServer(private val _context: Context, private val _isHost: Boolean, pr
     // todo set to livedata and make accessible
     private val _registeredDevices = mutableSetOf<BluetoothDevice>()
 
+    private val timeServiceFilter = IntentFilter().apply {
+        addAction(Intent.ACTION_TIME_TICK)
+        addAction(Intent.ACTION_TIME_CHANGED)
+        addAction(Intent.ACTION_TIMEZONE_CHANGED)
+    }
+
     /**
      * Listens for Bluetooth adapter events to enable/disable
      * advertising and server functionality.
@@ -167,8 +173,21 @@ class GattServer(private val _context: Context, private val _isHost: Boolean, pr
         }
     }
 
+    fun stop() {
+        if (_bluetoothManager.adapter.isEnabled) {
+            stopServer()
+            stopAdvertising()
+        }
+        _context.unregisterReceiver(bluetoothReceiver)
+    }
 
+    fun unregisterTimeServiceReceiver() {
+        _context.unregisterReceiver(timeReceiver)
+    }
 
+    fun registerTimeServiceReceiver() {
+        _context.registerReceiver(timeReceiver, timeServiceFilter)
+    }
 
 
 }

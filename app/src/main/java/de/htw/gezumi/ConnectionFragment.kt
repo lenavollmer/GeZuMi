@@ -58,17 +58,17 @@ class ConnectionFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
-        //gattServer.startViewModel()
+        gattServer.registerTimeServiceReceiver()
     }
 
     override fun onStop() {
         super.onStop()
-        //gattServer.stopViewModel()
+        gattServer.unregisterTimeServiceReceiver()
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        //gattServer.destroyViewModel()
+        gattServer.stop()
     }
 
     override fun onPause() {
