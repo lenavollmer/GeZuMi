@@ -1,5 +1,6 @@
 package de.htw.gezumi.model
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -21,14 +22,30 @@ class DeviceViewModel : ViewModel() {
 
     fun addRSSI(value: Int){
         _values.add(value)
-        _distance.postValue(calculateRSSI(value.toDouble()))
+
+        _distance.postValue(calculateRSSI(getMedian()))
     }
     fun clearList(){
         _values.clear()
     }
 
-    fun calculateRSSI(rssi: Double): Double {
-        val txPower = -59 //hard coded power value. Usually ranges between -59 to -65
+    // Discuss: How often should we call this?
+    // Really every time we get a new value? Maybe only every 10/... ms?
+    // How frequently do we want to remove values from the List?
+    private fun getMedian(): Double {
+        // Remove 'oldest' value after one minute
+        // Make sure that this doesn't loop!
+        while(_values.size > 61) _values.remove(1)
+
+        val sortedArray = _values.sorted()
+
+        return if (sortedArray.size % 2 === 0) (sortedArray[sortedArray.size / 2].toDouble() + sortedArray[
+                sortedArray.size / 2 - 1].toDouble()) / 2
+        else sortedArray[sortedArray.size / 2].toDouble()
+    }
+
+    private fun calculateRSSI(rssi: Double): Double {
+        val txPower = -59 // hard-coded power value. Usually ranges between -59 to -65
         if (rssi == 0.0) {
             return -1.0
         }
