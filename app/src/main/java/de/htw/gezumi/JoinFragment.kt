@@ -14,12 +14,12 @@ import de.htw.gezumi.gatt.GattServer
  */
 class JoinFragment : Fragment() {
 
-    private val bluetoothModel: GattServer by activityViewModels()
+    private val bluetoothGattServer: GattServer by activityViewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        bluetoothModel.createViewModel()
+        bluetoothGattServer.createViewModel(false)
     }
 
     override fun onCreateView(
@@ -32,16 +32,16 @@ class JoinFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
-        bluetoothModel.startViewModel()
+        bluetoothGattServer.startViewModel()
     }
 
     override fun onStop() {
         super.onStop()
-        bluetoothModel.stopViewModel()
+        bluetoothGattServer.stopViewModel()
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        bluetoothModel.destroyViewModel()
+        bluetoothGattServer.destroyViewModel()
     }
 }

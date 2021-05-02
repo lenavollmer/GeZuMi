@@ -13,7 +13,7 @@ import kotlin.collections.ArrayList
 
 private const val SCAN_PERIOD = 10000L
 
-class BluetoothController(private val _hostFragment: HostFragment) {
+class BluetoothController(private val _hostFragment: ConnectionFragment) {
 
     private val TAG = "BTController"
 
@@ -41,10 +41,15 @@ class BluetoothController(private val _hostFragment: HostFragment) {
         }
     }
 
-    fun scanForDevices() {
-        val filter = ScanFilter.Builder().setServiceUuid(
-            ParcelUuid.fromString("00001805-0000-1000-8000-00805f9b34fb")
-        ).build()
+    fun scanForDevices(hostScan: Boolean) {
+        val filter = if (hostScan)
+            ScanFilter.Builder()
+                .setServiceUuid(ParcelUuid.fromString("00001805-0000-1000-8000-00805f9b34fb"))
+                .build()
+        else
+            ScanFilter.Builder()
+                .setServiceUuid( ParcelUuid.fromString("00002a2b-0000-1000-8000-00805f9b34f0"))
+                .build()
         val scanSettings = ScanSettings.Builder().setCallbackType(ScanSettings.CALLBACK_TYPE_ALL_MATCHES).build()
 
         _bluetoothLeScanner?.let { scanner ->
@@ -55,6 +60,7 @@ class BluetoothController(private val _hostFragment: HostFragment) {
                 }, SCAN_PERIOD)
                 scanning = true
                 scanner.startScan(listOf(filter), scanSettings, leScanCallback)
+                Log.d(TAG, "scanning as host: $hostScan")
             } else {
                 scanning = false
                 scanner.stopScan(leScanCallback)

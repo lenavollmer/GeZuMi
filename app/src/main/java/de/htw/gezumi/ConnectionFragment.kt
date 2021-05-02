@@ -11,24 +11,34 @@ import android.view.ViewGroup
 import androidx.core.app.ActivityCompat
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.DividerItemDecoration
-import de.htw.gezumi.databinding.FragmentHostBinding
 import de.htw.gezumi.adapter.BtDeviceListAdapter
-
+import de.htw.gezumi.databinding.FragmentConnectionBinding
+import de.htw.gezumi.gatt.GattServer
 
 
 /**
  * A simple [Fragment] subclass as the second destination in the navigation.
  */
-class HostFragment : Fragment() {
+class ConnectionFragment : Fragment() {
 
-    private lateinit var binding: FragmentHostBinding
+    private lateinit var binding: FragmentConnectionBinding
 
+    private val bluetoothGattServer: GattServer by activityViewModels()
     private val bluetoothController: BluetoothController = BluetoothController(this)
     private val deviceListAdapter: BtDeviceListAdapter = BtDeviceListAdapter(bluetoothController.btDevices)
 
+    private var _isHost: Boolean = false
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        _isHost = arguments?.getBoolean("isHost")!!
+        bluetoothGattServer.createViewModel(_isHost)
+    }
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_host, container, false)
+        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_connection, container, false)
         return binding.root
     }
 
@@ -41,10 +51,25 @@ class HostFragment : Fragment() {
             addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
         }
         binding.button.setOnClickListener {
-            bluetoothController.scanForDevices()
+            bluetoothController.scanForDevices(_isHost)
         }
 
         checkPermission()
+    }
+
+    override fun onStart() {
+        super.onStart()
+        bluetoothGattServer.startViewModel()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        bluetoothGattServer.stopViewModel()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        bluetoothGattServer.destroyViewModel()
     }
 
     override fun onPause() {
