@@ -34,11 +34,11 @@ class DeviceViewModel : ViewModel() {
     private fun getMedian(): Double {
         // Remove 'oldest' value after one minute
         // Make sure that this doesn't loop!
-        while(_values.size > 61) _values.remove(1)
+        while(_values.size > 61) _values.removeFirst()
 
         val sortedArray = _values.sorted()
 
-        return if (sortedArray.size % 2 === 0) (sortedArray[sortedArray.size / 2].toDouble() + sortedArray[
+        return if (sortedArray.size % 2 == 0) (sortedArray[sortedArray.size / 2].toDouble() + sortedArray[
                 sortedArray.size / 2 - 1].toDouble()) / 2
         else sortedArray[sortedArray.size / 2].toDouble()
     }
