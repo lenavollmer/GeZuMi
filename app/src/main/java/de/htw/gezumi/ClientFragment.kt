@@ -2,8 +2,13 @@ package de.htw.gezumi
 
 import android.Manifest
 import android.app.Activity
+import android.bluetooth.BluetoothDevice
+import android.bluetooth.le.ScanCallback
+import android.bluetooth.le.ScanResult
+import android.bluetooth.le.ScanSettings
 import android.content.pm.PackageManager
 import android.os.*
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,30 +17,40 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.DividerItemDecoration
 import de.htw.gezumi.adapter.BtDeviceListAdapter
-import de.htw.gezumi.databinding.FragmentConnectionBinding
+import de.htw.gezumi.databinding.FragmentClientBinding
 
+private const val TAG = "ClientFragment"
 
-/**
- * A simple [Fragment] subclass as the second destination in the navigation.
- */
-class ConnectionFragment : Fragment() {
+class ClientFragment : Fragment() {
 
-    private lateinit var _binding: FragmentConnectionBinding
+    private lateinit var _binding: FragmentClientBinding
 
-    private val _bluetoothController: BluetoothController = BluetoothController(this)
-    private val _deviceListAdapter: BtDeviceListAdapter = BtDeviceListAdapter(_bluetoothController.btDevices)
-    private lateinit var _gattServer: GattServer
+    private val _bluetoothController: BluetoothController = BluetoothController()
+    private val _btDevices: ArrayList<BluetoothDevice> = ArrayList()
+    private val _deviceListAdapter: BtDeviceListAdapter = BtDeviceListAdapter(_btDevices)
 
-    private var _isHost: Boolean = false
+    private val leScanCallback: ScanCallback = object : ScanCallback() {
+        override fun onScanResult(callbackType: Int, result: ScanResult) {
+            super.onScanResult(callbackType, result)
+            Log.d(TAG, "BLE action type: $callbackType")
+            when (callbackType) {
+                ScanSettings.CALLBACK_TYPE_ALL_MATCHES -> // first match does not have a name
+                    if (!_btDevices.contains(result.device)) _btDevices.add(result.device)
+                ScanSettings.CALLBACK_TYPE_MATCH_LOST -> {
+                    _btDevices.remove(result.device) // todo doesn't work with adapted scan settings
+                    Log.d(TAG, "lost " + result.device.name)
+                }
+            }
+            updateBtDeviceListAdapter()
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        _isHost = arguments?.getBoolean("isHost")!!
-        _gattServer = GattServer(requireContext(), _isHost, _bluetoothController)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        _binding = DataBindingUtil.inflate(inflater, R.layout.fragment_connection, container, false)
+        _binding = DataBindingUtil.inflate(inflater, R.layout.fragment_client, container, false)
         return _binding.root
     }
 
@@ -48,25 +63,10 @@ class ConnectionFragment : Fragment() {
             addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
         }
         _binding.button.setOnClickListener {
-            _bluetoothController.scanForDevices(_isHost)
+            _bluetoothController.scanForDevices(leScanCallback)
         }
 
         checkPermission()
-    }
-
-    override fun onStart() {
-        super.onStart()
-        _gattServer.registerTimeServiceReceiver()
-    }
-
-    override fun onStop() {
-        super.onStop()
-        _gattServer.unregisterTimeServiceReceiver()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        _gattServer.stop()
     }
 
     override fun onPause() {
@@ -76,7 +76,7 @@ class ConnectionFragment : Fragment() {
         updateBtDeviceListAdapter();
     }
 
-    fun updateBtDeviceListAdapter() {
+    private fun updateBtDeviceListAdapter() {
         _deviceListAdapter.notifyDataSetChanged()
     }
 

@@ -14,27 +14,27 @@
         <action android:id="@+id/action_MainFragment_to_Host" app:destination="@id/Host">
             <argument android:name="isHost" android:defaultValue="true"/>
         </action>
-        <action android:id="@+id/action_MainFragment_to_Join" app:destination="@id/Join">
+        <action android:id="@+id/action_MainFragment_to_Client" app:destination="@id/Client">
             <argument android:name="isHost" android:defaultValue="false"/>
         </action>
     </fragment>
     <fragment
             android:id="@+id/Host"
-            android:name="de.htw.gezumi.ConnectionFragment"
+            android:name="de.htw.gezumi.HostFragment"
             android:label="@string/host_label"
-            tools:layout="@layout/fragment_connection">
-        <action android:id="@+id/action_ConnectionFragment_to_Game" app:destination="@id/Game">
+            tools:layout="@layout/fragment_host">
+        <action android:id="@+id/action_HostFragment_to_Game" app:destination="@id/Game">
             <argument android:name="isHost" android:defaultValue="true"/>
         </action>
         <argument android:name="isHost" app:argType="boolean"/>
     </fragment>
 
     <fragment
-            android:id="@+id/Join"
-            android:name="de.htw.gezumi.ConnectionFragment"
-            android:label="@string/join_label"
-            tools:layout="@layout/fragment_connection">
-        <action android:id="@+id/action_ConnectionFragment_to_Game" app:destination="@id/Game">
+            android:id="@+id/Client"
+            android:name="de.htw.gezumi.ClientFragment"
+            android:label="@string/client_label"
+            tools:layout="@layout/fragment_client">
+        <action android:id="@+id/action_ClientFragment_to_Game" app:destination="@id/Game">
             <argument android:name="isHost" android:defaultValue="false"/>
         </action>
         <argument android:name="isHost" app:argType="boolean"/>
