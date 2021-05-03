@@ -11,9 +11,9 @@ class GattServerCallback(private val _registeredDevices: MutableSet<BluetoothDev
 
     override fun onConnectionStateChange(device: BluetoothDevice, status: Int, newState: Int) {
         if (newState == BluetoothProfile.STATE_CONNECTED) {
-            Log.i(TAG, "BluetoothDevice CONNECTED: $device")
+            Log.d(TAG, "BluetoothDevice CONNECTED: $device")
         } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-            Log.i(TAG, "BluetoothDevice DISCONNECTED: $device")
+            Log.d(TAG, "BluetoothDevice DISCONNECTED: $device")
             //Remove device from any active subscriptions
             _registeredDevices.remove(device)
         }
@@ -25,14 +25,14 @@ class GattServerCallback(private val _registeredDevices: MutableSet<BluetoothDev
     ) {
         val now = System.currentTimeMillis()
         when {
-            TimeProfile.CURRENT_TIME == characteristic.uuid -> {
-                Log.i(TAG, "Read CurrentTime")
+            TimeProfile.GAME_ID == characteristic.uuid -> {
+                Log.d(TAG, "read game ID")
                 _gattServer.bluetoothGattServer?.sendResponse(
                     device,
                     requestId,
                     BluetoothGatt.GATT_SUCCESS,
                     0,
-                    TimeProfile.getExactTime(now, TimeProfile.ADJUST_NONE)
+                    TimeProfile.getGameId()
                 )
             }
             TimeProfile.LOCAL_TIME_INFO == characteristic.uuid -> {

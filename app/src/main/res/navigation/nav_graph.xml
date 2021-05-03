@@ -23,7 +23,9 @@
             android:name="de.htw.gezumi.ConnectionFragment"
             android:label="@string/host_label"
             tools:layout="@layout/fragment_connection">
-        <action android:id="@+id/action_HostFragment_to_Game" app:destination="@id/Game"/>
+        <action android:id="@+id/action_ConnectionFragment_to_Game" app:destination="@id/Game">
+            <argument android:name="isHost" android:defaultValue="true"/>
+        </action>
         <argument android:name="isHost" app:argType="boolean"/>
     </fragment>
 
@@ -32,6 +34,9 @@
             android:name="de.htw.gezumi.ConnectionFragment"
             android:label="@string/join_label"
             tools:layout="@layout/fragment_connection">
+        <action android:id="@+id/action_ConnectionFragment_to_Game" app:destination="@id/Game">
+            <argument android:name="isHost" android:defaultValue="false"/>
+        </action>
         <argument android:name="isHost" app:argType="boolean"/>
     </fragment>
 
@@ -43,5 +48,6 @@
         <argument
                 android:name="device"
                 app:argType="android.bluetooth.BluetoothDevice" />
+        <argument android:name="isHost" app:argType="boolean"/>
     </fragment>
 </navigation>

@@ -86,9 +86,9 @@ class GattServer(private val _context: Context, private val _isHost: Boolean, pr
         bluetoothGattServer = _bluetoothManager.openGattServer(_context, GattServerCallback(_registeredDevices, this))
 
         (if (_isHost)
-            bluetoothGattServer?.addService(TimeProfile.createTimeService(TimeProfile.SERVER_UUID))
+            bluetoothGattServer?.addService(TimeProfile.createGameService(TimeProfile.SERVER_UUID))
         else
-            bluetoothGattServer?.addService(TimeProfile.createTimeService(TimeProfile.CLIENT_UUID)))
+            bluetoothGattServer?.addService(TimeProfile.createGameService(TimeProfile.CLIENT_UUID)))
             ?: Log.w(TAG, "Unable to create GATT server")
     }
 
@@ -150,7 +150,7 @@ class GattServer(private val _context: Context, private val _isHost: Boolean, pr
         for (device in _registeredDevices) {
             val timeCharacteristic = bluetoothGattServer
                 ?.getService(if (_isHost) TimeProfile.SERVER_UUID else TimeProfile.CLIENT_UUID)
-                ?.getCharacteristic(TimeProfile.CURRENT_TIME)
+                ?.getCharacteristic(TimeProfile.GAME_ID)
             timeCharacteristic?.value = exactTime
             bluetoothGattServer?.notifyCharacteristicChanged(device, timeCharacteristic, false)
         }
