@@ -5,8 +5,7 @@ import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothProfile
 import android.util.Log
-import androidx.fragment.app.viewModels
-import de.htw.gezumi.gatt.TimeProfile
+import de.htw.gezumi.gatt.GameService
 import de.htw.gezumi.model.DeviceViewModel
 
 private const val TAG = "ClientGattCallback"
@@ -39,7 +38,7 @@ class GattClientCallback(private val _deviceViewModel: DeviceViewModel) : Blueto
         super.onServicesDiscovered(gatt, status)
         Log.d(TAG, "services discovered")
         Log.d(TAG, "read game id")
-        val gameIdCharacteristic = gatt?.getService(TimeProfile.SERVER_UUID)?.getCharacteristic(TimeProfile.GAME_ID)
+        val gameIdCharacteristic = gatt?.getService(GameService.SERVER_UUID)?.getCharacteristic(GameService.GAME_ID)
         val success = gatt?.readCharacteristic(gameIdCharacteristic)
         Log.d(TAG, "read game id: $success")
     }
@@ -50,7 +49,7 @@ class GattClientCallback(private val _deviceViewModel: DeviceViewModel) : Blueto
         status: Int
     ) {
         super.onCharacteristicRead(gatt, characteristic, status)
-        if (characteristic?.uuid == TimeProfile.GAME_ID) {
+        if (characteristic?.uuid == GameService.GAME_ID) {
             val gameId = characteristic?.value?.toString(Charsets.UTF_8)
             Log.d(TAG, "callback: characteristic read successfully, gameId: $gameId")
         }

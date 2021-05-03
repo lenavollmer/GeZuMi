@@ -2,7 +2,7 @@ package de.htw.gezumi
 
 import android.bluetooth.*
 import android.util.Log
-import de.htw.gezumi.gatt.TimeProfile
+import de.htw.gezumi.gatt.GameService
 import java.util.*
 
 private const val TAG = "GattServerCallback"
@@ -26,14 +26,14 @@ class GattServerCallback(private val _registeredDevices: MutableSet<BluetoothDev
         characteristic: BluetoothGattCharacteristic
     ) {
         when (characteristic.uuid) {
-            TimeProfile.GAME_ID -> {
+            GameService.GAME_ID -> {
                 Log.d(TAG, "read game ID")
                 _gattServer.bluetoothGattServer?.sendResponse(
                     device,
                     requestId,
                     BluetoothGatt.GATT_SUCCESS,
                     0,
-                    TimeProfile.getGameId()
+                    GameService.getGameId()
                 )
             }
             else -> {
@@ -54,7 +54,7 @@ class GattServerCallback(private val _registeredDevices: MutableSet<BluetoothDev
         device: BluetoothDevice, requestId: Int, offset: Int,
         descriptor: BluetoothGattDescriptor
     ) {
-        if (TimeProfile.CLIENT_CONFIG == descriptor.uuid) {
+        if (GameService.CLIENT_CONFIG == descriptor.uuid) {
             Log.d(TAG, "Config descriptor read")
             val returnValue = if (_registeredDevices.contains(device)) {
                 BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
@@ -85,7 +85,7 @@ class GattServerCallback(private val _registeredDevices: MutableSet<BluetoothDev
         preparedWrite: Boolean, responseNeeded: Boolean,
         offset: Int, value: ByteArray
     ) {
-        if (TimeProfile.CLIENT_CONFIG == descriptor.uuid) {
+        if (GameService.CLIENT_CONFIG == descriptor.uuid) {
             if (Arrays.equals(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE, value)) {
                 Log.d(TAG, "Subscribe device to notifications: $device")
                 _registeredDevices.add(device)

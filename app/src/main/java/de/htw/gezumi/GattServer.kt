@@ -11,7 +11,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.ParcelUuid
 import android.util.Log
-import de.htw.gezumi.gatt.TimeProfile
+import de.htw.gezumi.gatt.GameService
 
 private const val TAG = "GattServer"
 
@@ -21,14 +21,7 @@ class GattServer(private val _context: Context, private val _bluetoothController
     private val _bluetoothManager = _context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
 
     /* Collection of notification subscribers */
-    // todo set to livedata and make accessible
     private val _registeredDevices = mutableSetOf<BluetoothDevice>()
-
-    private val timeServiceFilter = IntentFilter().apply {
-        addAction(Intent.ACTION_TIME_TICK)
-        addAction(Intent.ACTION_TIME_CHANGED)
-        addAction(Intent.ACTION_TIMEZONE_CHANGED)
-    }
 
     /**
      * Listens for Bluetooth adapter events to enable/disable
@@ -82,7 +75,7 @@ class GattServer(private val _context: Context, private val _bluetoothController
         Log.d(TAG, "start gatt server")
         bluetoothGattServer = _bluetoothManager.openGattServer(_context, GattServerCallback(_registeredDevices, this, _connectCallback))
 
-        bluetoothGattServer?.addService(TimeProfile.createGameService(TimeProfile.SERVER_UUID))
+        bluetoothGattServer?.addService(GameService.createGameService(GameService.SERVER_UUID))
             ?: Log.w(TAG, "Unable to create GATT server")
     }
 
@@ -113,7 +106,7 @@ class GattServer(private val _context: Context, private val _bluetoothController
             val data = AdvertiseData.Builder()
                 .setIncludeDeviceName(true)
                 .setIncludeTxPowerLevel(false)
-                .addServiceUuid(ParcelUuid(TimeProfile.SERVER_UUID))
+                .addServiceUuid(ParcelUuid(GameService.SERVER_UUID))
                 .build()
 
             it.startAdvertising(settings, data, advertiseCallback)
@@ -136,37 +129,19 @@ class GattServer(private val _context: Context, private val _bluetoothController
      * to the characteristic.
      */
     private fun notifyRegisteredDevices(timestamp: Long, adjustReason: Byte) {
-        if (_registeredDevices.isEmpty()) {
+        /*if (_registeredDevices.isEmpty()) {
             Log.i(TAG, "No subscribers registered")
             return
         }
-        val exactTime = TimeProfile.getExactTime(timestamp, adjustReason)
 
         Log.i(TAG, "Sending update to ${_registeredDevices.size} subscribers")
         for (device in _registeredDevices) {
             val timeCharacteristic = bluetoothGattServer
-                ?.getService(TimeProfile.SERVER_UUID)
-                ?.getCharacteristic(TimeProfile.GAME_ID)
-            timeCharacteristic?.value = exactTime
+                ?.getService(GameService.SERVER_UUID)
+                ?.getCharacteristic(GameService.GAME_ID)
+            timeCharacteristic?.value = someValue
             bluetoothGattServer?.notifyCharacteristicChanged(device, timeCharacteristic, false)
-        }
-    }
-
-    /**
-     * Listens for system time changes and triggers a notification to
-     * Bluetooth subscribers.
-     */
-    private val timeReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context, intent: Intent) {
-            val adjustReason = when (intent.action) {
-                Intent.ACTION_TIME_CHANGED -> TimeProfile.ADJUST_MANUAL
-                Intent.ACTION_TIMEZONE_CHANGED -> TimeProfile.ADJUST_TIMEZONE
-                Intent.ACTION_TIME_TICK -> TimeProfile.ADJUST_NONE
-                else -> TimeProfile.ADJUST_NONE
-            }
-            val now = System.currentTimeMillis()
-            notifyRegisteredDevices(now, adjustReason)
-        }
+        }*/
     }
 
     fun stop() {
@@ -176,14 +151,4 @@ class GattServer(private val _context: Context, private val _bluetoothController
         }
         _context.unregisterReceiver(bluetoothReceiver)
     }
-
-    fun unregisterTimeServiceReceiver() {
-        _context.unregisterReceiver(timeReceiver)
-    }
-
-    fun registerTimeServiceReceiver() {
-        _context.registerReceiver(timeReceiver, timeServiceFilter)
-    }
-
-
 }

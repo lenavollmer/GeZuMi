@@ -84,15 +84,7 @@ class HostFragment : Fragment() {
         }
     }
 
-    override fun onStart() {
-        super.onStart()
-        _gattServer.registerTimeServiceReceiver()
-    }
-
-    override fun onStop() {
-        super.onStop()
-        _gattServer.unregisterTimeServiceReceiver()
-    }
+    // TODO handle lifecycle actions for gatt server
 
     override fun onDestroy() {
         super.onDestroy()
