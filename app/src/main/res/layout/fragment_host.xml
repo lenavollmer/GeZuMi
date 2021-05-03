@@ -18,7 +18,7 @@
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                 tools:listitem="@layout/item_player" app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintVertical_bias="1.0"
-                android:layout_marginTop="32dp"/>
+                android:layout_marginTop="32dp" app:layout_constraintTop_toTopOf="parent"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

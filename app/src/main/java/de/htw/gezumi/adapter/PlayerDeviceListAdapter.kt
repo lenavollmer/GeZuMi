@@ -1,6 +1,7 @@
 package de.htw.gezumi.adapter
 
 import android.bluetooth.BluetoothDevice
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.os.bundleOf
@@ -10,11 +11,13 @@ import de.htw.gezumi.R
 import de.htw.gezumi.databinding.ItemBtDeviceBinding
 import de.htw.gezumi.databinding.ItemPlayerBinding
 
+private const val TAG = "PlayerDeviceLA"
+
 class PlayerDeviceListAdapter(private val _playerDevices: List<BluetoothDevice>) : RecyclerView.Adapter<PlayerDeviceListAdapter.ItemViewHolder>() {
 
     class ItemViewHolder(private val binding: ItemPlayerBinding): RecyclerView.ViewHolder(binding.root) {
         fun bind(device: BluetoothDevice) {
-            // todo move to item_bt_device per data binding
+            Log.d(TAG, "bind: ${device.name}") // TODO: device name is null
             binding.textDeviceName.text = device.name
             // make sure to include this so your view will be updated
             binding.invalidateAll()

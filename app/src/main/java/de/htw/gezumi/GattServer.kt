@@ -15,7 +15,7 @@ import de.htw.gezumi.gatt.TimeProfile
 
 private const val TAG = "GattServer"
 
-class GattServer(private val _context: Context, private val _bluetoothController: BluetoothController) {
+class GattServer(private val _context: Context, private val _bluetoothController: BluetoothController, private val _connectCallback : HostFragment.GattConnectCallback) {
 
     var bluetoothGattServer: BluetoothGattServer? = null
     private val _bluetoothManager = _context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
@@ -70,10 +70,6 @@ class GattServer(private val _context: Context, private val _bluetoothController
         if (!_bluetoothController.isBluetoothEnabled()) {
             Log.d(TAG, "Bluetooth is currently disabled...enabling")
             _bluetoothController.enableBluetooth()
-        } else {
-            Log.d(TAG, "Bluetooth enabled...starting services")
-            startAdvertising()
-            startServer()
         }
     }
 
@@ -82,8 +78,9 @@ class GattServer(private val _context: Context, private val _bluetoothController
      * Initialize the GATT server instance with the services/characteristics
      * from the Time Profile.
      */
-    private fun startServer() {
-        bluetoothGattServer = _bluetoothManager.openGattServer(_context, GattServerCallback(_registeredDevices, this))
+    fun startServer() {
+        Log.d(TAG, "start gatt server")
+        bluetoothGattServer = _bluetoothManager.openGattServer(_context, GattServerCallback(_registeredDevices, this, _connectCallback))
 
         bluetoothGattServer?.addService(TimeProfile.createGameService(TimeProfile.SERVER_UUID))
             ?: Log.w(TAG, "Unable to create GATT server")
@@ -92,7 +89,8 @@ class GattServer(private val _context: Context, private val _bluetoothController
     /**
      * Shut down the GATT server.
      */
-    private fun stopServer() {
+    fun stopServer() {
+        Log.d(TAG, "stop gatt server")
         bluetoothGattServer?.close()
     }
 
@@ -100,7 +98,7 @@ class GattServer(private val _context: Context, private val _bluetoothController
      * Begin advertising over Bluetooth that this device is connectable
      * and supports the Current Time Service.
      */
-    private fun startAdvertising() {
+    fun startAdvertising() {
         val bluetoothLeAdvertiser: BluetoothLeAdvertiser? =
             _bluetoothManager.adapter.bluetoothLeAdvertiser
 
@@ -126,7 +124,7 @@ class GattServer(private val _context: Context, private val _bluetoothController
     /**
      * Stop Bluetooth advertisements.
      */
-    private fun stopAdvertising() {
+    fun stopAdvertising() {
         Log.d(TAG, "stop advertising")
         val bluetoothLeAdvertiser: BluetoothLeAdvertiser? =
             _bluetoothManager.adapter.bluetoothLeAdvertiser

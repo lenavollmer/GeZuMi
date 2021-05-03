@@ -7,14 +7,16 @@ import java.util.*
 
 private const val TAG = "GattServerCallback"
 
-class GattServerCallback(private val _registeredDevices: MutableSet<BluetoothDevice>, private val _gattServer: GattServer) : BluetoothGattServerCallback() {
+class GattServerCallback(private val _registeredDevices: MutableSet<BluetoothDevice>, private val _gattServer: GattServer, private val _connectCallback : HostFragment.GattConnectCallback) : BluetoothGattServerCallback() {
 
     override fun onConnectionStateChange(device: BluetoothDevice, status: Int, newState: Int) {
         if (newState == BluetoothProfile.STATE_CONNECTED) {
             Log.d(TAG, "BluetoothDevice CONNECTED: $device")
+            _connectCallback.onGattConnect(device)
         } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
             Log.d(TAG, "BluetoothDevice DISCONNECTED: $device")
             //Remove device from any active subscriptions
+            _connectCallback.onGattDisconnect(device)
             _registeredDevices.remove(device)
         }
     }
