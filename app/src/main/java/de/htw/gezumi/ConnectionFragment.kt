@@ -2,7 +2,6 @@ package de.htw.gezumi
 
 import android.Manifest
 import android.app.Activity
-import android.bluetooth.le.*
 import android.content.pm.PackageManager
 import android.os.*
 import android.view.LayoutInflater
@@ -11,7 +10,6 @@ import android.view.ViewGroup
 import androidx.core.app.ActivityCompat
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.DividerItemDecoration
 import de.htw.gezumi.adapter.BtDeviceListAdapter
 import de.htw.gezumi.databinding.FragmentConnectionBinding
@@ -22,35 +20,35 @@ import de.htw.gezumi.databinding.FragmentConnectionBinding
  */
 class ConnectionFragment : Fragment() {
 
-    private lateinit var binding: FragmentConnectionBinding
+    private lateinit var _binding: FragmentConnectionBinding
 
-    private val bluetoothController: BluetoothController = BluetoothController(this)
-    private val deviceListAdapter: BtDeviceListAdapter = BtDeviceListAdapter(bluetoothController.btDevices)
-    private lateinit var gattServer: GattServer
+    private val _bluetoothController: BluetoothController = BluetoothController(this)
+    private val _deviceListAdapter: BtDeviceListAdapter = BtDeviceListAdapter(_bluetoothController.btDevices)
+    private lateinit var _gattServer: GattServer
 
     private var _isHost: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         _isHost = arguments?.getBoolean("isHost")!!
-        gattServer = GattServer(requireContext(), _isHost, bluetoothController)
+        _gattServer = GattServer(requireContext(), _isHost, _bluetoothController)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_connection, container, false)
-        return binding.root
+        _binding = DataBindingUtil.inflate(inflater, R.layout.fragment_connection, container, false)
+        return _binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.lifecycleOwner = viewLifecycleOwner
-        binding.recyclerBtDevices.adapter = deviceListAdapter
-        binding.recyclerBtDevices.apply {
+        _binding.lifecycleOwner = viewLifecycleOwner
+        _binding.recyclerBtDevices.adapter = _deviceListAdapter
+        _binding.recyclerBtDevices.apply {
             setHasFixedSize(true)
             addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
         }
-        binding.button.setOnClickListener {
-            bluetoothController.scanForDevices(_isHost)
+        _binding.button.setOnClickListener {
+            _bluetoothController.scanForDevices(_isHost)
         }
 
         checkPermission()
@@ -58,17 +56,17 @@ class ConnectionFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
-        gattServer.registerTimeServiceReceiver()
+        _gattServer.registerTimeServiceReceiver()
     }
 
     override fun onStop() {
         super.onStop()
-        gattServer.unregisterTimeServiceReceiver()
+        _gattServer.unregisterTimeServiceReceiver()
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        gattServer.stop()
+        _gattServer.stop()
     }
 
     override fun onPause() {
@@ -79,7 +77,7 @@ class ConnectionFragment : Fragment() {
     }
 
     fun updateBtDeviceListAdapter() {
-        deviceListAdapter.notifyDataSetChanged()
+        _deviceListAdapter.notifyDataSetChanged()
     }
 
     private fun checkPermission() {

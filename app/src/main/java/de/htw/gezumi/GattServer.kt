@@ -39,11 +39,11 @@ class GattServer(private val _context: Context, private val _isHost: Boolean, pr
             when (intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.STATE_OFF)) {
                 BluetoothAdapter.STATE_ON -> {
                     startAdvertising()
-                    startServer()
+                    if (_isHost) startServer()
                 }
                 BluetoothAdapter.STATE_OFF -> {
                     stopServer()
-                    stopAdvertising()
+                    if (_isHost) stopServer()
                 }
             }
         }
@@ -73,7 +73,7 @@ class GattServer(private val _context: Context, private val _isHost: Boolean, pr
         } else {
             Log.d(TAG, "Bluetooth enabled...starting services")
             startAdvertising()
-            startServer()
+            if (_isHost) startServer()
         }
     }
 
@@ -85,10 +85,7 @@ class GattServer(private val _context: Context, private val _isHost: Boolean, pr
     private fun startServer() {
         bluetoothGattServer = _bluetoothManager.openGattServer(_context, GattServerCallback(_registeredDevices, this))
 
-        (if (_isHost)
-            bluetoothGattServer?.addService(TimeProfile.createGameService(TimeProfile.SERVER_UUID))
-        else
-            bluetoothGattServer?.addService(TimeProfile.createGameService(TimeProfile.CLIENT_UUID)))
+        bluetoothGattServer?.addService(TimeProfile.createGameService(TimeProfile.SERVER_UUID))
             ?: Log.w(TAG, "Unable to create GATT server")
     }
 

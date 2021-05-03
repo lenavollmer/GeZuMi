@@ -23,9 +23,8 @@ class GattServerCallback(private val _registeredDevices: MutableSet<BluetoothDev
         device: BluetoothDevice, requestId: Int, offset: Int,
         characteristic: BluetoothGattCharacteristic
     ) {
-        val now = System.currentTimeMillis()
-        when {
-            TimeProfile.GAME_ID == characteristic.uuid -> {
+        when (characteristic.uuid) {
+            TimeProfile.GAME_ID -> {
                 Log.d(TAG, "read game ID")
                 _gattServer.bluetoothGattServer?.sendResponse(
                     device,
@@ -35,19 +34,9 @@ class GattServerCallback(private val _registeredDevices: MutableSet<BluetoothDev
                     TimeProfile.getGameId()
                 )
             }
-            TimeProfile.LOCAL_TIME_INFO == characteristic.uuid -> {
-                Log.i(TAG, "Read LocalTimeInfo")
-                _gattServer.bluetoothGattServer?.sendResponse(
-                    device,
-                    requestId,
-                    BluetoothGatt.GATT_SUCCESS,
-                    0,
-                    TimeProfile.getLocalTimeInfo(now)
-                )
-            }
             else -> {
                 // Invalid characteristic
-                Log.w(TAG, "Invalid Characteristic Read: " + characteristic.uuid)
+                Log.d(TAG, "Invalid Characteristic Read: " + characteristic.uuid)
                 _gattServer.bluetoothGattServer?.sendResponse(
                     device,
                     requestId,
