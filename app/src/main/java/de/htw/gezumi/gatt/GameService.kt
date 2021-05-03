@@ -10,6 +10,7 @@ import java.util.UUID
 
 object GameService {
 
+    val GAME_ID_LENGTH = 15;
     val CLIENT_UUID: UUID = UUID.fromString("00001805-0000-1000-8000-00805f9b34fb")
     val SERVER_UUID: UUID = UUID.fromString("00001805-0000-1000-8000-00805f9b34fc")
     val GAME_ID: UUID = UUID.fromString("00002a2b-0000-1000-8000-00805f9b34fb")
@@ -37,6 +38,13 @@ object GameService {
     }
 
     fun getGameId(): ByteArray {
-        return "game1".toByteArray(Charsets.UTF_8)
+        return getRandomString(GAME_ID_LENGTH).toByteArray(Charsets.UTF_8)
+    }
+
+    private fun getRandomString(length: Int) : String {
+        val allowedChars = ('A'..'Z') + ('a'..'z') + ('0'..'9')
+        return (1..length)
+            .map { allowedChars.random() }
+            .joinToString("")
     }
 }

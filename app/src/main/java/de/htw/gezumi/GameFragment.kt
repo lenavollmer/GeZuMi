@@ -2,7 +2,6 @@ package de.htw.gezumi
 
 import android.bluetooth.*
 import android.os.Bundle
-import android.util.Log
 import android.view.*
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
@@ -21,18 +20,18 @@ class GameFragment : Fragment() {
     private lateinit var _binding: FragmentGameBinding
     private val _deviceViewModel: DeviceViewModel by viewModels()
 
-    private lateinit var _gatt: BluetoothGatt
-    private lateinit var _gattClientCallback: GattClientCallback
-    private lateinit var _currentDevice: BluetoothDevice
-    private var _rssiTimer = Timer()
+    private lateinit var _gattClient: GattClient
+    private lateinit var _hostDevice: BluetoothDevice
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        _currentDevice = arguments?.getParcelable("device")!!
-        _gattClientCallback = GattClientCallback(_deviceViewModel)
-        _gatt = _currentDevice.connectGatt(activity, false, _gattClientCallback)
-        var success1 = _gatt.connect()
-        Log.d(TAG, "connected to gatt: $success1")
+        _hostDevice = arguments?.getParcelable("device")!!
+
+        val gattClientCallback = GattClientCallback(_deviceViewModel)
+        _gattClient = GattClient(requireContext())
+
+        // connect
+        _gattClient.connect(_hostDevice, gattClientCallback)
     }
 
     override fun onCreateView(
@@ -40,7 +39,7 @@ class GameFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = DataBindingUtil.inflate(inflater, R.layout.fragment_game, container, false)
-        _deviceViewModel.setName(_currentDevice.name)
+        _deviceViewModel.setName(_hostDevice.name)
         return _binding.root
     }
 
@@ -52,12 +51,12 @@ class GameFragment : Fragment() {
 
     override fun onPause() {
         super.onPause()
-        _gatt.disconnect()
+        _gattClient.disconnect()
     }
 
     override fun onResume() {
         super.onResume()
-        _gatt.connect()
+        _gattClient.reconnect()
     }
 
 }
