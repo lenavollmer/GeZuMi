@@ -15,13 +15,13 @@ private const val TAG = "PlayerDeviceLA"
 
 class PlayerDeviceListAdapter(private val _playerDevices: List<BluetoothDevice>) : RecyclerView.Adapter<PlayerDeviceListAdapter.ItemViewHolder>() {
 
-    class ItemViewHolder(private val binding: ItemPlayerBinding): RecyclerView.ViewHolder(binding.root) {
-        fun bind(device: BluetoothDevice) {
+    class ItemViewHolder(private val _binding: ItemPlayerBinding): RecyclerView.ViewHolder(_binding.root) {
+        fun bind(device: BluetoothDevice, position: Int) {
             Log.d(TAG, "bind: ${device.name}") // TODO: device name is null
-            binding.textDeviceName.text = device.name
+            _binding.textDeviceName.text = "Player " + position + ": " + device.name
             // make sure to include this so your view will be updated
-            binding.invalidateAll()
-            binding.executePendingBindings()
+            _binding.invalidateAll()
+            _binding.executePendingBindings()
         }
     }
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemViewHolder {
@@ -32,7 +32,7 @@ class PlayerDeviceListAdapter(private val _playerDevices: List<BluetoothDevice>)
 
     override fun onBindViewHolder(holder: ItemViewHolder, position: Int) {
         val device: BluetoothDevice = _playerDevices[position]
-        holder.bind(device)
+        holder.bind(device, position)
     }
 
     override fun getItemCount(): Int {
