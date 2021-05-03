@@ -7,6 +7,8 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import de.htw.gezumi.databinding.FragmentGameBinding
+import de.htw.gezumi.gatt.GattClient
+import de.htw.gezumi.gatt.GattClientCallback
 import de.htw.gezumi.model.DeviceViewModel
 import java.util.*
 

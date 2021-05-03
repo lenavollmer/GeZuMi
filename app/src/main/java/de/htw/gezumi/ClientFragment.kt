@@ -17,6 +17,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.DividerItemDecoration
 import de.htw.gezumi.adapter.BtDeviceListAdapter
+import de.htw.gezumi.controller.BluetoothController
 import de.htw.gezumi.databinding.FragmentClientBinding
 
 private const val TAG = "ClientFragment"

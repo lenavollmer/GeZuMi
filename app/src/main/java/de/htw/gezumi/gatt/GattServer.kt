@@ -1,4 +1,4 @@
-package de.htw.gezumi
+package de.htw.gezumi.gatt
 
 import android.bluetooth.*
 import android.bluetooth.le.AdvertiseCallback
@@ -11,6 +11,8 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.ParcelUuid
 import android.util.Log
+import de.htw.gezumi.HostFragment
+import de.htw.gezumi.controller.BluetoothController
 import de.htw.gezumi.gatt.GameService
 
 private const val TAG = "GattServer"

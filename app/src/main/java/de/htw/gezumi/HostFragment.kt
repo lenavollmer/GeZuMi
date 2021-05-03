@@ -16,7 +16,9 @@ import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.DividerItemDecoration
 import de.htw.gezumi.adapter.PlayerDeviceListAdapter
+import de.htw.gezumi.controller.BluetoothController
 import de.htw.gezumi.databinding.FragmentHostBinding
+import de.htw.gezumi.gatt.GattServer
 
 private const val TAG = "HostFragment"
 

@@ -1,7 +1,8 @@
-package de.htw.gezumi
+package de.htw.gezumi.gatt
 
 import android.bluetooth.*
 import android.util.Log
+import de.htw.gezumi.HostFragment
 import de.htw.gezumi.gatt.GameService
 import java.util.*
 

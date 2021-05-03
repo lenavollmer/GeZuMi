@@ -1,4 +1,4 @@
-package de.htw.gezumi
+package de.htw.gezumi.controller
 
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice

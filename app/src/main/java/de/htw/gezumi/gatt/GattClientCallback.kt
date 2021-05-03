@@ -1,4 +1,4 @@
-package de.htw.gezumi
+package de.htw.gezumi.gatt
 
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCallback
