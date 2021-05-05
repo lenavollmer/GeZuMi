@@ -2,7 +2,6 @@ package de.htw.gezumi
 
 import android.bluetooth.*
 import android.os.Bundle
-import android.util.Log
 import android.view.*
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
