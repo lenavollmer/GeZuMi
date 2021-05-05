@@ -5,8 +5,8 @@ import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothProfile
 import android.util.Log
-import de.htw.gezumi.gatt.GameService
 import de.htw.gezumi.model.DeviceViewModel
+import java.nio.ByteBuffer
 import java.util.*
 
 private const val TAG = "ClientGattCallback"
@@ -19,8 +19,7 @@ class GattClientCallback(private val _deviceViewModel: DeviceViewModel) : Blueto
         if (newState == BluetoothProfile.STATE_CONNECTED) {
             Log.d(TAG, "callback: connected")
             Log.d(TAG, "discover services")
-            val success2 = gatt?.discoverServices();
-            Log.d(TAG, "discover services: $success2")
+            gatt?.discoverServices();
 
         } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
             _rssiTimer.cancel()
@@ -30,15 +29,25 @@ class GattClientCallback(private val _deviceViewModel: DeviceViewModel) : Blueto
     override fun onReadRemoteRssi(gatt: BluetoothGatt?, rssi: Int, status: Int) {
         super.onReadRemoteRssi(gatt, rssi, status)
         _deviceViewModel.addRSSI(rssi)
+        // TODO the raw rssi value is transferred here, but a processed value should
+
+
+        val rssiDevice = gatt?.getService(GameService.SERVER_UUID)?.getCharacteristic(GameService.RSSI_UUID)?.getDescriptor(GameService.RSSI_DEVICE_UUID)
+        rssiDevice?.value = "Device1".toByteArray(Charsets.UTF_8)
+        gatt?.writeDescriptor(rssiDevice)
+
+        val chara = gatt?.getService(GameService.SERVER_UUID)?.getCharacteristic(GameService.RSSI_UUID)
+        chara?.value = ByteBuffer.allocate(4).putInt(rssi).array()
+        gatt?.writeCharacteristic(chara)
+
     }
 
     override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
         super.onServicesDiscovered(gatt, status)
         Log.d(TAG, "services discovered")
         Log.d(TAG, "read game id")
-        val gameIdCharacteristic = gatt?.getService(GameService.SERVER_UUID)?.getCharacteristic(GameService.GAME_ID)
-        val success = gatt?.readCharacteristic(gameIdCharacteristic)
-        Log.d(TAG, "read game id: $success")
+        val gameIdCharacteristic = gatt?.getService(GameService.SERVER_UUID)?.getCharacteristic(GameService.GAME_ID_UUID)
+        gatt?.readCharacteristic(gameIdCharacteristic)
 
         Log.d(TAG, "start testing rssi")
         val task: TimerTask = object : TimerTask() {
@@ -49,15 +58,13 @@ class GattClientCallback(private val _deviceViewModel: DeviceViewModel) : Blueto
             _rssiTimer.schedule(task, 1000, 1000)
     }
 
-    override fun onCharacteristicRead(
-        gatt: BluetoothGatt?,
-        characteristic: BluetoothGattCharacteristic?,
-        status: Int
-    ) {
+    override fun onCharacteristicRead(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic?, status: Int) {
         super.onCharacteristicRead(gatt, characteristic, status)
-        if (characteristic?.uuid == GameService.GAME_ID) {
-            val gameId = characteristic?.value?.toString(Charsets.UTF_8)
-            Log.d(TAG, "callback: characteristic read successfully, gameId: $gameId")
+        when (characteristic?.uuid) {
+            GameService.GAME_ID_UUID -> {
+                val gameId = characteristic?.value?.toString(Charsets.UTF_8)
+                Log.d(TAG, "callback: characteristic read successfully, gameId: $gameId")
+            }
         }
     }
 }
