@@ -20,7 +20,7 @@
         xmlns:tools="http://schemas.android.com/tools">
 
     <data>
-        <variable name="deviceModel" type="de.htw.gezumi.model.DeviceViewModel"/>
+        <variable name="deviceViewModel" type="de.htw.gezumi.model.DeviceViewModel"/>
     </data>
 
 
@@ -30,20 +30,20 @@
             tools:context=".GameFragment">
 
         <TextView
-                android:text="@{deviceModel.name}"
+                android:text="@{deviceViewModel.name}"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" android:id="@+id/device"
+                android:layout_height="wrap_content" android:id="@+id/text_device_name"
                 app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintHorizontal_bias="0.524" app:layout_constraintVertical_bias="0.216"
                 app:layout_constraintTop_toTopOf="parent" tools:text="device"/>
         <TextView
-                android:text="@{@string/distance(deviceModel.distance)}"
+                android:text="@{@string/distance(deviceViewModel.distance)}"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" android:id="@+id/distance"
+                android:layout_height="wrap_content" android:id="@+id/text_distance"
                 app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintVertical_bias="0.293"
-                app:layout_constraintTop_toBottomOf="@+id/device" tools:text="rssi"/>
+                app:layout_constraintTop_toBottomOf="@+id/text_device_name" tools:text="rssi"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

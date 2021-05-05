@@ -5,10 +5,17 @@
     <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            tools:context=".HostFragment">
+            tools:context=".ClientFragment">
+
+        <Button
+                android:text="@string/scan"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" android:id="@+id/button"
+                app:layout_constraintTop_toTopOf="parent" app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" android:layout_marginTop="16dp"/>
 
         <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/recycler_players"
+                android:id="@+id/recycler_bt_devices"
                 android:layout_width="0dp"
                 android:layout_height="0dp"
                 android:scrollbars="vertical"
@@ -16,9 +23,9 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                tools:listitem="@layout/item_player" app:layout_constraintHorizontal_bias="0.0"
-                app:layout_constraintVertical_bias="1.0"
-                android:layout_marginTop="32dp" app:layout_constraintTop_toTopOf="parent"/>
+                tools:listitem="@layout/item_bt_device" app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintVertical_bias="1.0" app:layout_constraintTop_toBottomOf="@+id/button"
+                android:layout_marginTop="32dp"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

@@ -28,7 +28,7 @@ class MainFragment : Fragment() {
             findNavController().navigate(R.id.action_MainFragment_to_Host)
         }
         view.findViewById<Button>(R.id.button_join).setOnClickListener {
-            findNavController().navigate(R.id.action_MainFragment_to_Join)
+            findNavController().navigate(R.id.action_MainFragment_to_Client)
         }
     }
 }

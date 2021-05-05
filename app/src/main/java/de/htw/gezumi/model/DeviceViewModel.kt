@@ -8,6 +8,8 @@ import de.htw.gezumi.filter.KalmanFilter
 import de.htw.gezumi.filter.MedianFilter
 import kotlin.math.pow
 
+private const val TAG = "DeviceViewModel"
+
 class DeviceViewModel : ViewModel() {
     private val _name = MutableLiveData("Unknown")
     val name: LiveData<String> get() = _name
@@ -30,6 +32,7 @@ class DeviceViewModel : ViewModel() {
         _name.postValue(name)
     }
 
+
     fun addRSSI(rssi: Int) {
         var kalmanValue = _kalmanFilter.applyFilter(rssi.toDouble())
         _kalmanValues.add(kalmanValue)
@@ -38,6 +41,7 @@ class DeviceViewModel : ViewModel() {
         _distance.postValue(getDistanceFromRSSI(medianValue))
         _realValues.add(rssi.toDouble())
     }
+
 
     /**
      * Calculate the distance for the given RSSI.
@@ -64,15 +68,14 @@ class DeviceViewModel : ViewModel() {
      */
     fun logVisualizationCSV() {
         var csvString = "\"Time\";\"Real\";\"Kalman\";\"Median\"\n"
-        Log.d("Length:", _kalmanValues.size.toString());
-        for((i, kalman) in _kalmanValues.withIndex()){
-            val time = i.toDouble()/2
+        for ((i, kalman) in _kalmanValues.withIndex()) {
+            val time = i.toDouble() / 2
             csvString += "${time};${getDistanceFromRSSI(_realValues[i])};${getDistanceFromRSSI(kalman)};${
                 getDistanceFromRSSI(
                     _medianValues[i]
                 )
             }\n"
         }
-        Log.d("CSV Data", csvString);
+        Log.d(TAG, csvString);
     }
 }
