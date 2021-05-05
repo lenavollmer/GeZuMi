@@ -1,9 +1,6 @@
 package de.htw.gezumi.gatt
 
-import android.bluetooth.BluetoothGatt
-import android.bluetooth.BluetoothGattCallback
-import android.bluetooth.BluetoothGattCharacteristic
-import android.bluetooth.BluetoothProfile
+import android.bluetooth.*
 import android.util.Log
 import de.htw.gezumi.model.DeviceViewModel
 import java.nio.ByteBuffer
@@ -30,16 +27,20 @@ class GattClientCallback(private val _deviceViewModel: DeviceViewModel) : Blueto
         super.onReadRemoteRssi(gatt, rssi, status)
         _deviceViewModel.addRSSI(rssi)
         // TODO the raw rssi value is transferred here, but a processed value should
-
-
+        _lastRssi = rssi
+        // write device the rssi was measured for (in this test case it's just the host)
         val rssiDevice = gatt?.getService(GameService.SERVER_UUID)?.getCharacteristic(GameService.RSSI_UUID)?.getDescriptor(GameService.RSSI_DEVICE_UUID)
         rssiDevice?.value = "Device1".toByteArray(Charsets.UTF_8)
         gatt?.writeDescriptor(rssiDevice)
+    }
+    private var _lastRssi = 0;
+    override fun onDescriptorWrite(gatt: BluetoothGatt?, descriptor: BluetoothGattDescriptor?, status: Int) {
+        super.onDescriptorWrite(gatt, descriptor, status)
 
-        val chara = gatt?.getService(GameService.SERVER_UUID)?.getCharacteristic(GameService.RSSI_UUID)
-        chara?.value = ByteBuffer.allocate(4).putInt(rssi).array()
-        gatt?.writeCharacteristic(chara)
-
+        // send characteristic
+        val rssiCharacteristic = gatt?.getService(GameService.SERVER_UUID)?.getCharacteristic(GameService.RSSI_UUID)
+        rssiCharacteristic?.value = ByteBuffer.allocate(4).putInt(_lastRssi).array()
+        gatt?.writeCharacteristic(rssiCharacteristic)
     }
 
     override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {

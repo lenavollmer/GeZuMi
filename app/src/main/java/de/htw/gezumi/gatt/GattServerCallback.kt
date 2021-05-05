@@ -65,12 +65,12 @@ class GattServerCallback(private val _registeredDevices: MutableSet<BluetoothDev
         when (characteristic?.uuid) {
             GameService.RSSI_UUID -> {
                 val rssi = ByteBuffer.wrap(value).int;
-                val rssiDevice = characteristic?.getDescriptor(GameService.RSSI_DEVICE_UUID)
-                val deviceName = rssiDevice.value?.toString(Charsets.UTF_8)
-                Log.d(TAG, "write received: rssi = $rssi for device $deviceName")
+                Log.d(TAG, "write received: rssi = $rssi")
             }
         }
     }
+
+    // TODO map value and descriptor property in a way that it works for many incoming requests from different devices
 
     override fun onDescriptorWriteRequest(
         device: BluetoothDevice, requestId: Int,
@@ -112,6 +112,14 @@ class GattServerCallback(private val _registeredDevices: MutableSet<BluetoothDev
                     )
                 }
             }
+        }
+        if (responseNeeded) {
+            _gattServer.bluetoothGattServer?.sendResponse(
+                device,
+                requestId,
+                BluetoothGatt.GATT_SUCCESS,
+                0, null
+            )
         }
     }
 
