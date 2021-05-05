@@ -60,5 +60,4 @@ class GameFragment : Fragment() {
         super.onResume()
         _gattClient.reconnect()
     }
-
 }
