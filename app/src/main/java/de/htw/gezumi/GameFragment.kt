@@ -2,6 +2,7 @@ package de.htw.gezumi
 
 import android.bluetooth.*
 import android.os.Bundle
+import android.util.Log
 import android.view.*
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
@@ -45,6 +46,7 @@ class GameFragment : Fragment() {
 
     override fun onPause() {
         super.onPause()
+        deviceModel.logVisualizationCSV()
         gatt.disconnect()
     }
 
@@ -61,7 +63,7 @@ class GameFragment : Fragment() {
                         gatt?.readRemoteRssi()
                     }
                 }
-                mRssiTimer.schedule(task, 1000, 1000)
+                mRssiTimer.schedule(task, 500, 500)
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 mRssiTimer.cancel()
             }
