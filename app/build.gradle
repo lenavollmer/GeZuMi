@@ -25,13 +25,14 @@ android {
         abortOnError false
         absolutePaths true
         checkAllWarnings false
-        warningsAsErrors true
+        warningsAsErrors false
         textReport true
         textOutput 'stdout'
         xmlReport false
         htmlReport false
         checkReleaseBuilds false
-        disable "UnsafeExperimentalUsageError", "UnsafeExperimentalUsageWarning"
+        disable "UnsafeExperimentalUsageError",
+                "UnsafeExperimentalUsageWarning"
     }
 
     buildTypes {
