@@ -31,6 +31,7 @@ android {
         xmlReport false
         htmlReport false
         checkReleaseBuilds false
+        disable "UnsafeExperimentalUsageError", "UnsafeExperimentalUsageWarning"
     }
 
     buildTypes {
