@@ -16,7 +16,7 @@ jobs:
       - name: Build app
         run: ./gradlew assembleDebug
 
-      #Generate build number
+      # Generate build number
       - name: Generate build number
         id: buildnumber
         uses: einaregilsson/build-number@v3
