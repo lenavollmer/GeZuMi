@@ -18,6 +18,23 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    lintOptions {
+        // set to true to turn off analysis progress reporting by lint
+        quiet true
+        // change this to set the linter live
+        abortOnError false
+        absolutePaths true
+        checkAllWarnings false
+        warningsAsErrors false
+        textReport true
+        textOutput 'stdout'
+        xmlReport false
+        htmlReport false
+        checkReleaseBuilds false
+        disable "UnsafeExperimentalUsageError",
+                "UnsafeExperimentalUsageWarning"
+    }
+
     buildTypes {
         release {
             minifyEnabled false
