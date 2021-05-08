@@ -2,6 +2,7 @@ package de.htw.gezumi
 
 import android.bluetooth.*
 import android.os.Bundle
+import android.util.Log
 import android.view.*
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
@@ -9,7 +10,8 @@ import androidx.fragment.app.viewModels
 import de.htw.gezumi.databinding.FragmentGameBinding
 import de.htw.gezumi.gatt.GattClient
 import de.htw.gezumi.gatt.GattClientCallback
-import de.htw.gezumi.model.DevicesViewModel
+import de.htw.gezumi.model.Device
+import de.htw.gezumi.viewmodel.DevicesViewModel
 import java.util.*
 
 private const val TAG = "GameFragment"
@@ -29,6 +31,12 @@ class GameFragment : Fragment() {
         super.onCreate(savedInstanceState)
         _hostDevice = arguments?.getParcelable("hostDevice")!!
 
+        val hostDevice = Device(_hostDevice.address, -70)
+        hostDevice.setName(_hostDevice.name)
+        _devicesViewModel.host = hostDevice
+        Log.d(TAG, "host: ${hostDevice.name} address: ${hostDevice.address}")
+        _devicesViewModel.addDevice(_devicesViewModel.host)
+
         val gattClientCallback = GattClientCallback(_devicesViewModel)
         _gattClient = GattClient(requireContext())
 
@@ -47,7 +55,7 @@ class GameFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding.lifecycleOwner = viewLifecycleOwner
-        _binding.deviceViewModel = _devicesViewModel
+        _binding.devicesViewModel = _devicesViewModel
     }
 
     override fun onPause() {

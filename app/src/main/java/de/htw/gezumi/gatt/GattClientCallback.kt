@@ -3,7 +3,7 @@ package de.htw.gezumi.gatt
 import android.bluetooth.*
 import android.util.Log
 import de.htw.gezumi.model.Device
-import de.htw.gezumi.model.DevicesViewModel
+import de.htw.gezumi.viewmodel.DevicesViewModel
 import java.nio.ByteBuffer
 import java.util.*
 
@@ -16,13 +16,8 @@ class GattClientCallback(private val _devicesViewModel: DevicesViewModel) : Blue
     override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
         if (newState == BluetoothProfile.STATE_CONNECTED) {
             Log.d(TAG, "callback: connected")
-            val hostDevice = Device(gatt!!.device.address)
-            hostDevice.setName(gatt.device.name)
-            Log.d(TAG, "host: ${hostDevice.name} address: ${hostDevice.address}")
-            _devicesViewModel.addDevice(hostDevice)
-            _devicesViewModel.host = hostDevice
             Log.d(TAG, "discover services")
-            gatt.discoverServices();
+            gatt?.discoverServices()
 
         } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
             _rssiTimer.cancel()

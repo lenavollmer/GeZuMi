@@ -9,29 +9,17 @@ private const val TAG = "Calculations"
 
 class Calculations {
     companion object {
-        private val _medianFilter = MedianFilter()
-        private val _kalmanFilter = KalmanFilter()
-
-        fun applyKalman(device: Device): Double {
-            return _kalmanFilter.applyFilter(device.getLastRssiValue())
-        }
-
-        fun applyMedian(device: Device): Double {
-            return _medianFilter.applyFilter(device.getLastRssiValue())
-        }
 
         /**
-         * Calculate the distance of a device using the median value. TODO: adapt if we have more than 1 rssi value
+         * Calculates the distance for the given [rssi] (BLE signal strength).
+         * [txPower] is the RSSI value with which the distance is 1 meter.
+         * @return the distance in meters
          */
-        fun calculateDistance(median: Double): Double {
-            // txPower is the hard coded transmission power value of the sending device
-            // it is the RSSI value with which the distance is 1 meter
-            // val txPower = -59
-            val txPower = -71 // Xiaomi A2 Lite
-            if (median == 0.0) {
+        fun calculateDistance(rssi: Double, txPower: Int): Double {
+            if (rssi == 0.0) {
                 return -1.0
             }
-            val ratio = median * 1.0 / txPower
+            val ratio = rssi * 1.0 / txPower
             return if (ratio < 1.0) {
                 ratio.pow(10.0)
             } else {

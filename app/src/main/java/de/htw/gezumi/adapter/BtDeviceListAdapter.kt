@@ -18,7 +18,6 @@ class BtDeviceListAdapter(private val _btDevices: List<BluetoothDevice>) : Recyc
             val button = binding.messageButton
             button.setText(R.string.connect)
             button.setOnClickListener {
-
                 itemView.findNavController().navigate(R.id.action_ClientFragment_to_Game, bundleOf("hostDevice" to device))
             }
             // make sure to include this so your view will be updated
