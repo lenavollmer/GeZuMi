@@ -68,7 +68,6 @@ class ClientFragment : Fragment() {
 
     override fun onPause() {
         super.onPause()
-        //deviceListAdapter.clear() should we really clear all bluetooth devices here?
         // TODO maybe stop bluetooth scanning or smth
         updateBtDeviceListAdapter()
     }
