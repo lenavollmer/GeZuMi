@@ -4,7 +4,6 @@ import android.bluetooth.BluetoothDevice
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import de.htw.gezumi.R
 import de.htw.gezumi.databinding.BottomSheetItemBinding
 
 class ConnectedPlayerDeviceAdapter(private val _btDevices: List<BluetoothDevice>, private val listener: (position: Int, status: STATUS) -> Unit) : RecyclerView.Adapter<ConnectedPlayerDeviceAdapter.ItemViewHolder>() {
