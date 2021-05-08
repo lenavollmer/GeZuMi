@@ -9,7 +9,7 @@ import androidx.fragment.app.viewModels
 import de.htw.gezumi.databinding.FragmentGameBinding
 import de.htw.gezumi.gatt.GattClient
 import de.htw.gezumi.gatt.GattClientCallback
-import de.htw.gezumi.model.DeviceViewModel
+import de.htw.gezumi.model.DevicesViewModel
 import java.util.*
 
 private const val TAG = "GameFragment"
@@ -20,16 +20,16 @@ private const val TAG = "GameFragment"
 class GameFragment : Fragment() {
 
     private lateinit var _binding: FragmentGameBinding
-    private val _deviceViewModel: DeviceViewModel by viewModels()
+    private val _devicesViewModel: DevicesViewModel by viewModels()
 
     private lateinit var _gattClient: GattClient
     private lateinit var _hostDevice: BluetoothDevice
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        _hostDevice = arguments?.getParcelable("device")!!
+        _hostDevice = arguments?.getParcelable("hostDevice")!!
 
-        val gattClientCallback = GattClientCallback(_deviceViewModel)
+        val gattClientCallback = GattClientCallback(_devicesViewModel)
         _gattClient = GattClient(requireContext())
 
         // connect
@@ -41,14 +41,13 @@ class GameFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = DataBindingUtil.inflate(inflater, R.layout.fragment_game, container, false)
-        _deviceViewModel.setName(_hostDevice.name)
         return _binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding.lifecycleOwner = viewLifecycleOwner
-        _binding.deviceViewModel = _deviceViewModel
+        _binding.deviceViewModel = _devicesViewModel
     }
 
     override fun onPause() {

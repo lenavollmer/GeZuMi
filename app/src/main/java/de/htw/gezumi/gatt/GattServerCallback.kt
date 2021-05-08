@@ -4,7 +4,6 @@ import android.bluetooth.*
 import android.util.Log
 import de.htw.gezumi.HostFragment
 import java.nio.ByteBuffer
-import java.util.*
 
 private const val TAG = "GattServerCallback"
 
@@ -97,8 +96,8 @@ class GattServerCallback(private val _registeredDevices: MutableSet<BluetoothDev
                     )
                 }*/
             }
-            GameService.RSSI_DEVICE_UUID -> {
-                val deviceName = value?.toString(Charsets.UTF_8)
+            GameService.RSSI_SEND_REQUEST_UUID -> {
+                val deviceName = value.toString(Charsets.UTF_8)
                 Log.d(TAG, "rssi device: $deviceName")
             }
             else -> {
