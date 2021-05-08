@@ -7,11 +7,12 @@ import android.bluetooth.BluetoothProfile
 import android.util.Log
 import de.htw.gezumi.gatt.GameService
 import de.htw.gezumi.model.DeviceViewModel
+import de.htw.gezumi.viewmodel.GameViewModel
 import java.util.*
 
 private const val TAG = "ClientGattCallback"
 
-class GattClientCallback(private val _deviceViewModel: DeviceViewModel) : BluetoothGattCallback() {
+class GattClientCallback(private val _gameViewModel: GameViewModel) : BluetoothGattCallback() {
 
     private var _rssiTimer = Timer() // TODO timer just for test purposes here, rssi value doesn't have to do with gatt connection
 
@@ -29,7 +30,7 @@ class GattClientCallback(private val _deviceViewModel: DeviceViewModel) : Blueto
 
     override fun onReadRemoteRssi(gatt: BluetoothGatt?, rssi: Int, status: Int) {
         super.onReadRemoteRssi(gatt, rssi, status)
-        _deviceViewModel.addRSSI(rssi)
+        _gameViewModel.addRSSI(rssi)
     }
 
     override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {

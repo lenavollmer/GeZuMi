@@ -4,13 +4,15 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import de.htw.gezumi.filter.KalmanFilter
-import de.htw.gezumi.filter.MedianFilter
+import de.htw.gezumi.distance.filter.KalmanFilter
+import de.htw.gezumi.distance.filter.MedianFilter
 import kotlin.math.pow
 
 private const val TAG = "DeviceViewModel"
 
 class DeviceViewModel : ViewModel() {
+    private lateinit var _hostDevice: Device
+
     private val _name = MutableLiveData("Unknown")
     val name: LiveData<String> get() = _name
 

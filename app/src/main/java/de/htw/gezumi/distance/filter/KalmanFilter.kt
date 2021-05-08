@@ -1,10 +1,10 @@
-package de.htw.gezumi.filter
+package de.htw.gezumi.distance.filter
 
 /**
  * Credits: created by fgroch on 29.08.16.
  * Taken from https://github.com/fgroch/beacon-rssi-resolver/blob/master/src/main/java/tools/blocks/filter/KalmanFilter.java
  */
-class KalmanFilter {
+class KalmanFilter: Filter {
     private var processNoise //Process noise
             : Double
     private var measurementNoise //Measurement noise
@@ -25,7 +25,7 @@ class KalmanFilter {
         this.measurementNoise = measurementNoise
     }
 
-    fun applyFilter(rssi: Double): Double {
+    override fun applyFilter(rssi: Double): Double {
         val priorRSSI: Double
         val kalmanGain: Double
         val priorErrorCovarianceRSSI: Double
