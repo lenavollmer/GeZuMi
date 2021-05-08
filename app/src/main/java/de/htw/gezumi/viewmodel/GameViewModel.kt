@@ -9,6 +9,8 @@ class GameViewModel() : ViewModel() {
 
     fun addRSSI(rssi: Int) {
         hostDevice.value?.addRSSI(rssi)
+        // postValue makes it possible to post from other threads
+        hostDevice.postValue(hostDevice.value)
     }
 
     fun setName(name: String) {
