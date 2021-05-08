@@ -1,9 +1,14 @@
 package de.htw.gezumi.model
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import de.htw.gezumi.filter.KalmanFilter
+import de.htw.gezumi.filter.MedianFilter
 import kotlin.math.pow
+
+private const val TAG = "DeviceViewModel"
 
 class DeviceViewModel : ViewModel() {
     private val _name = MutableLiveData("Unknown")
@@ -12,24 +17,40 @@ class DeviceViewModel : ViewModel() {
     private val _distance = MutableLiveData(0.0)
     val distance: LiveData<Double> get() = _distance
 
-    private val _values = mutableListOf<Int>()
+
+    private val _medianValues = mutableListOf<Double>()
+    private val _medianFilter = MedianFilter()
+
+    private val _kalmanValues = mutableListOf<Double>()
+    private val _kalmanFilter = KalmanFilter()
+
+    private val _realValues = mutableListOf<Double>()
+
 
     fun setName(name: String) {
         // postValue makes it possible to post from other threads
         _name.postValue(name)
     }
 
-    fun addRSSI(value: Int) {
-        _values.add(value)
-        _distance.postValue(calculateRSSI(value.toDouble()))
+
+    fun addRSSI(rssi: Int) {
+        var kalmanValue = _kalmanFilter.applyFilter(rssi.toDouble())
+        _kalmanValues.add(kalmanValue)
+        var medianValue = _medianFilter.applyFilter(rssi.toDouble())
+        _medianValues.add(medianValue)
+        _distance.postValue(getDistanceFromRSSI(medianValue))
+        _realValues.add(rssi.toDouble())
     }
 
-    fun clearList() {
-        _values.clear()
-    }
 
-    fun calculateRSSI(rssi: Double): Double {
-        val txPower = -59 //hard coded power value. Usually ranges between -59 to -65
+    /**
+     * Calculate the distance for the given RSSI.
+     */
+    private fun getDistanceFromRSSI(rssi: Double): Double {
+        // txPower is the hard coded transmission power value of the sending device
+        // it is the RSSI value with which the distance is 1 meter
+        // val txPower = -59
+        val txPower = -71 // Xiaomi A2 Lite
         if (rssi == 0.0) {
             return -1.0
         }
@@ -39,5 +60,22 @@ class DeviceViewModel : ViewModel() {
         } else {
             (0.89976) * ratio.pow(7.7095) + 0.111
         }
+    }
+
+    /**
+     * Only for debugging/testing purpose.
+     * Log a csv string which can be used to visualize the measured distances.
+     */
+    fun logVisualizationCSV() {
+        var csvString = "\"Time\";\"Real\";\"Kalman\";\"Median\"\n"
+        for ((i, kalman) in _kalmanValues.withIndex()) {
+            val time = i.toDouble() / 2
+            csvString += "${time};${getDistanceFromRSSI(_realValues[i])};${getDistanceFromRSSI(kalman)};${
+                getDistanceFromRSSI(
+                    _medianValues[i]
+                )
+            }\n"
+        }
+        Log.d(TAG, csvString);
     }
 }

@@ -56,7 +56,7 @@ class GattClientCallback(private val _deviceViewModel: DeviceViewModel) : Blueto
                     gatt?.readRemoteRssi()
                 }
             }
-            _rssiTimer.schedule(task, 1000, 1000)
+            _rssiTimer.schedule(task, 500, 500)
     }
 
     override fun onCharacteristicRead(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic?, status: Int) {
