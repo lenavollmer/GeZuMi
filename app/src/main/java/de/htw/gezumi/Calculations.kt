@@ -1,11 +1,7 @@
 package de.htw.gezumi
 
-import de.htw.gezumi.filter.KalmanFilter
-import de.htw.gezumi.filter.MedianFilter
-import de.htw.gezumi.model.Device
 import kotlin.math.pow
 
-private const val TAG = "Calculations"
 
 class Calculations {
     companion object {

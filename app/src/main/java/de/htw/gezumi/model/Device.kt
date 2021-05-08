@@ -16,6 +16,8 @@ class Device(val address: String, private val _txPower: Int) {
 
     private val _filter: Filter = MedianFilter()
 
+    val rssiHistory = mutableListOf<Int>()
+
     fun setName(name: String) {
         // postValue makes it possible to post from other threads
         _name.postValue(name)
@@ -23,6 +25,7 @@ class Device(val address: String, private val _txPower: Int) {
 
     // convenience function
     fun addRssi(rssi: Int) {
+        rssiHistory.add(rssi)
         val curDist = Calculations.calculateDistance(rssi.toDouble(), _txPower)
         _distance.postValue(_filter.applyFilter(curDist))
     }
