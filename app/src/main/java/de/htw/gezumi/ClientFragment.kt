@@ -46,10 +46,6 @@ class ClientFragment : Fragment() {
         }
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = DataBindingUtil.inflate(inflater, R.layout.fragment_client, container, false)
         return _binding.root
@@ -74,7 +70,7 @@ class ClientFragment : Fragment() {
         super.onPause()
         //deviceListAdapter.clear() should we really clear all bluetooth devices here?
         // TODO maybe stop bluetooth scanning or smth
-        updateBtDeviceListAdapter();
+        updateBtDeviceListAdapter()
     }
 
     private fun updateBtDeviceListAdapter() {

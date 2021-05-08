@@ -1,10 +1,6 @@
 package de.htw.gezumi
 
 import android.bluetooth.BluetoothDevice
-import android.bluetooth.le.ScanCallback
-import android.bluetooth.le.ScanResult
-import android.bluetooth.le.ScanSettings
-import android.nfc.Tag
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -13,8 +9,10 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.DividerItemDecoration
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import de.htw.gezumi.adapter.PlayerDeviceListAdapter
 import de.htw.gezumi.controller.BluetoothController
 import de.htw.gezumi.databinding.FragmentHostBinding
@@ -25,6 +23,7 @@ private const val TAG = "HostFragment"
 class HostFragment : Fragment() {
 
     private lateinit var _binding: FragmentHostBinding
+    private lateinit var bottomSheetBehavior: BottomSheetBehavior<ConstraintLayout>
 
     private val _bluetoothController: BluetoothController = BluetoothController()
     private lateinit var _gattServer: GattServer
@@ -42,18 +41,11 @@ class HostFragment : Fragment() {
             _connectedDevices.add(device)
             Log.d(TAG, "new device connected")
             Handler(Looper.getMainLooper()).post{updatePlayerListAdapter()}
-            /*this@HostFragment.requireActivity().runOnUiThread{
-                updatePlayerListAdapter()
-            }*/
-
         }
 
         override fun onGattDisconnect(device: BluetoothDevice) {
             _connectedDevices.remove(device)
             Handler(Looper.getMainLooper()).post{updatePlayerListAdapter()}
-            /*this@HostFragment.requireActivity().runOnUiThread{
-                updatePlayerListAdapter()
-            }*/
         }
     }
 
@@ -84,6 +76,18 @@ class HostFragment : Fragment() {
             setHasFixedSize(true)
             addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
         }
+
+        bottomSheetBehavior = BottomSheetBehavior.from(_binding.bottomSheet.bottomSheet)
+        bottomSheetBehavior.isHideable = false
+
+//        _binding.bottomSheetDisplay.setOnClickListener {
+//            val state =
+//                if (bottomSheetBehavior.state == BottomSheetBehavior.STATE_EXPANDED)
+//                    BottomSheetBehavior.STATE_COLLAPSED
+//                else
+//                    BottomSheetBehavior.STATE_EXPANDED
+//            bottomSheetBehavior.state = state
+//        }
     }
 
     // TODO handle lifecycle actions for gatt server
@@ -97,7 +101,7 @@ class HostFragment : Fragment() {
         super.onPause()
         //deviceListAdapter.clear() should we really clear all bluetooth devices here?
         // TODO maybe stop bluetooth scanning or smth
-        updatePlayerListAdapter();
+        updatePlayerListAdapter()
     }
 
     private fun updatePlayerListAdapter() {
