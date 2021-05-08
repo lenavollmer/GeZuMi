@@ -3,8 +3,7 @@ package de.htw.gezumi.gatt
 import android.bluetooth.*
 import android.util.Log
 import de.htw.gezumi.HostFragment
-import de.htw.gezumi.gatt.GameService
-import java.util.*
+import java.nio.ByteBuffer
 
 private const val TAG = "GattServerCallback"
 
@@ -27,7 +26,7 @@ class GattServerCallback(private val _registeredDevices: MutableSet<BluetoothDev
         characteristic: BluetoothGattCharacteristic
     ) {
         when (characteristic.uuid) {
-            GameService.GAME_ID -> {
+            GameService.GAME_ID_UUID -> {
                 Log.d(TAG, "read game ID")
                 _gattServer.bluetoothGattServer?.sendResponse(
                     device,
@@ -48,6 +47,78 @@ class GattServerCallback(private val _registeredDevices: MutableSet<BluetoothDev
                     null
                 )
             }
+        }
+    }
+
+    override fun onCharacteristicWriteRequest(
+        device: BluetoothDevice?,
+        requestId: Int,
+        characteristic: BluetoothGattCharacteristic?,
+        preparedWrite: Boolean,
+        responseNeeded: Boolean,
+        offset: Int,
+        value: ByteArray?
+    ) {
+        super.onCharacteristicWriteRequest(device, requestId, characteristic, preparedWrite, responseNeeded,
+            offset, value)
+        when (characteristic?.uuid) {
+            GameService.RSSI_UUID -> {
+                val rssi = ByteBuffer.wrap(value).int;
+                Log.d(TAG, "write received: rssi = $rssi")
+            }
+        }
+    }
+
+    // TODO map value and descriptor property in a way that it works for many incoming requests from different devices
+
+    override fun onDescriptorWriteRequest(
+        device: BluetoothDevice, requestId: Int,
+        descriptor: BluetoothGattDescriptor,
+        preparedWrite: Boolean, responseNeeded: Boolean,
+        offset: Int, value: ByteArray
+    ) {
+        when (descriptor.uuid) {
+            GameService.CLIENT_CONFIG -> {
+                /*if (Arrays.equals(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE, value)) {
+                    Log.d(TAG, "Subscribe device to notifications: $device")
+                    _registeredDevices.add(device)
+                } else if (Arrays.equals(BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE, value)) {
+                    Log.d(TAG, "Unsubscribe device from notifications: $device")
+                    _registeredDevices.remove(device)
+                }
+
+                if (responseNeeded) {
+                    _gattServer.bluetoothGattServer?.sendResponse(
+                        device,
+                        requestId,
+                        BluetoothGatt.GATT_SUCCESS,
+                        0, null
+                    )
+                }*/
+            }
+            GameService.RSSI_SEND_REQUEST_UUID -> {
+                val deviceName = value.toString(Charsets.UTF_8)
+                Log.d(TAG, "rssi device: $deviceName")
+            }
+            else -> {
+                Log.w(TAG, "Unknown descriptor write request")
+                if (responseNeeded) {
+                    _gattServer.bluetoothGattServer?.sendResponse(
+                        device,
+                        requestId,
+                        BluetoothGatt.GATT_FAILURE,
+                        0, null
+                    )
+                }
+            }
+        }
+        if (responseNeeded) {
+            _gattServer.bluetoothGattServer?.sendResponse(
+                device,
+                requestId,
+                BluetoothGatt.GATT_SUCCESS,
+                0, null
+            )
         }
     }
 
@@ -80,39 +151,5 @@ class GattServerCallback(private val _registeredDevices: MutableSet<BluetoothDev
         }
     }
 
-    override fun onDescriptorWriteRequest(
-        device: BluetoothDevice, requestId: Int,
-        descriptor: BluetoothGattDescriptor,
-        preparedWrite: Boolean, responseNeeded: Boolean,
-        offset: Int, value: ByteArray
-    ) {
-        if (GameService.CLIENT_CONFIG == descriptor.uuid) {
-            if (Arrays.equals(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE, value)) {
-                Log.d(TAG, "Subscribe device to notifications: $device")
-                _registeredDevices.add(device)
-            } else if (Arrays.equals(BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE, value)) {
-                Log.d(TAG, "Unsubscribe device from notifications: $device")
-                _registeredDevices.remove(device)
-            }
 
-            if (responseNeeded) {
-                _gattServer.bluetoothGattServer?.sendResponse(
-                    device,
-                    requestId,
-                    BluetoothGatt.GATT_SUCCESS,
-                    0, null
-                )
-            }
-        } else {
-            Log.w(TAG, "Unknown descriptor write request")
-            if (responseNeeded) {
-                _gattServer.bluetoothGattServer?.sendResponse(
-                    device,
-                    requestId,
-                    BluetoothGatt.GATT_FAILURE,
-                    0, null
-                )
-            }
-        }
-    }
 }

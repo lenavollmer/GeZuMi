@@ -17,8 +17,8 @@ class GattClient(private val _context: Context) {
     }
 
     fun reconnect() {
-        var success1 = _gatt.connect()
-        Log.d(TAG, "connected to gatt: $success1")
+        var success = _gatt.connect()
+        Log.d(TAG, "connected to gatt: $success")
     }
 
     fun disconnect() {

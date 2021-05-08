@@ -18,7 +18,7 @@ class PlayerDeviceListAdapter(private val _playerDevices: List<BluetoothDevice>)
     class ItemViewHolder(private val _binding: ItemPlayerBinding): RecyclerView.ViewHolder(_binding.root) {
         fun bind(device: BluetoothDevice, position: Int) {
             Log.d(TAG, "bind: ${device.name}") // TODO: device name is null
-            _binding.textDeviceName.text = "Player " + position + ": " + device.name
+            _binding.textHostDeviceName.text = "Player " + position + ": " + device.name
             // make sure to include this so your view will be updated
             _binding.invalidateAll()
             _binding.executePendingBindings()
