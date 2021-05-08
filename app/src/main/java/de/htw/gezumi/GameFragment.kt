@@ -9,9 +9,7 @@ import androidx.fragment.app.viewModels
 import de.htw.gezumi.databinding.FragmentGameBinding
 import de.htw.gezumi.gatt.GattClient
 import de.htw.gezumi.gatt.GattClientCallback
-import de.htw.gezumi.model.DeviceViewModel
 import de.htw.gezumi.viewmodel.GameViewModel
-import java.util.*
 
 private const val TAG = "GameFragment"
 
@@ -43,7 +41,7 @@ class GameFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = DataBindingUtil.inflate(inflater, R.layout.fragment_game, container, false)
-        _gameViewModel.setName(_hostDevice.name)
+        _gameViewModel.setHostName(_hostDevice.name)
         return _binding.root
     }
 

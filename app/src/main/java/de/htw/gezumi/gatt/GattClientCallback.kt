@@ -5,8 +5,6 @@ import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothProfile
 import android.util.Log
-import de.htw.gezumi.gatt.GameService
-import de.htw.gezumi.model.DeviceViewModel
 import de.htw.gezumi.viewmodel.GameViewModel
 import java.util.*
 
@@ -30,7 +28,7 @@ class GattClientCallback(private val _gameViewModel: GameViewModel) : BluetoothG
 
     override fun onReadRemoteRssi(gatt: BluetoothGatt?, rssi: Int, status: Int) {
         super.onReadRemoteRssi(gatt, rssi, status)
-        _gameViewModel.addRSSI(rssi)
+        _gameViewModel.addHostRssi(rssi)
     }
 
     override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
