@@ -32,14 +32,12 @@ class DevicesViewModel : ViewModel() {
         )
     }
 
-    fun writeFile(context: Context, sFileName: String, sBody: String) {
+    private fun writeFile(context: Context, sFileName: String, sBody: String) {
         val dir: File = context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS) ?: return
-//        val dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
         val file = File(dir, sFileName)
         var os: FileOutputStream? = null
-        dir.mkdirs()
-        file.mkdirs()
         try {
+            dir.mkdirs()
             os = FileOutputStream(file)
             os.write(sBody.toByteArray())
             os.close()
