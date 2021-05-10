@@ -3,6 +3,7 @@ package de.htw.gezumi.gatt
 import android.bluetooth.*
 import android.util.Log
 import de.htw.gezumi.model.Device
+import de.htw.gezumi.model.DeviceData
 import de.htw.gezumi.viewmodel.DevicesViewModel
 import java.nio.ByteBuffer
 import java.util.*
@@ -30,18 +31,23 @@ class GattClientCallback(private val _devicesViewModel: DevicesViewModel) : Blue
         // TODO the raw rssi value is transferred here, but a processed value should
         _lastRssi = rssi
         // write device the rssi was measured for (in this test case it's just the host)
-        val sendRequest = gatt?.getService(GameService.SERVER_UUID)?.getCharacteristic(GameService.RSSI_UUID)?.getDescriptor(GameService.RSSI_SEND_REQUEST_UUID)
-        sendRequest?.value = "Device1".toByteArray(Charsets.UTF_8)
-        gatt?.writeDescriptor(sendRequest)
+        //val sendRequest = gatt?.getService(GameService.SERVER_UUID)?.getCharacteristic(GameService.RSSI_UUID)?.getDescriptor(GameService.RSSI_SEND_REQUEST_UUID)
+        //sendRequest?.value = "Device1".toByteArray(Charsets.UTF_8)
+        //gatt?.writeDescriptor(sendRequest)
+
+        val rssiCharacteristic = gatt?.getService(GameService.SERVER_UUID)?.getCharacteristic(GameService.RSSI_UUID)
+        rssiCharacteristic?.value = DeviceData(gatt!!.device.address, rssi.toFloat()).toByteArray() //ByteBuffer.allocate(4).putInt(_lastRssi).array()
+        Log.d(TAG, "write " + rssiCharacteristic?.value?.size)
+        gatt.writeCharacteristic(rssiCharacteristic)
     }
     private var _lastRssi = 0;
     override fun onDescriptorWrite(gatt: BluetoothGatt?, descriptor: BluetoothGattDescriptor?, status: Int) {
         super.onDescriptorWrite(gatt, descriptor, status)
 
         // send characteristic
-        val rssiCharacteristic = gatt?.getService(GameService.SERVER_UUID)?.getCharacteristic(GameService.RSSI_UUID)
-        rssiCharacteristic?.value = ByteBuffer.allocate(4).putInt(_lastRssi).array()
-        gatt?.writeCharacteristic(rssiCharacteristic)
+        //val rssiCharacteristic = gatt?.getService(GameService.SERVER_UUID)?.getCharacteristic(GameService.RSSI_UUID)
+        //rssiCharacteristic?.value = ByteBuffer.allocate(4).putInt(_lastRssi).array()
+        //gatt?.writeCharacteristic(rssiCharacteristic)
     }
 
     override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {

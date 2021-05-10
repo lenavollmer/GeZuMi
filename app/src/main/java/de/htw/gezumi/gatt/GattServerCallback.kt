@@ -3,7 +3,7 @@ package de.htw.gezumi.gatt
 import android.bluetooth.*
 import android.util.Log
 import de.htw.gezumi.HostFragment
-import java.nio.ByteBuffer
+import de.htw.gezumi.model.DeviceData
 
 private const val TAG = "GattServerCallback"
 
@@ -63,8 +63,9 @@ class GattServerCallback(private val _registeredDevices: MutableSet<BluetoothDev
             offset, value)
         when (characteristic?.uuid) {
             GameService.RSSI_UUID -> {
-                val rssi = ByteBuffer.wrap(value).int;
-                Log.d(TAG, "write received: rssi = $rssi")
+                Log.d(TAG, "read " + value?.size)
+                val deviceData = DeviceData.fromBytes(value!!)
+                Log.d(TAG, "write received: device: ${deviceData.deviceAddress} rssi = ${deviceData.value}")
             }
         }
     }
