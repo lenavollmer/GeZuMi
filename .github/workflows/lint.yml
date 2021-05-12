@@ -11,6 +11,6 @@ jobs:
 
       # Lint app
       - name: Lint app
-        run: ./gradlew lintDebug
+        run: ./gradlew clean assembleDebug test lintDebug
 
 
