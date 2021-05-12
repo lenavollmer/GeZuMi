@@ -4,12 +4,12 @@ import android.bluetooth.BluetoothDevice
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.databinding.DataBindingUtil
+import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.DividerItemDecoration
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import de.htw.gezumi.adapter.ConnectedPlayerDeviceAdapter
@@ -62,12 +62,12 @@ class HostFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        _bluetoothController.setContext(requireContext())
         arguments?.let {
 
         }
         // start gatt server
         _gattServer = GattServer(requireContext(), _bluetoothController, connectCallback)
-        _gattServer.startAdvertising()
         _gattServer.startServer()
     }
 

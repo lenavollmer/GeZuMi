@@ -29,7 +29,7 @@ class GameFragment : Fragment() {
     private val _gameViewModel: GameViewModel by viewModels()
 
     // bluetooth stuff also in game fragment or is it possible to manage all that in client and host
-    private val _bluetoothController: BluetoothController = BluetoothController(requireContext())
+    private val _bluetoothController: BluetoothController = BluetoothController()
     private lateinit var _gattClient: GattClient
     private lateinit var _hostDevice: BluetoothDevice
 
@@ -53,6 +53,8 @@ class GameFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         _hostDevice = arguments?.getParcelable("hostDevice")!!
+
+        _bluetoothController.setContext(requireContext())
 
         val hostDevice = Device(_hostDevice.address, -70)
         hostDevice.setName(_hostDevice.name)

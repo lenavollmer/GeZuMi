@@ -16,9 +16,10 @@ import kotlin.collections.ArrayList
 private const val SCAN_PERIOD = 10000L
 private const val TAG = "BTController"
 
-class BluetoothController(_context: Context) {
+class BluetoothController {
 
-    private val _bluetoothManager = _context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+    private lateinit var _context: Context
+    private lateinit var _bluetoothManager: BluetoothManager
     private val _bluetoothAdapter: BluetoothAdapter = BluetoothAdapter.getDefaultAdapter() // TODO clean up nullables and do proper bt support checking
     private val _bluetoothLeScanner: BluetoothLeScanner? = _bluetoothAdapter.bluetoothLeScanner
 
@@ -68,6 +69,7 @@ class BluetoothController(_context: Context) {
      * and supports the Current Time Service.
      */
     fun startAdvertising(uuid: ParcelUuid) {
+        require(::_bluetoothManager.isInitialized) {"Must have context set"}
         val bluetoothLeAdvertiser: BluetoothLeAdvertiser? =
             _bluetoothManager.adapter.bluetoothLeAdvertiser
 
@@ -124,6 +126,11 @@ class BluetoothController(_context: Context) {
             return false
         }
         return true
+    }
+
+    fun setContext(context: Context) {
+        _context = context
+        _bluetoothManager = _context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
     }
 
 }

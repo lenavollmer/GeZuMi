@@ -27,7 +27,7 @@ class ClientFragment : Fragment() {
 
     private lateinit var _binding: FragmentClientBinding
 
-    private val _bluetoothController: BluetoothController = BluetoothController(requireContext())
+    private val _bluetoothController: BluetoothController = BluetoothController()
     private val _btDevices: ArrayList<BluetoothDevice> = ArrayList()
     private val _deviceListAdapter: BtDeviceListAdapter = BtDeviceListAdapter(_btDevices)
 
@@ -45,6 +45,11 @@ class ClientFragment : Fragment() {
             }
             updateBtDeviceListAdapter()
         }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        _bluetoothController.setContext(requireContext())
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
