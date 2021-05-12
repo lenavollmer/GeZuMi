@@ -24,10 +24,8 @@ android {
     }
 
     lintOptions {
-        disable 'UnsafeExperimentalUsageError',
-                'UnsafeExperimentalUsageWarning'
         // set to true to turn off analysis progress reporting by lint
-        quiet true
+        quiet false
         // change this to set the linter live
         abortOnError true
         absolutePaths true
@@ -38,6 +36,7 @@ android {
         xmlReport false
         htmlReport false
         checkReleaseBuilds false
+        lintConfig file("lint.xml")
     }
 
     buildTypes {
