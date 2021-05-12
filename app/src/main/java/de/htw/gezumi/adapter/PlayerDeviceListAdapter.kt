@@ -1,14 +1,11 @@
 package de.htw.gezumi.adapter
 
+import android.annotation.SuppressLint
 import android.bluetooth.BluetoothDevice
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.core.os.bundleOf
-import androidx.navigation.findNavController
 import androidx.recyclerview.widget.RecyclerView
-import de.htw.gezumi.R
-import de.htw.gezumi.databinding.ItemBtDeviceBinding
 import de.htw.gezumi.databinding.ItemPlayerBinding
 
 private const val TAG = "PlayerDeviceLA"
@@ -16,6 +13,7 @@ private const val TAG = "PlayerDeviceLA"
 class PlayerDeviceListAdapter(private val _playerDevices: List<BluetoothDevice>) : RecyclerView.Adapter<PlayerDeviceListAdapter.ItemViewHolder>() {
 
     class ItemViewHolder(private val _binding: ItemPlayerBinding): RecyclerView.ViewHolder(_binding.root) {
+        @SuppressLint("SetTextI18n") // Todo: Remove String
         fun bind(device: BluetoothDevice, position: Int) {
             Log.d(TAG, "bind: ${device.name}") // TODO: device name is null
             _binding.textHostDeviceName.text = "Player " + position + ": " + device.name

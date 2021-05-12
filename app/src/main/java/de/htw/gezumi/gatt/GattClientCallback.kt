@@ -64,7 +64,7 @@ class GattClientCallback(private val _devicesViewModel: DevicesViewModel) : Blue
         super.onCharacteristicRead(gatt, characteristic, status)
         when (characteristic?.uuid) {
             GameService.GAME_ID_UUID -> {
-                val gameId = characteristic?.value?.toString(Charsets.UTF_8)
+                val gameId = characteristic.value?.toString(Charsets.UTF_8)
                 Log.d(TAG, "callback: characteristic read successfully, gameId: $gameId")
             }
         }

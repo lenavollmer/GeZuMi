@@ -63,7 +63,7 @@ class GattServerCallback(private val _registeredDevices: MutableSet<BluetoothDev
             offset, value)
         when (characteristic?.uuid) {
             GameService.RSSI_UUID -> {
-                val rssi = ByteBuffer.wrap(value).int;
+                val rssi = ByteBuffer.wrap(value!!).int;
                 Log.d(TAG, "write received: rssi = $rssi")
             }
         }

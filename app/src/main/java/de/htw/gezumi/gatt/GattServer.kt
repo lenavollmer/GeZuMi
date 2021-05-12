@@ -130,8 +130,9 @@ class GattServer(private val _context: Context, private val _bluetoothController
      * Send a time service notification to any devices that are subscribed
      * to the characteristic.
      */
+    /*
     private fun notifyRegisteredDevices(timestamp: Long, adjustReason: Byte) {
-        /*if (_registeredDevices.isEmpty()) {
+        if (_registeredDevices.isEmpty()) {
             Log.i(TAG, "No subscribers registered")
             return
         }
@@ -143,8 +144,8 @@ class GattServer(private val _context: Context, private val _bluetoothController
                 ?.getCharacteristic(GameService.GAME_ID)
             timeCharacteristic?.value = someValue
             bluetoothGattServer?.notifyCharacteristicChanged(device, timeCharacteristic, false)
-        }*/
-    }
+        }
+    }*/
 
     fun stop() {
         if (_bluetoothManager.adapter.isEnabled) {

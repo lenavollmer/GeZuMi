@@ -22,10 +22,10 @@ android {
         // set to true to turn off analysis progress reporting by lint
         quiet true
         // change this to set the linter live
-        abortOnError false
+        abortOnError true
         absolutePaths true
         checkAllWarnings false
-        warningsAsErrors false
+        warningsAsErrors true
         textReport true
         textOutput 'stdout'
         xmlReport false
@@ -63,7 +63,7 @@ dependencies {
     implementation 'androidx.navigation:navigation-fragment-ktx:2.3.5'
     implementation 'androidx.navigation:navigation-ui-ktx:2.3.5'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
-    testImplementation 'junit:junit:4.+'
+    testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
 
