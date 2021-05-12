@@ -2,7 +2,6 @@ package de.htw.gezumi.model
 
 import java.io.Serializable
 import java.nio.ByteBuffer
-import kotlin.experimental.and
 
 class DeviceData(val deviceAddress: String, val value: Float): Serializable {
 
@@ -10,7 +9,7 @@ class DeviceData(val deviceAddress: String, val value: Float): Serializable {
         const val separator = 0x0A.toByte()
 
         fun fromBytes(bytes: ByteArray): DeviceData {
-            val deviceAddress = bytesToHex(bytes.slice(0 until 6).toByteArray())
+            val deviceAddress = bytes.slice(0 until 6).toByteArray().toHexString()
             val value = ByteBuffer.wrap(bytes.slice(6 until bytes.size).toByteArray()).float
             return DeviceData(deviceAddress, value)
         }
@@ -23,17 +22,7 @@ class DeviceData(val deviceAddress: String, val value: Float): Serializable {
             return -1;
         }
 
-        private val HEX_ARRAY = "0123456789ABCDEF".toCharArray()
-
-        private fun bytesToHex(bytes: ByteArray): String {
-            val hexChars = CharArray(bytes.size * 2)
-            for (j in bytes.indices) {
-                val v: Int = bytes[j] and 0xFF
-                hexChars[j * 2] = HEX_ARRAY.get(v ushr 4)
-                hexChars[j * 2 + 1] = HEX_ARRAY.get(v and 0x0F)
-            }
-            return String(hexChars)
-        }
+        private fun ByteArray.toHexString() = asUByteArray().joinToString(":") { it.toString(16).padStart(2, '0') }
 
     }
 
