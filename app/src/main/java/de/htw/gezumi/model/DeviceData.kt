@@ -12,11 +12,10 @@ class DeviceData(val deviceAddress: String, val value: Float) {
             return DeviceData(deviceAddress, value)
         }
 
-        private fun toHexString(bytes: ByteArray) = bytes.asUByteArray().joinToString(":") { it.toString(16).padStart(2, '0') }
+        private fun toHexString(bytes: ByteArray) = bytes.asUByteArray().joinToString(":") { it.toString(16).padStart(2, '0') }.capitalize()
     }
 
     fun toByteArray(): ByteArray {
-        // newline \n = 0x0A
         val hexString = deviceAddress.replace(":", "")
         return decodeHex(hexString) + ByteBuffer.allocate(4).putFloat(value).array()
     }

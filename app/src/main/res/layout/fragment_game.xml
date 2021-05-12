@@ -20,7 +20,7 @@
         xmlns:tools="http://schemas.android.com/tools">
 
     <data>
-        <variable name="devicesViewModel" type="de.htw.gezumi.viewmodel.DevicesViewModel"/>
+        <variable name="devicesViewModel" type="de.htw.gezumi.viewmodel.GameViewModel"/>
     </data>
 
 

@@ -2,15 +2,14 @@ package de.htw.gezumi.gatt
 
 import android.bluetooth.*
 import android.util.Log
-import de.htw.gezumi.model.Device
+import de.htw.gezumi.GameFragment
 import de.htw.gezumi.model.DeviceData
-import de.htw.gezumi.viewmodel.DevicesViewModel
-import java.nio.ByteBuffer
+import de.htw.gezumi.viewmodel.GameViewModel
 import java.util.*
 
 private const val TAG = "ClientGattCallback"
 
-class GattClientCallback(private val _devicesViewModel: DevicesViewModel) : BluetoothGattCallback() {
+class GattClientCallback(private val _gameViewModel: GameViewModel, private val gameJoinCallback: GameFragment.GameJoinCallback) : BluetoothGattCallback() {
 
     private var _rssiTimer = Timer() // TODO timer just for test purposes here, rssi value doesn't have to do with gatt connection
 
@@ -27,7 +26,7 @@ class GattClientCallback(private val _devicesViewModel: DevicesViewModel) : Blue
 
     override fun onReadRemoteRssi(gatt: BluetoothGatt?, rssi: Int, status: Int) {
         super.onReadRemoteRssi(gatt, rssi, status)
-        _devicesViewModel.devices[0].addRssi(rssi) // TODO set for correct device
+        _gameViewModel.devices[0].addRssi(rssi) // TODO set for correct device
         // TODO the raw rssi value is transferred here, but a processed value should
         _lastRssi = rssi
         // write device the rssi was measured for (in this test case it's just the host)
@@ -35,7 +34,7 @@ class GattClientCallback(private val _devicesViewModel: DevicesViewModel) : Blue
         //sendRequest?.value = "Device1".toByteArray(Charsets.UTF_8)
         //gatt?.writeDescriptor(sendRequest)
 
-        val rssiCharacteristic = gatt?.getService(GameService.SERVER_UUID)?.getCharacteristic(GameService.RSSI_UUID)
+        val rssiCharacteristic = gatt?.getService(GameService.HOST_UUID)?.getCharacteristic(GameService.RSSI_UUID)
         rssiCharacteristic?.value = DeviceData(gatt!!.device.address, rssi.toFloat()).toByteArray() //ByteBuffer.allocate(4).putInt(_lastRssi).array()
         Log.d(TAG, "write " + rssiCharacteristic?.value?.size)
         gatt.writeCharacteristic(rssiCharacteristic)
@@ -54,7 +53,7 @@ class GattClientCallback(private val _devicesViewModel: DevicesViewModel) : Blue
         super.onServicesDiscovered(gatt, status)
         Log.d(TAG, "services discovered")
         Log.d(TAG, "read game id")
-        val gameIdCharacteristic = gatt?.getService(GameService.SERVER_UUID)?.getCharacteristic(GameService.GAME_ID_UUID)
+        val gameIdCharacteristic = gatt?.getService(GameService.HOST_UUID)?.getCharacteristic(GameService.GAME_ID_UUID)
         gatt?.readCharacteristic(gameIdCharacteristic)
 
         Log.d(TAG, "start testing rssi")
@@ -70,8 +69,12 @@ class GattClientCallback(private val _devicesViewModel: DevicesViewModel) : Blue
         super.onCharacteristicRead(gatt, characteristic, status)
         when (characteristic?.uuid) {
             GameService.GAME_ID_UUID -> {
-                val gameId = characteristic?.value?.toString(Charsets.UTF_8)
+                val gameId = characteristic.value.toString(Charsets.UTF_8)
                 Log.d(TAG, "callback: characteristic read successfully, gameId: $gameId")
+                // scan all device on game id
+                // advertise on game id
+                _gameViewModel.onGameJoined(gameId)
+                gameJoinCallback.onGameJoin()
             }
         }
     }

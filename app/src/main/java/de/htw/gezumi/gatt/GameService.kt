@@ -9,7 +9,7 @@ import java.util.UUID
 object GameService {
 
     val GAME_ID_LENGTH = 15;
-    val SERVER_UUID: UUID = UUID.fromString("00001805-0000-1000-8000-00805f9b34fc")
+    val HOST_UUID: UUID = UUID.fromString("00001805-0000-1000-8000-00805f9b34fc")
     val GAME_ID_UUID: UUID = UUID.fromString("00002a2b-0000-1000-8000-00805f9b34fb")
     val RSSI_UUID: UUID = UUID.fromString("00002a2b-0000-1000-8000-00805f9b34fa")
     val RSSI_SEND_REQUEST_UUID: UUID = UUID.fromString("00002a2b-0000-1000-8000-00805f9b34aa")

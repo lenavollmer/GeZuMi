@@ -8,6 +8,7 @@ import android.nfc.Tag
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.os.ParcelUuid
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -18,6 +19,7 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import de.htw.gezumi.adapter.PlayerDeviceListAdapter
 import de.htw.gezumi.controller.BluetoothController
 import de.htw.gezumi.databinding.FragmentHostBinding
+import de.htw.gezumi.gatt.GameService
 import de.htw.gezumi.gatt.GattServer
 
 private const val TAG = "HostFragment"
@@ -26,7 +28,7 @@ class HostFragment : Fragment() {
 
     private lateinit var _binding: FragmentHostBinding
 
-    private val _bluetoothController: BluetoothController = BluetoothController()
+    private val _bluetoothController: BluetoothController = BluetoothController(requireContext())
     private lateinit var _gattServer: GattServer
 
     private val _connectedDevices: ArrayList<BluetoothDevice> = ArrayList()
@@ -64,7 +66,6 @@ class HostFragment : Fragment() {
         }
         // start gatt server
         _gattServer = GattServer(requireContext(), _bluetoothController, connectCallback)
-        _gattServer.startAdvertising()
         _gattServer.startServer()
     }
 

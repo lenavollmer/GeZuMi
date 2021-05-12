@@ -19,6 +19,7 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import de.htw.gezumi.adapter.BtDeviceListAdapter
 import de.htw.gezumi.controller.BluetoothController
 import de.htw.gezumi.databinding.FragmentClientBinding
+import de.htw.gezumi.gatt.GameService
 
 private const val TAG = "ClientFragment"
 
@@ -26,7 +27,7 @@ class ClientFragment : Fragment() {
 
     private lateinit var _binding: FragmentClientBinding
 
-    private val _bluetoothController: BluetoothController = BluetoothController()
+    private val _bluetoothController: BluetoothController = BluetoothController(requireContext())
     private val _btDevices: ArrayList<BluetoothDevice> = ArrayList()
     private val _deviceListAdapter: BtDeviceListAdapter = BtDeviceListAdapter(_btDevices)
 
@@ -64,7 +65,7 @@ class ClientFragment : Fragment() {
             addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
         }
         _binding.button.setOnClickListener {
-            _bluetoothController.scanForDevices(leScanCallback)
+            _bluetoothController.scanForDevices(leScanCallback, ParcelUuid(GameService.HOST_UUID))
         }
 
         checkPermission()

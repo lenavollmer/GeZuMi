@@ -5,12 +5,13 @@ import de.htw.gezumi.model.Device
 
 private const val TAG = "DevicesViewModel"
 
-class DevicesViewModel : ViewModel() {
+class GameViewModel : ViewModel() {
 
     private val _devices = mutableListOf<Device>()
     val devices: List<Device> get() = _devices
 
     lateinit var host: Device
+    private lateinit var gameId: String
 
     /*init {
         // TODO add pause and stop logic + make this a coroutine
@@ -28,5 +29,9 @@ class DevicesViewModel : ViewModel() {
 
     fun addDevice(device: Device) {
         _devices.add(device)
+    }
+
+    fun onGameJoined(gameId: String) {
+        this.gameId = gameId
     }
 }

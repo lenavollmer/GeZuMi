@@ -1,10 +1,9 @@
 package de.htw.gezumi.gatt
 
-import android.bluetooth.*
-import android.bluetooth.le.AdvertiseCallback
-import android.bluetooth.le.AdvertiseData
-import android.bluetooth.le.AdvertiseSettings
-import android.bluetooth.le.BluetoothLeAdvertiser
+import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothDevice
+import android.bluetooth.BluetoothGattServer
+import android.bluetooth.BluetoothManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -13,7 +12,6 @@ import android.os.ParcelUuid
 import android.util.Log
 import de.htw.gezumi.HostFragment
 import de.htw.gezumi.controller.BluetoothController
-import de.htw.gezumi.gatt.GameService
 
 private const val TAG = "GattServer"
 
@@ -33,32 +31,16 @@ class GattServer(private val _context: Context, private val _bluetoothController
         override fun onReceive(context: Context, intent: Intent) {
             when (intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.STATE_OFF)) {
                 BluetoothAdapter.STATE_ON -> {
-                    startAdvertising()
                     startServer()
                 }
                 BluetoothAdapter.STATE_OFF -> {
-                    stopServer()
                     stopServer()
                 }
             }
         }
     }
 
-    /**
-     * Callback to receive information about the advertisement process.
-     */
-    private val advertiseCallback = object : AdvertiseCallback() {
-        override fun onStartSuccess(settingsInEffect: AdvertiseSettings) {
-            Log.i(TAG, "LE Advertise Started.")
-        }
-
-        override fun onStartFailure(errorCode: Int) {
-            Log.w(TAG, "LE Advertise Failed: $errorCode")
-        }
-    }
-
     init {
-
         // Register for system Bluetooth events
         val filter = IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED)
         _context.registerReceiver(bluetoothReceiver, filter)
@@ -74,10 +56,12 @@ class GattServer(private val _context: Context, private val _bluetoothController
      * from the Time Profile.
      */
     fun startServer() {
+        _bluetoothController.startAdvertising(ParcelUuid(GameService.HOST_UUID))
+
         Log.d(TAG, "start gatt server")
         bluetoothGattServer = _bluetoothManager.openGattServer(_context, GattServerCallback(_registeredDevices, this, _connectCallback))
 
-        bluetoothGattServer?.addService(GameService.createGameService(GameService.SERVER_UUID))
+        bluetoothGattServer?.addService(GameService.createGameService(GameService.HOST_UUID))
             ?: Log.w(TAG, "Unable to create GATT server")
     }
 
@@ -85,45 +69,9 @@ class GattServer(private val _context: Context, private val _bluetoothController
      * Shut down the GATT server.
      */
     fun stopServer() {
+        _bluetoothController.stopAdvertising()
         Log.d(TAG, "stop gatt server")
         bluetoothGattServer?.close()
-    }
-
-    /**
-     * Begin advertising over Bluetooth that this device is connectable
-     * and supports the Current Time Service.
-     */
-    fun startAdvertising() {
-        val bluetoothLeAdvertiser: BluetoothLeAdvertiser? =
-            _bluetoothManager.adapter.bluetoothLeAdvertiser
-
-        bluetoothLeAdvertiser?.let {
-            val settings = AdvertiseSettings.Builder()
-                .setAdvertiseMode(AdvertiseSettings.ADVERTISE_MODE_BALANCED)
-                .setConnectable(true)
-                .setTimeout(0)
-                .setTxPowerLevel(AdvertiseSettings.ADVERTISE_TX_POWER_MEDIUM)
-                .build()
-
-            val data = AdvertiseData.Builder()
-                .setIncludeDeviceName(true)
-                .setIncludeTxPowerLevel(false)
-                .addServiceUuid(ParcelUuid(GameService.SERVER_UUID))
-                .build()
-
-            it.startAdvertising(settings, data, advertiseCallback)
-        } ?: Log.w(TAG, "Failed to create advertiser")
-        Log.d(TAG, "advertise started as host")
-    }
-
-    /**
-     * Stop Bluetooth advertisements.
-     */
-    fun stopAdvertising() {
-        Log.d(TAG, "stop advertising")
-        val bluetoothLeAdvertiser: BluetoothLeAdvertiser? =
-            _bluetoothManager.adapter.bluetoothLeAdvertiser
-        bluetoothLeAdvertiser?.stopAdvertising(advertiseCallback) ?: Log.w(TAG, "Failed to create advertiser")
     }
 
     /**
@@ -149,7 +97,6 @@ class GattServer(private val _context: Context, private val _bluetoothController
     fun stop() {
         if (_bluetoothManager.adapter.isEnabled) {
             stopServer()
-            stopAdvertising()
         }
         _context.unregisterReceiver(bluetoothReceiver)
     }
