@@ -9,6 +9,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Get Java
+        run: java --version
+
       # Lint app
       - name: Lint app
         run: ./gradlew clean assembleDebug test lintDebug
