@@ -59,11 +59,10 @@ class BluetoothController() {
      */
     private fun checkBluetoothSupport(): Boolean {
 
-        /* Disabled since currently BluetoothAdapter is forced
         if (_bluetoothAdapter == null) {
             Log.w(TAG, "Bluetooth is not supported")
             return false
-        } */
+        }
         //!_connectionFragment.requireContext().packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)
         if (_bluetoothLeScanner == null) {
             Log.w(TAG, "Bluetooth LE is not supported")
