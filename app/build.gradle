@@ -4,6 +4,11 @@ plugins {
     id 'kotlin-kapt'
 }
 
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile) {
+    kotlinOptions {
+        allWarningsAsErrors = true
+    }
+}
 android {
     compileSdkVersion 30
     buildToolsVersion "30.0.3"
@@ -19,6 +24,8 @@ android {
     }
 
     lintOptions {
+        disable 'UnsafeExperimentalUsageError',
+                'UnsafeExperimentalUsageWarning'
         // set to true to turn off analysis progress reporting by lint
         quiet true
         // change this to set the linter live
@@ -31,8 +38,6 @@ android {
         xmlReport false
         htmlReport false
         checkReleaseBuilds false
-        disable 'UnsafeExperimentalUsageError',
-                'UnsafeExperimentalUsageWarning'
     }
 
     buildTypes {
