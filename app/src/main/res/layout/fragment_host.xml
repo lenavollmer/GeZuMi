@@ -2,15 +2,15 @@
 <layout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             tools:context=".HostFragment">
 
         <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recycler_players"
-                android:layout_width="0dp"
-                android:layout_height="0dp"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
                 android:scrollbars="vertical"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -20,5 +20,7 @@
                 app:layout_constraintVertical_bias="1.0"
                 android:layout_marginTop="32dp" app:layout_constraintTop_toTopOf="parent"/>
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+        <include android:id="@+id/bottom_sheet" layout="@layout/bottom_sheet_host" />
+
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </layout>
