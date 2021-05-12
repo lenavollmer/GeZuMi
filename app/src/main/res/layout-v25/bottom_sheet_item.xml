@@ -25,7 +25,7 @@
                 android:layout_marginStart="10dp"
                 app:layout_constraintStart_toEndOf="@+id/approve"
                 android:backgroundTint="?android:colorAccent"
-                android:textColor="#FFFFFF"
+                android:textColor="?android:textColorSecondary"
         />
         <Button
                 android:id="@+id/approve"
@@ -39,7 +39,7 @@
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/device_name"
                 android:backgroundTint="?android:colorAccent"
-                android:textColor="#FFFFFF"
+                android:textColor="?android:textColorSecondary"
         />
 
     </LinearLayout>
