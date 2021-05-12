@@ -21,5 +21,6 @@
     <string name="devices_join">Devices that want to join</string>
     <string name="approve">Approve</string>
     <string name="decline">Decline</string>
+    <string name="description_design_element">Design element</string>
 
 </resources>
