@@ -40,7 +40,8 @@ object GameService {
     }
 
     fun getGameId(): ByteArray {
-        return getRandomString(GAME_ID_LENGTH).toByteArray(Charsets.UTF_8)
+        //return getRandomString(GAME_ID_LENGTH).toByteArray(Charsets.UTF_8)
+        return UUID.randomUUID().toString().toByteArray(Charsets.UTF_8)
     }
 
     private fun getRandomString(length: Int) : String {

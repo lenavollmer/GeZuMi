@@ -89,7 +89,7 @@ class BluetoothController {
 
             it.startAdvertising(settings, data, advertiseCallback)
         } ?: Log.w(TAG, "Failed to create advertiser")
-        Log.d(TAG, "advertise started as host")
+        Log.d(TAG, "advertise started")
     }
 
     /**

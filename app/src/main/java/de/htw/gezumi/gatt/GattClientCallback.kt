@@ -11,8 +11,6 @@ private const val TAG = "ClientGattCallback"
 
 class GattClientCallback(private val _gameViewModel: GameViewModel, private val gameJoinCallback: GameFragment.GameJoinCallback) : BluetoothGattCallback() {
 
-    private var _rssiTimer = Timer() // TODO timer just for test purposes here, rssi value doesn't have to do with gatt connection
-
     override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
         if (newState == BluetoothProfile.STATE_CONNECTED) {
             Log.d(TAG, "callback: connected")
@@ -20,10 +18,9 @@ class GattClientCallback(private val _gameViewModel: GameViewModel, private val 
             gatt?.discoverServices()
 
         } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-            _rssiTimer.cancel()
         }
     }
-
+/*
     override fun onReadRemoteRssi(gatt: BluetoothGatt?, rssi: Int, status: Int) {
         super.onReadRemoteRssi(gatt, rssi, status)
         _gameViewModel.devices[0].addRssi(rssi) // TODO set for correct device
@@ -40,6 +37,7 @@ class GattClientCallback(private val _gameViewModel: GameViewModel, private val 
         gatt.writeCharacteristic(rssiCharacteristic)
     }
     private var _lastRssi = 0;
+    */
     override fun onDescriptorWrite(gatt: BluetoothGatt?, descriptor: BluetoothGattDescriptor?, status: Int) {
         super.onDescriptorWrite(gatt, descriptor, status)
 
@@ -55,14 +53,6 @@ class GattClientCallback(private val _gameViewModel: GameViewModel, private val 
         Log.d(TAG, "read game id")
         val gameIdCharacteristic = gatt?.getService(GameService.HOST_UUID)?.getCharacteristic(GameService.GAME_ID_UUID)
         gatt?.readCharacteristic(gameIdCharacteristic)
-
-        Log.d(TAG, "start testing rssi")
-        val task: TimerTask = object : TimerTask() {
-                override fun run() {
-                    gatt?.readRemoteRssi()
-                }
-            }
-            _rssiTimer.schedule(task, 500, 500)
     }
 
     override fun onCharacteristicRead(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic?, status: Int) {
@@ -71,9 +61,7 @@ class GattClientCallback(private val _gameViewModel: GameViewModel, private val 
             GameService.GAME_ID_UUID -> {
                 val gameId = characteristic.value.toString(Charsets.UTF_8)
                 Log.d(TAG, "callback: characteristic read successfully, gameId: $gameId")
-                // scan all device on game id
-                // advertise on game id
-                _gameViewModel.onGameJoined(gameId)
+                _gameViewModel.gameId = gameId
                 gameJoinCallback.onGameJoin()
             }
         }

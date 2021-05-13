@@ -3,7 +3,7 @@ package de.htw.gezumi.viewmodel
 import androidx.lifecycle.ViewModel
 import de.htw.gezumi.model.Device
 
-private const val TAG = "DevicesViewModel"
+private const val TAG = "GameViewModel"
 
 class GameViewModel : ViewModel() {
 
@@ -11,7 +11,7 @@ class GameViewModel : ViewModel() {
     val devices: List<Device> get() = _devices
 
     lateinit var host: Device
-    private lateinit var gameId: String
+    lateinit var gameId: String
 
     /*init {
         // TODO add pause and stop logic + make this a coroutine
@@ -31,7 +31,11 @@ class GameViewModel : ViewModel() {
         _devices.add(device)
     }
 
-    fun onGameJoined(gameId: String) {
-        this.gameId = gameId
+    fun contains(address: String): Boolean {
+        return _devices.any {d -> d.address == address}
+    }
+
+    fun getDevice(address: String): Device? {
+        return _devices.find { d -> d.address == address }
     }
 }
