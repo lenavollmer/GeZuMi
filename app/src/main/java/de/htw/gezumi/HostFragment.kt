@@ -28,14 +28,16 @@ class HostFragment : Fragment() {
     private val _bluetoothController: BluetoothController = BluetoothController()
     private lateinit var _gattServer: GattServer
 
-    private val _connectedDevices: ArrayList<BluetoothDevice> = ArrayList()
+    private val _connectedDevices: ArrayList<BluetoothDevice> = ArrayList() // device that are connected, but neither approved nor declined
     private val _approvedDevices: ArrayList<BluetoothDevice> = ArrayList()
     private val _playerListAdapter: PlayerDeviceListAdapter = PlayerDeviceListAdapter(_approvedDevices)
     private val _connectedListAdapter: ConnectedPlayerDeviceAdapter = ConnectedPlayerDeviceAdapter(_connectedDevices) { position, status ->
-        if(status == ConnectedPlayerDeviceAdapter.STATUS.APPROVED){
+        if (status == ConnectedPlayerDeviceAdapter.STATUS.APPROVED) {
             _approvedDevices.add(_connectedDevices[position])
+            _gattServer.
             _connectedDevices.removeAt(position)
-        }else{
+        }
+        else {
             // Todo add code to let device know that they are rejected
             _connectedDevices.removeAt(position)
         }

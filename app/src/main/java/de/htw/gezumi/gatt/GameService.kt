@@ -12,6 +12,7 @@ object GameService {
     val HOST_UUID: UUID = UUID.fromString("00001805-0000-1000-8000-00805f9b34fc")
     val GAME_ID_UUID: UUID = UUID.fromString("00002a2b-0000-1000-8000-00805f9b34fb")
     val RSSI_UUID: UUID = UUID.fromString("00002a2b-0000-1000-8000-00805f9b34fa")
+    val JOIN_APPROVED_UUID: UUID = UUID.fromString("00002a2b-0000-1000-8000-00805f9b34aa")
     val RSSI_SEND_REQUEST_UUID: UUID = UUID.fromString("00002a2b-0000-1000-8000-00805f9b34aa")
     /* Mandatory Client Characteristic Config Descriptor */
     val CLIENT_CONFIG: UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
@@ -24,8 +25,9 @@ object GameService {
         val gameId = BluetoothGattCharacteristic(GAME_ID_UUID, BluetoothGattCharacteristic.PROPERTY_READ, BluetoothGattCharacteristic.PERMISSION_READ)
 
         val rssi = BluetoothGattCharacteristic(RSSI_UUID, BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE, BluetoothGattCharacteristic.PERMISSION_WRITE)
-        val rssiDevice = BluetoothGattDescriptor(RSSI_SEND_REQUEST_UUID, BluetoothGattCharacteristic.PERMISSION_WRITE)
-        rssi.addDescriptor(rssiDevice)
+        val joinApproved = BluetoothGattCharacteristic(JOIN_APPROVED_UUID, BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE, BluetoothGattCharacteristic.PERMISSION_WRITE)
+        //val rssiDevice = BluetoothGattDescriptor(RSSI_SEND_REQUEST_UUID, BluetoothGattCharacteristic.PERMISSION_WRITE)
+        //rssi.addDescriptor(rssiDevice)
         /*
         val configDescriptor = BluetoothGattDescriptor(
             CLIENT_CONFIG,
@@ -36,6 +38,7 @@ object GameService {
 
         service.addCharacteristic(gameId)
         service.addCharacteristic(rssi)
+        service.addCharacteristic(joinApproved)
         return service
     }
 

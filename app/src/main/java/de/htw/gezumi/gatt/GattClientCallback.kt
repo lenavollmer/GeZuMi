@@ -20,7 +20,14 @@ class GattClientCallback(private val _gameViewModel: GameViewModel, private val 
         } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
         }
     }
+
+    override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
+        super.onServicesDiscovered(gatt, status)
+        Log.d(TAG, "services discovered")
+    }
+
 /*
+bitte noch nicht löschen :)
     override fun onReadRemoteRssi(gatt: BluetoothGatt?, rssi: Int, status: Int) {
         super.onReadRemoteRssi(gatt, rssi, status)
         _gameViewModel.devices[0].addRssi(rssi) // TODO set for correct device
@@ -38,22 +45,6 @@ class GattClientCallback(private val _gameViewModel: GameViewModel, private val 
     }
     private var _lastRssi = 0;
     */
-    override fun onDescriptorWrite(gatt: BluetoothGatt?, descriptor: BluetoothGattDescriptor?, status: Int) {
-        super.onDescriptorWrite(gatt, descriptor, status)
-
-        // send characteristic
-        //val rssiCharacteristic = gatt?.getService(GameService.SERVER_UUID)?.getCharacteristic(GameService.RSSI_UUID)
-        //rssiCharacteristic?.value = ByteBuffer.allocate(4).putInt(_lastRssi).array()
-        //gatt?.writeCharacteristic(rssiCharacteristic)
-    }
-
-    override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
-        super.onServicesDiscovered(gatt, status)
-        Log.d(TAG, "services discovered")
-        Log.d(TAG, "read game id")
-        val gameIdCharacteristic = gatt?.getService(GameService.HOST_UUID)?.getCharacteristic(GameService.GAME_ID_UUID)
-        gatt?.readCharacteristic(gameIdCharacteristic)
-    }
 
     override fun onCharacteristicRead(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic?, status: Int) {
         super.onCharacteristicRead(gatt, characteristic, status)
@@ -66,4 +57,19 @@ class GattClientCallback(private val _gameViewModel: GameViewModel, private val 
             }
         }
     }
+
+    override fun onDescriptorWrite(gatt: BluetoothGatt?, descriptor: BluetoothGattDescriptor?, status: Int) {
+        super.onDescriptorWrite(gatt, descriptor, status)
+        // TODO receive approved here
+        // when
+        Log.d(TAG, "read game id")
+        val gameIdCharacteristic = gatt?.getService(GameService.HOST_UUID)?.getCharacteristic(GameService.GAME_ID_UUID)
+        gatt?.readCharacteristic(gameIdCharacteristic)
+
+        // send characteristic
+        //val rssiCharacteristic = gatt?.getService(GameService.SERVER_UUID)?.getCharacteristic(GameService.RSSI_UUID)
+        //rssiCharacteristic?.value = ByteBuffer.allocate(4).putInt(_lastRssi).array()
+        //gatt?.writeCharacteristic(rssiCharacteristic)
+    }
+
 }

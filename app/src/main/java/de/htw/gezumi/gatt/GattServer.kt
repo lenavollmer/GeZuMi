@@ -12,6 +12,7 @@ import android.os.ParcelUuid
 import android.util.Log
 import de.htw.gezumi.HostFragment
 import de.htw.gezumi.controller.BluetoothController
+import java.nio.ByteBuffer
 
 private const val TAG = "GattServer"
 
@@ -79,7 +80,7 @@ class GattServer(private val _context: Context, private val _bluetoothController
      * to the characteristic.
      */
     private fun notifyRegisteredDevices(timestamp: Long, adjustReason: Byte) {
-        /*if (_registeredDevices.isEmpty()) {
+        if (_registeredDevices.isEmpty()) {
             Log.i(TAG, "No subscribers registered")
             return
         }
@@ -91,7 +92,7 @@ class GattServer(private val _context: Context, private val _bluetoothController
                 ?.getCharacteristic(GameService.GAME_ID)
             timeCharacteristic?.value = someValue
             bluetoothGattServer?.notifyCharacteristicChanged(device, timeCharacteristic, false)
-        }*/
+        }
     }
 
     fun stop() {
@@ -99,5 +100,13 @@ class GattServer(private val _context: Context, private val _bluetoothController
             stopServer()
         }
         _context.unregisterReceiver(bluetoothReceiver)
+    }
+
+    fun notifyJoinApproved(device: BluetoothDevice, approved: Boolean) {
+        val joinApprovedCharacteristic = bluetoothGattServer?.getService(GameService.HOST_UUID)?.getCharacteristic(GameService.JOIN_APPROVED_UUID)
+        joinApprovedCharacteristic?.value = ByteBuffer.allocate(4).putInt(if (approved) 1 else 0).array()
+        Log.d(TAG, "write join approve: $approved")
+        // TODO HERE XXXXX
+        bluetoothGattServer.notifyCharacteristicChanged()
     }
 }
