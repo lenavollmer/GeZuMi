@@ -71,7 +71,6 @@ bitte noch nicht löschen :)
 
     override fun onCharacteristicChanged(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic?) {
         super.onCharacteristicChanged(gatt, characteristic)
-        // TODO receive approved here
         when (characteristic?.uuid) {
             GameService.JOIN_APPROVED_UUID -> {
                 Log.d(TAG, "callback")
@@ -79,7 +78,7 @@ bitte noch nicht löschen :)
                 if (approved == 1) {
                     Log.d(TAG, "approved, read game id")
                     val gameIdCharacteristic = gatt?.getService(GameService.HOST_UUID)?.getCharacteristic(GameService.GAME_ID_UUID)
-                    gatt?.readCharacteristic(gameIdCharacteristic)
+                    Log.d(TAG, "read request success: " + gatt?.readCharacteristic(gameIdCharacteristic))
                 }
                 else {
                     // declined

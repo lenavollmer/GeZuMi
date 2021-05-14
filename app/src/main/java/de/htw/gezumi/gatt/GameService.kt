@@ -1,10 +1,12 @@
 package de.htw.gezumi.gatt
 
 import android.bluetooth.BluetoothGattCharacteristic
-import android.bluetooth.BluetoothGattDescriptor
 import android.bluetooth.BluetoothGattService
+import android.util.Log
+import java.util.*
 
-import java.util.UUID
+
+private const val TAG = "GameService"
 
 object GameService {
 
@@ -17,15 +19,16 @@ object GameService {
     /* Mandatory Client Characteristic Config Descriptor */
     val CLIENT_CONFIG: UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
 
+    val gameId = getRandomUuidString()
 
     fun createGameService(uuid: UUID): BluetoothGattService {
         val service = BluetoothGattService(
             uuid,
             BluetoothGattService.SERVICE_TYPE_PRIMARY)
-        val gameId = BluetoothGattCharacteristic(GAME_ID_UUID, BluetoothGattCharacteristic.PROPERTY_READ, BluetoothGattCharacteristic.PERMISSION_READ)
+        val gameIdCharacteristic = BluetoothGattCharacteristic(GAME_ID_UUID, BluetoothGattCharacteristic.PROPERTY_READ, BluetoothGattCharacteristic.PERMISSION_READ)
 
         val rssi = BluetoothGattCharacteristic(RSSI_UUID, BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE, BluetoothGattCharacteristic.PERMISSION_WRITE)
-        val joinApproved = BluetoothGattCharacteristic(JOIN_APPROVED_UUID, BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE, BluetoothGattCharacteristic.PERMISSION_WRITE)
+        val joinApproved = BluetoothGattCharacteristic(JOIN_APPROVED_UUID, BluetoothGattCharacteristic.PROPERTY_NOTIFY, BluetoothGattCharacteristic.PERMISSION_WRITE)
         //val rssiDevice = BluetoothGattDescriptor(RSSI_SEND_REQUEST_UUID, BluetoothGattCharacteristic.PERMISSION_WRITE)
         //rssi.addDescriptor(rssiDevice)
         /*
@@ -35,8 +38,7 @@ object GameService {
             BluetoothGattDescriptor.PERMISSION_READ or BluetoothGattDescriptor.PERMISSION_WRITE)
         currentTime.addDescriptor(configDescriptor)*/
 
-
-        service.addCharacteristic(gameId)
+        service.addCharacteristic(gameIdCharacteristic)
         service.addCharacteristic(rssi)
         service.addCharacteristic(joinApproved)
         return service
@@ -44,11 +46,25 @@ object GameService {
 
     fun getGameId(): ByteArray {
         //return getRandomString(GAME_ID_LENGTH).toByteArray(Charsets.UTF_8)
-        return UUID.randomUUID().toString().toByteArray(Charsets.UTF_8)
+        ///return UUID.randomUUID().toString().toByteArray(Charsets.UTF_8) is invalid
+        //val s = getRandomUuidString()
+        //Log.d("GameService", "generated game id: $s")
+        val bytes = gameId.toByteArray(Charsets.UTF_8)
+        Log.d(TAG, "game id bytes: ${bytes.size}")
+        return bytes
+        //return "abc".toByteArray(Charsets.UTF_8)
     }
 
-    private fun getRandomString(length: Int) : String {
-        val allowedChars = ('A'..'Z') + ('a'..'z') + ('0'..'9')
+    private fun getRandomUuidString() : String {
+        return getRandomString( 8) + "-" +
+                getRandomString( 4) + "-" +
+                getRandomString( 4) + "-" +
+                getRandomString( 4) + "-" +
+                getRandomString( 12)
+    }
+
+    private fun getRandomString(length: Int): String {
+        val allowedChars = ('a'..'f') + ('0'..'9')
         return (1..length)
             .map { allowedChars.random() }
             .joinToString("")

@@ -27,7 +27,7 @@ class GattServerCallback(private val _registeredDevices: MutableSet<BluetoothDev
     ) {
         when (characteristic.uuid) {
             GameService.GAME_ID_UUID -> {
-                Log.d(TAG, "read game ID")
+                Log.d(TAG, "read game ID ${device.address}, $requestId")
                 _gattServer.bluetoothGattServer?.sendResponse(
                     device,
                     requestId,

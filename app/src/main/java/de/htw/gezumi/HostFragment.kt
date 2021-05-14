@@ -53,7 +53,7 @@ class HostFragment : Fragment() {
     private val connectCallback = object : GattConnectCallback {
         override fun onGattConnect(device: BluetoothDevice) {
             _connectedDevices.add(device)
-            _bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
+            Handler(Looper.getMainLooper()).post{_bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED}
             Handler(Looper.getMainLooper()).post{updateAdapters()}
         }
 
