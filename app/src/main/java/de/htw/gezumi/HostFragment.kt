@@ -34,11 +34,12 @@ class HostFragment : Fragment() {
     private val _connectedListAdapter: ConnectedPlayerDeviceAdapter = ConnectedPlayerDeviceAdapter(_connectedDevices) { position, status ->
         if (status == ConnectedPlayerDeviceAdapter.STATUS.APPROVED) {
             _approvedDevices.add(_connectedDevices[position])
-            _gattServer.
+            _gattServer.notifyJoinApproved(_connectedDevices[position], true)
             _connectedDevices.removeAt(position)
         }
         else {
             // Todo add code to let device know that they are rejected
+            _gattServer.notifyJoinApproved(_connectedDevices[position], false)
             _connectedDevices.removeAt(position)
         }
         updateAdapters()

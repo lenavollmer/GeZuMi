@@ -5,6 +5,7 @@ import android.util.Log
 import de.htw.gezumi.GameFragment
 import de.htw.gezumi.model.DeviceData
 import de.htw.gezumi.viewmodel.GameViewModel
+import java.nio.ByteBuffer
 import java.util.*
 
 private const val TAG = "ClientGattCallback"
@@ -24,6 +25,7 @@ class GattClientCallback(private val _gameViewModel: GameViewModel, private val 
     override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
         super.onServicesDiscovered(gatt, status)
         Log.d(TAG, "services discovered")
+        gatt?.setCharacteristicNotification(gatt.getService(GameService.HOST_UUID)?.getCharacteristic(GameService.JOIN_APPROVED_UUID), true)
     }
 
 /*
@@ -60,16 +62,30 @@ bitte noch nicht löschen :)
 
     override fun onDescriptorWrite(gatt: BluetoothGatt?, descriptor: BluetoothGattDescriptor?, status: Int) {
         super.onDescriptorWrite(gatt, descriptor, status)
-        // TODO receive approved here
-        // when
-        Log.d(TAG, "read game id")
-        val gameIdCharacteristic = gatt?.getService(GameService.HOST_UUID)?.getCharacteristic(GameService.GAME_ID_UUID)
-        gatt?.readCharacteristic(gameIdCharacteristic)
 
         // send characteristic
         //val rssiCharacteristic = gatt?.getService(GameService.SERVER_UUID)?.getCharacteristic(GameService.RSSI_UUID)
         //rssiCharacteristic?.value = ByteBuffer.allocate(4).putInt(_lastRssi).array()
         //gatt?.writeCharacteristic(rssiCharacteristic)
+    }
+
+    override fun onCharacteristicChanged(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic?) {
+        super.onCharacteristicChanged(gatt, characteristic)
+        // TODO receive approved here
+        when (characteristic?.uuid) {
+            GameService.JOIN_APPROVED_UUID -> {
+                Log.d(TAG, "callback")
+                val approved = ByteBuffer.wrap(characteristic.value).int
+                if (approved == 1) {
+                    Log.d(TAG, "approved, read game id")
+                    val gameIdCharacteristic = gatt?.getService(GameService.HOST_UUID)?.getCharacteristic(GameService.GAME_ID_UUID)
+                    gatt?.readCharacteristic(gameIdCharacteristic)
+                }
+                else {
+                    // declined
+                }
+            }
+        }
     }
 
 }
