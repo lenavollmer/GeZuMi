@@ -3,7 +3,6 @@ package de.htw.gezumi.gatt
 import android.bluetooth.*
 import android.util.Log
 import de.htw.gezumi.GameFragment
-import de.htw.gezumi.model.DeviceData
 import de.htw.gezumi.viewmodel.GameViewModel
 import java.nio.ByteBuffer
 import java.util.*
@@ -28,26 +27,6 @@ class GattClientCallback(private val _gameViewModel: GameViewModel, private val 
         gatt?.setCharacteristicNotification(gatt.getService(GameService.HOST_UUID)?.getCharacteristic(GameService.JOIN_APPROVED_UUID), true)
     }
 
-/*
-bitte noch nicht löschen :)
-    override fun onReadRemoteRssi(gatt: BluetoothGatt?, rssi: Int, status: Int) {
-        super.onReadRemoteRssi(gatt, rssi, status)
-        _gameViewModel.devices[0].addRssi(rssi) // TODO set for correct device
-        // TODO the raw rssi value is transferred here, but a processed value should
-        _lastRssi = rssi
-        // write device the rssi was measured for (in this test case it's just the host)
-        //val sendRequest = gatt?.getService(GameService.SERVER_UUID)?.getCharacteristic(GameService.RSSI_UUID)?.getDescriptor(GameService.RSSI_SEND_REQUEST_UUID)
-        //sendRequest?.value = "Device1".toByteArray(Charsets.UTF_8)
-        //gatt?.writeDescriptor(sendRequest)
-
-        val rssiCharacteristic = gatt?.getService(GameService.HOST_UUID)?.getCharacteristic(GameService.RSSI_UUID)
-        rssiCharacteristic?.value = DeviceData(gatt!!.device.address, rssi.toFloat()).toByteArray() //ByteBuffer.allocate(4).putInt(_lastRssi).array()
-        Log.d(TAG, "write " + rssiCharacteristic?.value?.size)
-        gatt.writeCharacteristic(rssiCharacteristic)
-    }
-    private var _lastRssi = 0;
-    */
-
     override fun onCharacteristicRead(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic?, status: Int) {
         super.onCharacteristicRead(gatt, characteristic, status)
         when (characteristic?.uuid) {
@@ -57,7 +36,6 @@ bitte noch nicht löschen :)
                 Log.d(TAG, "callback: characteristic read successfully, gameId: ${_gameViewModel.gameId}")
                 gameJoinCallback.onGameJoin()
                 Log.d(TAG, "subscribe for game events")
-                gatt?.setCharacteristicNotification(gatt.getService(GameService.HOST_UUID)?.getCharacteristic(GameService.GAME_EVENT_UUID), true)
                 val subscribeDescriptor = gatt?.getService(GameService.HOST_UUID)?.getCharacteristic(GameService.GAME_EVENT_UUID)?.getDescriptor(GameService.CLIENT_CONFIG)
                 subscribeDescriptor?.value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
                 gatt?.writeDescriptor(subscribeDescriptor)
@@ -67,11 +45,20 @@ bitte noch nicht löschen :)
 
     override fun onDescriptorWrite(gatt: BluetoothGatt?, descriptor: BluetoothGattDescriptor?, status: Int) {
         super.onDescriptorWrite(gatt, descriptor, status)
-        Log.d(TAG, "onDescriptorWrite")
-        // send characteristic
-        //val rssiCharacteristic = gatt?.getService(GameService.SERVER_UUID)?.getCharacteristic(GameService.RSSI_UUID)
-        //rssiCharacteristic?.value = ByteBuffer.allocate(4).putInt(_lastRssi).array()
-        //gatt?.writeCharacteristic(rssiCharacteristic)
+        when (descriptor?.uuid) {
+            GameService.CLIENT_CONFIG -> {
+                if (status == BluetoothGatt.GATT_SUCCESS) {
+                    if (Arrays.equals(descriptor?.value, BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE)) {
+                        Log.d(TAG, "game event subscribe successful")
+                        gatt?.setCharacteristicNotification(gatt.getService(GameService.HOST_UUID)?.getCharacteristic(GameService.GAME_EVENT_UUID), true)
+                    }
+                    else if (Arrays.equals(descriptor?.value, BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE)) {
+                        Log.d(TAG, "game event unsubscribe successful")
+                        gatt?.setCharacteristicNotification(gatt.getService(GameService.HOST_UUID)?.getCharacteristic(GameService.GAME_EVENT_UUID), false)
+                    }
+                }
+            }
+        }
     }
 
     override fun onCharacteristicChanged(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic?) {

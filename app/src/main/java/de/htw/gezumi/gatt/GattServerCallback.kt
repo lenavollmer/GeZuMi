@@ -91,12 +91,12 @@ class GattServerCallback(private val _subscribedDevices: MutableSet<BluetoothDev
                         device,
                         requestId,
                         BluetoothGatt.GATT_SUCCESS,
-                        0, null
+                        0, BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
                     )
                 }
             }
             else -> {
-                Log.w(TAG, "Unknown descriptor write request")
+                Log.d(TAG, "Unknown descriptor write request")
                 if (responseNeeded) {
                     _gattServer.bluetoothGattServer?.sendResponse(
                         device,
@@ -108,35 +108,4 @@ class GattServerCallback(private val _subscribedDevices: MutableSet<BluetoothDev
             }
         }
     }
-
-    override fun onDescriptorReadRequest(
-        device: BluetoothDevice, requestId: Int, offset: Int,
-        descriptor: BluetoothGattDescriptor
-    ) {
-        if (GameService.CLIENT_CONFIG == descriptor.uuid) {
-            Log.d(TAG, "Config descriptor read")
-            val returnValue = if (_subscribedDevices.contains(device)) {
-                BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
-            } else {
-                BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE
-            }
-            _gattServer.bluetoothGattServer?.sendResponse(
-                device,
-                requestId,
-                BluetoothGatt.GATT_SUCCESS,
-                0,
-                returnValue
-            )
-        } else {
-            Log.w(TAG, "Unknown descriptor read request")
-            _gattServer.bluetoothGattServer?.sendResponse(
-                device,
-                requestId,
-                BluetoothGatt.GATT_FAILURE,
-                0, null
-            )
-        }
-    }
-
-
 }
