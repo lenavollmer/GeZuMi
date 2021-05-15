@@ -2,6 +2,7 @@ package de.htw.gezumi.viewmodel
 
 import android.app.Application
 import android.bluetooth.BluetoothDevice
+import android.bluetooth.BluetoothGattServerCallback
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
@@ -12,7 +13,10 @@ import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
 import de.htw.gezumi.controller.BluetoothController
+import de.htw.gezumi.gatt.GameService
+import de.htw.gezumi.gatt.GattServerCallback
 import de.htw.gezumi.model.Device
+import java.util.*
 
 private const val TAG = "GameViewModel"
 const val RSSI_READ_INTERVAL = 500
@@ -37,22 +41,43 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             val gameUuid = ParcelUuid.fromString(gameId)
             // waiting for game start is not necessary
             Log.d(TAG, "start advertising on game id")
-            bluetoothController.startAdvertising(gameUuid)
+            if (::host.isInitialized) bluetoothController.startAdvertising(gameUuid)
+            //val bluetoothGattServer = bluetoothController.openGattServer(object: BluetoothGattServerCallback(){})
+            //bluetoothGattServer.addService(GameService.createBroadcastService(UUID.fromString(gameId)))
             Log.d(TAG, "start scanning for players on game id")
-            bluetoothController.scanForDevices(gameScanCallback, gameUuid)
+            //if (::host.isInitialized) bluetoothController.stopScan(ParcelUuid(GameService.HOST_UUID)) // stop if not host
+            //else bluetoothController.stopAdvertising() // stop if host
+            bluetoothController.startScan(gameScanCallback, gameUuid)
         }
 
         override fun onGameLeave() {
             Log.d(TAG, "on game leave")
-            // TODO
-            Handler(Looper.getMainLooper()).post{}
+            // TODO host leaves game
+            bluetoothController.stopAdvertising()
+            bluetoothController.stopScan(gameScanCallback, ParcelUuid.fromString(gameId))
+            // Handler(Looper.getMainLooper()).post{}
         }
+    }
+
+    fun onGameJoin() {
+        Log.d(TAG, "on game join")
+        Handler(Looper.getMainLooper()).post{ Toast.makeText(getApplication<Application>().applicationContext, "Joined", Toast.LENGTH_LONG).show()}
+        val gameUuid = ParcelUuid.fromString(gameId)
+        // waiting for game start is not necessary
+        Log.d(TAG, "start advertising on game id")
+        if (::host.isInitialized) bluetoothController.startAdvertising(gameUuid)
+        //val bluetoothGattServer = bluetoothController.openGattServer(object: BluetoothGattServerCallback(){})
+        //bluetoothGattServer.addService(GameService.createBroadcastService(UUID.fromString(gameId)))
+        Log.d(TAG, "start scanning for players on game id")
+        if (::host.isInitialized) bluetoothController.stopScan(hostScanCallback, ParcelUuid(GameService.HOST_UUID)) // stop if not host
+        //else bluetoothController.stopAdvertising() // TODO stop if host
+        bluetoothController.startScan(gameScanCallback, gameUuid)
     }
 
     val gameScanCallback: ScanCallback = object : ScanCallback() {
         override fun onScanResult(callbackType: Int, result: ScanResult) {
             super.onScanResult(callbackType, result)
-            Log.d(TAG, "gameScanCallback")
+            Log.d(TAG, "gameScanCallback: $callbackType, ${result.device.address}")
             when (callbackType) {
                 ScanSettings.CALLBACK_TYPE_ALL_MATCHES -> {
                     onGameScanResult(result.device, result.rssi)
@@ -64,6 +89,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
     }
+
+    lateinit var hostScanCallback: ScanCallback;
 
     init {
         bluetoothController.setContext(application.applicationContext)
@@ -95,6 +122,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         if (millisPassed > RSSI_READ_INTERVAL) {
             Log.d(TAG, "game scan: read rssi of ${device.address}, last read: $millisPassed")
             device.addRssi(rssi)
+            _devices[device] = System.currentTimeMillis()
         }
     }
 

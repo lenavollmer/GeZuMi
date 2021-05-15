@@ -1,10 +1,7 @@
 package de.htw.gezumi.gatt
 
 import android.bluetooth.*
-import android.content.BroadcastReceiver
 import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
 import android.os.ParcelUuid
 import android.util.Log
 import de.htw.gezumi.HostFragment
@@ -27,10 +24,10 @@ class GattServer(private val _context: Context, private val _bluetoothController
     }
 
     fun startServer(gameService: BluetoothGattService) {
-        _bluetoothController.startAdvertising(ParcelUuid(GameService.HOST_UUID))
+        //_bluetoothController.startAdvertising(ParcelUuid(GameService.HOST_UUID))
 
         Log.d(TAG, "start gatt server")
-        bluetoothGattServer = _bluetoothManager.openGattServer(_context, GattServerCallback(_subscribedDevices, this, _connectCallback))
+        bluetoothGattServer = _bluetoothController.openGattServer(GattServerCallback(_subscribedDevices, this, _connectCallback))
 
         bluetoothGattServer?.addService(gameService)
             ?: Log.d(TAG, "Unable to create GATT server")

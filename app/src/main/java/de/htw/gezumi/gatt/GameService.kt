@@ -3,6 +3,7 @@ package de.htw.gezumi.gatt
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
 import android.bluetooth.BluetoothGattService
+import android.os.ParcelUuid
 import android.util.Log
 import java.util.*
 
@@ -23,9 +24,9 @@ object GameService {
     const val GAME_ID_PREFIX = "00002672-0000-1000-"
     val gameIdPostfix = getRandomUuidString()
 
-    fun createGameService(uuid: UUID): BluetoothGattService {
+    fun createHostService(): BluetoothGattService {
         val service = BluetoothGattService(
-            uuid,
+            HOST_UUID,
             BluetoothGattService.SERVICE_TYPE_PRIMARY)
         val gameIdCharacteristic = BluetoothGattCharacteristic(GAME_ID_UUID, BluetoothGattCharacteristic.PROPERTY_READ, BluetoothGattCharacteristic.PERMISSION_READ)
 
@@ -41,6 +42,10 @@ object GameService {
         service.addCharacteristic(joinApproved)
         service.addCharacteristic(gameEvent)
         return service
+    }
+
+    fun createBroadcastService(gameUuid: UUID): BluetoothGattService {
+        return BluetoothGattService(gameUuid, BluetoothGattService.SERVICE_TYPE_SECONDARY)
     }
 
     private fun getRandomUuidString() : String {

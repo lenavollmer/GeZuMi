@@ -16,11 +16,8 @@ import androidx.core.app.ActivityCompat
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.viewModels
-import androidx.lifecycle.AndroidViewModel
 import androidx.recyclerview.widget.DividerItemDecoration
 import de.htw.gezumi.adapter.HostDeviceListAdapter
-import de.htw.gezumi.controller.BluetoothController
 import de.htw.gezumi.databinding.FragmentClientBinding
 import de.htw.gezumi.gatt.GameService
 import de.htw.gezumi.viewmodel.GameViewModel
@@ -36,19 +33,22 @@ class ClientFragment : Fragment() {
     private val _availableHostDevices: ArrayList<BluetoothDevice> = ArrayList()
     private val _hostDeviceListAdapter: HostDeviceListAdapter = HostDeviceListAdapter(_availableHostDevices)
 
-    private val leScanCallback: ScanCallback = object : ScanCallback() {
-        override fun onScanResult(callbackType: Int, result: ScanResult) {
-            super.onScanResult(callbackType, result)
-            Log.d(TAG, "BLE action type: $callbackType")
-            when (callbackType) {
-                ScanSettings.CALLBACK_TYPE_ALL_MATCHES -> // first match does not have a name
-                    if (!_availableHostDevices.contains(result.device)) _availableHostDevices.add(result.device)
-                ScanSettings.CALLBACK_TYPE_MATCH_LOST -> {
-                    _availableHostDevices.remove(result.device) // todo doesn't work with adapted scan settings
-                    Log.d(TAG, "lost " + result.device.name)
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        _gameViewModel.hostScanCallback = object : ScanCallback() {
+            override fun onScanResult(callbackType: Int, result: ScanResult) {
+                super.onScanResult(callbackType, result)
+                Log.d(TAG, "host scan callback")
+                when (callbackType) {
+                    ScanSettings.CALLBACK_TYPE_ALL_MATCHES -> // first match does not have a name
+                        if (!_availableHostDevices.contains(result.device)) _availableHostDevices.add(result.device)
+                    ScanSettings.CALLBACK_TYPE_MATCH_LOST -> {
+                        _availableHostDevices.remove(result.device) // todo doesn't work with adapted scan settings
+                        Log.d(TAG, "lost " + result.device.name)
+                    }
                 }
+                updateBtDeviceListAdapter()
             }
-            updateBtDeviceListAdapter()
         }
     }
 
@@ -66,7 +66,7 @@ class ClientFragment : Fragment() {
             addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
         }
         _binding.button.setOnClickListener {
-            _gameViewModel.bluetoothController.scanForDevices(leScanCallback, ParcelUuid(GameService.HOST_UUID))
+            _gameViewModel.bluetoothController.startScan(_gameViewModel.hostScanCallback, ParcelUuid(GameService.HOST_UUID))
         }
 
         checkPermission()

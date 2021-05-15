@@ -33,7 +33,7 @@ class GattClientCallback(private val _gameViewModel: GameViewModel) : BluetoothG
                 val gameIdPostfix = characteristic.value.toString(Charsets.UTF_8)
                 _gameViewModel.gameId = GameService.GAME_ID_PREFIX + gameIdPostfix
                 Log.d(TAG, "callback: characteristic read successfully, gameId: ${_gameViewModel.gameId}")
-                _gameViewModel.gameJoinCallback.onGameJoin()
+                _gameViewModel.onGameJoin()
                 Log.d(TAG, "subscribe for game events")
                 val subscribeDescriptor = gatt?.getService(GameService.HOST_UUID)?.getCharacteristic(GameService.GAME_EVENT_UUID)?.getDescriptor(GameService.CLIENT_CONFIG)
                 subscribeDescriptor?.value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE

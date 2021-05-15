@@ -1,17 +1,14 @@
 package de.htw.gezumi.controller
 
 import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothDevice
+import android.bluetooth.BluetoothGattServer
+import android.bluetooth.BluetoothGattServerCallback
 import android.bluetooth.BluetoothManager
 import android.bluetooth.le.*
 import android.content.Context
-import android.os.Handler
-import android.os.Looper
 import android.os.ParcelUuid
 import android.util.Log
-import de.htw.gezumi.gatt.GameService
 import java.util.*
-import kotlin.collections.ArrayList
 
 private const val SCAN_PERIOD = 10000L
 private const val TAG = "BTController"
@@ -23,18 +20,23 @@ class BluetoothController {
     private val _bluetoothAdapter: BluetoothAdapter = BluetoothAdapter.getDefaultAdapter() // TODO clean up nullables and do proper bt support checking
     private val _bluetoothLeScanner: BluetoothLeScanner? = _bluetoothAdapter.bluetoothLeScanner
 
-    private var scanning = false
+    private var _scanFilters = mutableListOf<ScanFilter>()
+    private val _scanSettings = ScanSettings.Builder().setCallbackType(ScanSettings.CALLBACK_TYPE_ALL_MATCHES).build()
 
-    /**
-     * Callback to receive information about the advertisement process.
-     */
+    val _advertiseSettings = AdvertiseSettings.Builder()
+        .setAdvertiseMode(AdvertiseSettings.ADVERTISE_MODE_BALANCED)
+        .setConnectable(true)
+        .setTimeout(0)
+        .setTxPowerLevel(AdvertiseSettings.ADVERTISE_TX_POWER_MEDIUM)
+        .build()
+
     private val advertiseCallback = object : AdvertiseCallback() {
         override fun onStartSuccess(settingsInEffect: AdvertiseSettings) {
-            Log.i(TAG, "LE Advertise Started.")
+            Log.d(TAG, "ble advertise started")
         }
 
         override fun onStartFailure(errorCode: Int) {
-            Log.w(TAG, "LE Advertise Failed: $errorCode")
+            Log.d(TAG, "ble advertise failed: $errorCode")
         }
     }
 
@@ -42,50 +44,46 @@ class BluetoothController {
         checkBluetoothSupport()
     }
 
-    fun scanForDevices(leScanCallback: ScanCallback, serviceUUID: ParcelUuid) {
+    fun startScan(leScanCallback: ScanCallback, serviceUUID: ParcelUuid) {
         val filter = ScanFilter.Builder()
                 .setServiceUuid(serviceUUID)
                 .build()
-        val scanSettings = ScanSettings.Builder().setCallbackType(ScanSettings.CALLBACK_TYPE_ALL_MATCHES).build()
+        if (!_scanFilters.contains(filter)) _scanFilters.add(filter)
 
-        _bluetoothLeScanner?.let { scanner ->
-            if (!scanning) { // Stops scanning after a pre-defined scan period.
-                Handler(Looper.getMainLooper()).postDelayed({
-                    scanning = false
-                    scanner.stopScan(leScanCallback)
-                }, SCAN_PERIOD)
-                scanning = true
-                scanner.startScan(listOf(filter), scanSettings, leScanCallback)
-                Log.d(TAG, "scanning ble")
-            } else {
-                scanning = false
-                scanner.stopScan(leScanCallback)
-            }
-        }
+        Log.d(TAG, "start ble scanning")
+        _bluetoothLeScanner?.startScan(_scanFilters, _scanSettings, leScanCallback)
     }
 
-    fun startAdvertising(uuid: ParcelUuid) {
+    /**
+     * Stop scanning for the specified uuid.
+     * @param leScanCallback if another scan is still running, leScanCallback has to be passed again
+     */
+    fun stopScan(leScanCallback: ScanCallback, serviceUUID: ParcelUuid) {
+        val filter = ScanFilter.Builder()
+            .setServiceUuid(serviceUUID)
+            .build()
+        require(_scanFilters.contains(filter)) { "Filter not present in scan filters" }
+        _scanFilters.remove(filter)
+        _bluetoothLeScanner?.stopScan(leScanCallback)
+        if (_scanFilters.isNotEmpty())
+            _bluetoothLeScanner?.startScan(_scanFilters, _scanSettings, leScanCallback)
+    }
+
+    fun startAdvertising(uuid: ParcelUuid, gameId: ParcelUuid = ParcelUuid(UUID.fromString("asd"))) {
         require(::_bluetoothManager.isInitialized) {"Must have context set"}
-        val bluetoothLeAdvertiser: BluetoothLeAdvertiser? =
-            _bluetoothManager.adapter.bluetoothLeAdvertiser
+        val bluetoothLeAdvertiser: BluetoothLeAdvertiser? = _bluetoothManager.adapter.bluetoothLeAdvertiser
 
         bluetoothLeAdvertiser?.let {
-            val settings = AdvertiseSettings.Builder()
-                .setAdvertiseMode(AdvertiseSettings.ADVERTISE_MODE_BALANCED)
-                .setConnectable(true)
-                .setTimeout(0)
-                .setTxPowerLevel(AdvertiseSettings.ADVERTISE_TX_POWER_MEDIUM)
-                .build()
 
             val data = AdvertiseData.Builder()
                 .setIncludeDeviceName(true)
-                .setIncludeTxPowerLevel(false)
+                .setIncludeTxPowerLevel(false) // TODO include??
                 .addServiceUuid(uuid)
+                .addServiceUuid(gameId)
                 .build()
 
-            it.startAdvertising(settings, data, advertiseCallback)
-        } ?: Log.w(TAG, "Failed to create advertiser")
-        Log.d(TAG, "advertise started")
+            it.startAdvertising(_advertiseSettings, data, advertiseCallback)
+        } ?: Log.d(TAG, "advertise failed")
     }
 
     /**
@@ -93,9 +91,12 @@ class BluetoothController {
      */
     fun stopAdvertising() {
         Log.d(TAG, "stop advertising")
-        val bluetoothLeAdvertiser: BluetoothLeAdvertiser? =
-            _bluetoothManager.adapter.bluetoothLeAdvertiser
-        bluetoothLeAdvertiser?.stopAdvertising(advertiseCallback) ?: Log.w(TAG, "Failed to create advertiser")
+        val bluetoothLeAdvertiser: BluetoothLeAdvertiser? = _bluetoothManager.adapter.bluetoothLeAdvertiser
+        bluetoothLeAdvertiser?.stopAdvertising(advertiseCallback) ?: Log.d(TAG, "stop advertise failed")
+    }
+
+    fun openGattServer(gattServerCallback: BluetoothGattServerCallback): BluetoothGattServer {
+        return _bluetoothManager.openGattServer(_context, gattServerCallback)
     }
 
     fun enableBluetooth() {

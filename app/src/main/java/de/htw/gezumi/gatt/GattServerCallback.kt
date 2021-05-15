@@ -12,10 +12,10 @@ class GattServerCallback(private val _subscribedDevices: MutableSet<BluetoothDev
 
     override fun onConnectionStateChange(device: BluetoothDevice, status: Int, newState: Int) {
         if (newState == BluetoothProfile.STATE_CONNECTED) {
-            Log.d(TAG, "BluetoothDevice CONNECTED: $device")
+            Log.d(TAG, "bluetoothDevice CONNECTED: $device")
             _connectCallback.onGattConnect(device)
         } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-            Log.d(TAG, "BluetoothDevice DISCONNECTED: $device")
+            Log.d(TAG, "bluetoothDevice DISCONNECTED: $device")
             //Remove device from any active subscriptions
             _connectCallback.onGattDisconnect(device)
             _subscribedDevices.remove(device)
@@ -80,10 +80,10 @@ class GattServerCallback(private val _subscribedDevices: MutableSet<BluetoothDev
         when (descriptor.uuid) {
             GameService.CLIENT_CONFIG -> {
                 if (Arrays.equals(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE, value)) {
-                    Log.d(TAG, "Subscribe device to notifications: $device")
+                    Log.d(TAG, "subscribe device to notifications: $device")
                     _subscribedDevices.add(device)
                 } else if (Arrays.equals(BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE, value)) {
-                    Log.d(TAG, "Unsubscribe device from notifications: $device")
+                    Log.d(TAG, "unsubscribe device from notifications: $device")
                     _subscribedDevices.remove(device)
                 }
                 if (responseNeeded) {
@@ -107,5 +107,11 @@ class GattServerCallback(private val _subscribedDevices: MutableSet<BluetoothDev
                 }
             }
         }
+    }
+
+    override fun onServiceAdded(status: Int, service: BluetoothGattService?) {
+        super.onServiceAdded(status, service)
+        Log.d(TAG, "SERVICE ADDED")
+        HostFragment.test()
     }
 }

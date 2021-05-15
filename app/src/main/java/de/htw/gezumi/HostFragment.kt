@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothDevice
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.os.ParcelUuid
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -16,11 +17,12 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import de.htw.gezumi.adapter.ConnectedPlayerDeviceAdapter
 import de.htw.gezumi.adapter.PlayerDeviceListAdapter
-import de.htw.gezumi.controller.BluetoothController
 import de.htw.gezumi.databinding.FragmentHostBinding
 import de.htw.gezumi.gatt.GameService
 import de.htw.gezumi.gatt.GattServer
 import de.htw.gezumi.viewmodel.GameViewModel
+import java.util.*
+import kotlin.collections.ArrayList
 
 private const val TAG = "HostFragment"
 
@@ -73,12 +75,37 @@ class HostFragment : Fragment() {
         arguments?.let {
 
         }
+        _gameViewModel.gameId = GameService.GAME_ID_PREFIX + GameService.gameIdPostfix
+
         Log.d(TAG, "start gatt server and game service")
         _gattServer = GattServer(requireContext(), _gameViewModel.bluetoothController, connectCallback)
-        _gattServer.startServer(GameService.createGameService(GameService.HOST_UUID))
+        _gattServer.startServer(GameService.createHostService())
         // join own game
-        _gameViewModel.gameId = GameService.GAME_ID_PREFIX + GameService.gameIdPostfix
-        _gameViewModel.gameJoinCallback.onGameJoin()
+        /*_gameViewModel.gameId = GameService.GAME_ID_PREFIX + GameService.gameIdPostfix
+        _gameViewModel.onGameJoin()
+        _gattServer.bluetoothGattServer?.addService(GameService.createBroadcastService(UUID.fromString(_gameViewModel.gameId)))
+        _gameViewModel.bluetoothController.startAdvertising(ParcelUuid(GameService.HOST_UUID), ParcelUuid(UUID.fromString(_gameViewModel.gameId)))*/
+    }
+
+    companion object {
+        lateinit var instance: HostFragment
+        var called = false
+        fun test() {
+            instance.let {
+                if (!called) {
+                    it._gattServer.bluetoothGattServer?.addService(GameService.createBroadcastService(UUID.fromString(it._gameViewModel.gameId)))
+                    called = true
+                }
+                else {
+                    it._gameViewModel.onGameJoin()
+                    it._gameViewModel.bluetoothController.startAdvertising(ParcelUuid(GameService.HOST_UUID), ParcelUuid(UUID.fromString(it._gameViewModel.gameId)))
+                }
+            }
+        }
+    }
+
+    init {
+        instance = this
     }
 
     override fun onCreateView(
