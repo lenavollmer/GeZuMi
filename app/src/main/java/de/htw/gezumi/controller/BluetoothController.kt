@@ -64,10 +64,6 @@ class BluetoothController {
         }
     }
 
-    /**
-     * Begin advertising over Bluetooth that this device is connectable
-     * and supports the Current Time Service.
-     */
     fun startAdvertising(uuid: ParcelUuid) {
         require(::_bluetoothManager.isInitialized) {"Must have context set"}
         val bluetoothLeAdvertiser: BluetoothLeAdvertiser? =

@@ -15,19 +15,24 @@ import android.view.ViewGroup
 import androidx.core.app.ActivityCompat
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.AndroidViewModel
 import androidx.recyclerview.widget.DividerItemDecoration
 import de.htw.gezumi.adapter.HostDeviceListAdapter
 import de.htw.gezumi.controller.BluetoothController
 import de.htw.gezumi.databinding.FragmentClientBinding
 import de.htw.gezumi.gatt.GameService
+import de.htw.gezumi.viewmodel.GameViewModel
 
 private const val TAG = "ClientFragment"
 
 class ClientFragment : Fragment() {
 
+    private val _gameViewModel: GameViewModel by activityViewModels()
+
     private lateinit var _binding: FragmentClientBinding
 
-    private val _bluetoothController: BluetoothController = BluetoothController()
     private val _availableHostDevices: ArrayList<BluetoothDevice> = ArrayList()
     private val _hostDeviceListAdapter: HostDeviceListAdapter = HostDeviceListAdapter(_availableHostDevices)
 
@@ -47,11 +52,6 @@ class ClientFragment : Fragment() {
         }
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        _bluetoothController.setContext(requireContext())
-    }
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = DataBindingUtil.inflate(inflater, R.layout.fragment_client, container, false)
         return _binding.root
@@ -66,7 +66,7 @@ class ClientFragment : Fragment() {
             addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
         }
         _binding.button.setOnClickListener {
-            _bluetoothController.scanForDevices(leScanCallback, ParcelUuid(GameService.HOST_UUID))
+            _gameViewModel.bluetoothController.scanForDevices(leScanCallback, ParcelUuid(GameService.HOST_UUID))
         }
 
         checkPermission()

@@ -1,9 +1,6 @@
 package de.htw.gezumi.gatt
 
-import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothDevice
-import android.bluetooth.BluetoothGattServer
-import android.bluetooth.BluetoothManager
+import android.bluetooth.*
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -23,46 +20,20 @@ class GattServer(private val _context: Context, private val _bluetoothController
 
     private val _subscribedDevices = mutableSetOf<BluetoothDevice>()
 
-    /**
-     * Listens for Bluetooth adapter events to enable/disable
-     * advertising and server functionality.
-     */
-    private val bluetoothReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context, intent: Intent) {
-            when (intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.STATE_OFF)) {
-                BluetoothAdapter.STATE_ON -> {
-                    startServer()
-                }
-                BluetoothAdapter.STATE_OFF -> {
-                    stopServer()
-                }
-            }
-        }
-    }
 
     init {
-        // Register for system Bluetooth events
-        val filter = IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED)
-        _context.registerReceiver(bluetoothReceiver, filter)
-        if (!_bluetoothController.isBluetoothEnabled()) {
-            Log.d(TAG, "Bluetooth is currently disabled...enabling")
-            _bluetoothController.enableBluetooth()
-        }
+        if (!_bluetoothController.isBluetoothEnabled())
+            Log.d(TAG, "Bluetooth is currently disabled")
     }
 
-
-    /**
-     * Initialize the GATT server instance with the services/characteristics
-     * from the Time Profile.
-     */
-    fun startServer() {
+    fun startServer(gameService: BluetoothGattService) {
         _bluetoothController.startAdvertising(ParcelUuid(GameService.HOST_UUID))
 
         Log.d(TAG, "start gatt server")
         bluetoothGattServer = _bluetoothManager.openGattServer(_context, GattServerCallback(_subscribedDevices, this, _connectCallback))
 
-        bluetoothGattServer?.addService(GameService.createGameService(GameService.HOST_UUID))
-            ?: Log.w(TAG, "Unable to create GATT server")
+        bluetoothGattServer?.addService(gameService)
+            ?: Log.d(TAG, "Unable to create GATT server")
     }
 
     /**
@@ -74,31 +45,10 @@ class GattServer(private val _context: Context, private val _bluetoothController
         bluetoothGattServer?.close()
     }
 
-    /**
-     * Send a time service notification to any devices that are subscribed
-     * to the characteristic.
-     */
-    private fun notifyRegisteredDevices(timestamp: Long, adjustReason: Byte) {
-        /*if (_registeredDevices.isEmpty()) {
-            Log.i(TAG, "No subscribers registered")
-            return
-        }
-
-        Log.i(TAG, "Sending update to ${_registeredDevices.size} subscribers")
-        for (device in _registeredDevices) {
-            val timeCharacteristic = bluetoothGattServer
-                ?.getService(GameService.SERVER_UUID)
-                ?.getCharacteristic(GameService.GAME_ID)
-            timeCharacteristic?.value = someValue
-            bluetoothGattServer?.notifyCharacteristicChanged(device, timeCharacteristic, false)
-        }*/
-    }
-
     fun stop() {
         if (_bluetoothManager.adapter.isEnabled) {
             stopServer()
         }
-        _context.unregisterReceiver(bluetoothReceiver)
     }
 
     fun notifyJoinApproved(device: BluetoothDevice, approved: Boolean) {
@@ -110,6 +60,11 @@ class GattServer(private val _context: Context, private val _bluetoothController
 
     fun notifyGameStart() {
         Log.d(TAG, "notify game start")
+        if (_subscribedDevices.isEmpty()) {
+            Log.i(TAG, "No subscribers registered")
+            return
+        }
+
         val gameStartCharacteristic = bluetoothGattServer?.getService(GameService.HOST_UUID)?.getCharacteristic(GameService.GAME_EVENT_UUID)
         gameStartCharacteristic?.value = ByteBuffer.allocate(4).putInt(GameService.GAME_START_EVENT).array()
         for (device in _subscribedDevices) {

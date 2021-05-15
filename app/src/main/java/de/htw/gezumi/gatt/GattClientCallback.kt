@@ -2,14 +2,13 @@ package de.htw.gezumi.gatt
 
 import android.bluetooth.*
 import android.util.Log
-import de.htw.gezumi.GameFragment
 import de.htw.gezumi.viewmodel.GameViewModel
 import java.nio.ByteBuffer
 import java.util.*
 
 private const val TAG = "ClientGattCallback"
 
-class GattClientCallback(private val _gameViewModel: GameViewModel, private val gameJoinCallback: GameFragment.GameJoinCallback) : BluetoothGattCallback() {
+class GattClientCallback(private val _gameViewModel: GameViewModel) : BluetoothGattCallback() {
 
     override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
         if (newState == BluetoothProfile.STATE_CONNECTED) {
@@ -31,10 +30,10 @@ class GattClientCallback(private val _gameViewModel: GameViewModel, private val 
         super.onCharacteristicRead(gatt, characteristic, status)
         when (characteristic?.uuid) {
             GameService.GAME_ID_UUID -> {
-                val gameId = characteristic.value.toString(Charsets.UTF_8)
-                _gameViewModel.gameId = GameService.GAME_ID_PREFIX + gameId
+                val gameIdPostfix = characteristic.value.toString(Charsets.UTF_8)
+                _gameViewModel.gameId = GameService.GAME_ID_PREFIX + gameIdPostfix
                 Log.d(TAG, "callback: characteristic read successfully, gameId: ${_gameViewModel.gameId}")
-                gameJoinCallback.onGameJoin()
+                _gameViewModel.gameJoinCallback.onGameJoin()
                 Log.d(TAG, "subscribe for game events")
                 val subscribeDescriptor = gatt?.getService(GameService.HOST_UUID)?.getCharacteristic(GameService.GAME_EVENT_UUID)?.getDescriptor(GameService.CLIENT_CONFIG)
                 subscribeDescriptor?.value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE

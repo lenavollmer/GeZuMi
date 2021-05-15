@@ -21,7 +21,7 @@ object GameService {
     val CLIENT_CONFIG: UUID = UUID.fromString("00002672-0000-1000-8000-00805f9b34fb")
 
     const val GAME_ID_PREFIX = "00002672-0000-1000-"
-    val gameId = getRandomUuidString()
+    val gameIdPostfix = getRandomUuidString()
 
     fun createGameService(uuid: UUID): BluetoothGattService {
         val service = BluetoothGattService(
