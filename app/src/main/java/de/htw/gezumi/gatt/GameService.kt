@@ -21,7 +21,7 @@ object GameService {
     val GAME_EVENT_UUID: UUID = UUID.fromString("00002672-0000-1000-8000-00805f9b34ab")
     val CLIENT_CONFIG: UUID = UUID.fromString("00002672-0000-1000-8000-00805f9b34fb")
 
-    const val GAME_ID_PREFIX = "00002672-0000-1000-"
+    const val GAME_ID_PREFIX = "00002672-0000-1000-8000-00805f9b"
     val gameIdPostfix = getRandomUuidString()
 
     fun createHostService(): BluetoothGattService {
@@ -44,14 +44,10 @@ object GameService {
         return service
     }
 
-    fun createBroadcastService(gameUuid: UUID): BluetoothGattService {
-        return BluetoothGattService(gameUuid, BluetoothGattService.SERVICE_TYPE_SECONDARY)
-    }
-
     private fun getRandomUuidString() : String {
-        Log.d("GameService", "generate 16 byte game id")
-        return getRandomString( 4) + "-" +
-                getRandomString( 12)
+        Log.d("GameService", "generate 4 byte game id")
+        return getRandomString( 4)/* + "-" +
+                getRandomString( 12)*/
     }
 
     private fun getRandomString(length: Int): String {

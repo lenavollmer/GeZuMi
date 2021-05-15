@@ -85,6 +85,6 @@ class GameFragment : Fragment() {
         super.onStop()
         // stop scan and advertise
         // TODO on resume has to start it again (but not twice!) -> implement pause/disconnect functionality
-        _gameViewModel.gameJoinCallback.onGameLeave()
+        _gameViewModel.onGameLeave()
     }
 }

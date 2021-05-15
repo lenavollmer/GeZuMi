@@ -80,32 +80,9 @@ class HostFragment : Fragment() {
         Log.d(TAG, "start gatt server and game service")
         _gattServer = GattServer(requireContext(), _gameViewModel.bluetoothController, connectCallback)
         _gattServer.startServer(GameService.createHostService())
-        // join own game
-        /*_gameViewModel.gameId = GameService.GAME_ID_PREFIX + GameService.gameIdPostfix
-        _gameViewModel.onGameJoin()
-        _gattServer.bluetoothGattServer?.addService(GameService.createBroadcastService(UUID.fromString(_gameViewModel.gameId)))
-        _gameViewModel.bluetoothController.startAdvertising(ParcelUuid(GameService.HOST_UUID), ParcelUuid(UUID.fromString(_gameViewModel.gameId)))*/
-    }
-
-    companion object {
-        lateinit var instance: HostFragment
-        var called = false
-        fun test() {
-            instance.let {
-                if (!called) {
-                    it._gattServer.bluetoothGattServer?.addService(GameService.createBroadcastService(UUID.fromString(it._gameViewModel.gameId)))
-                    called = true
-                }
-                else {
-                    it._gameViewModel.onGameJoin()
-                    it._gameViewModel.bluetoothController.startAdvertising(ParcelUuid(GameService.HOST_UUID), ParcelUuid(UUID.fromString(it._gameViewModel.gameId)))
-                }
-            }
-        }
-    }
-
-    init {
-        instance = this
+        _gameViewModel.bluetoothController.startAdvertising(ParcelUuid(GameService.HOST_UUID), GameService.gameIdPostfix.toByteArray(Charsets.UTF_8))
+        //else bluetoothController.stopAdvertising() // TODO stop host advertise when game starts?
+        _gameViewModel.bluetoothController.startScan(_gameViewModel.gameScanCallback, ParcelUuid.fromString(_gameViewModel.gameId))
     }
 
     override fun onCreateView(

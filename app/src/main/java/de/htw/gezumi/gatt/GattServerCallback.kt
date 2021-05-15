@@ -108,10 +108,4 @@ class GattServerCallback(private val _subscribedDevices: MutableSet<BluetoothDev
             }
         }
     }
-
-    override fun onServiceAdded(status: Int, service: BluetoothGattService?) {
-        super.onServiceAdded(status, service)
-        Log.d(TAG, "SERVICE ADDED")
-        HostFragment.test()
-    }
 }

@@ -69,21 +69,19 @@ class BluetoothController {
             _bluetoothLeScanner?.startScan(_scanFilters, _scanSettings, leScanCallback)
     }
 
-    fun startAdvertising(uuid: ParcelUuid, gameId: ParcelUuid = ParcelUuid(UUID.fromString("asd"))) {
+    fun startAdvertising(uuid: ParcelUuid, data: ByteArray = ByteArray(0)) {
         require(::_bluetoothManager.isInitialized) {"Must have context set"}
         val bluetoothLeAdvertiser: BluetoothLeAdvertiser? = _bluetoothManager.adapter.bluetoothLeAdvertiser
+        val advertiseData = AdvertiseData.Builder()
+            .setIncludeDeviceName(false)
+            .setIncludeTxPowerLevel(true) // TODO include??
 
-        bluetoothLeAdvertiser?.let {
-
-            val data = AdvertiseData.Builder()
-                .setIncludeDeviceName(true)
-                .setIncludeTxPowerLevel(false) // TODO include??
-                .addServiceUuid(uuid)
-                .addServiceUuid(gameId)
-                .build()
-
-            it.startAdvertising(_advertiseSettings, data, advertiseCallback)
-        } ?: Log.d(TAG, "advertise failed")
+        if (data.isEmpty())
+            advertiseData.addServiceUuid(uuid)
+        else
+            advertiseData.addServiceData(uuid, data)
+        bluetoothLeAdvertiser?.startAdvertising(_advertiseSettings, advertiseData.build(), advertiseCallback)
+        ?: Log.d(TAG, "advertise failed")
     }
 
     /**

@@ -40,8 +40,11 @@ class ClientFragment : Fragment() {
                 super.onScanResult(callbackType, result)
                 Log.d(TAG, "host scan callback")
                 when (callbackType) {
-                    ScanSettings.CALLBACK_TYPE_ALL_MATCHES -> // first match does not have a name
+                    ScanSettings.CALLBACK_TYPE_ALL_MATCHES -> {// first match does not have a name
                         if (!_availableHostDevices.contains(result.device)) _availableHostDevices.add(result.device)
+                        // read host rssi if joined
+                        if (_gameViewModel.isJoined()) _gameViewModel.gameScanCallback.onScanResult(callbackType, result)
+                    }
                     ScanSettings.CALLBACK_TYPE_MATCH_LOST -> {
                         _availableHostDevices.remove(result.device) // todo doesn't work with adapted scan settings
                         Log.d(TAG, "lost " + result.device.name)
@@ -65,7 +68,7 @@ class ClientFragment : Fragment() {
             setHasFixedSize(true)
             addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
         }
-        _binding.button.setOnClickListener {
+        _binding.buttonScan.setOnClickListener {
             _gameViewModel.bluetoothController.startScan(_gameViewModel.hostScanCallback, ParcelUuid(GameService.HOST_UUID))
         }
 

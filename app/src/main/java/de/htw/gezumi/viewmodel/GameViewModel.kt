@@ -30,34 +30,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     lateinit var host: Device // is null for host themselves
     lateinit var gameId: String
 
-    interface GameJoinCallback {
-        fun onGameJoin()
-        fun onGameLeave()
-    }
-    val gameJoinCallback = object : GameJoinCallback {
-        override fun onGameJoin() {
-            Log.d(TAG, "on game join")
-            Handler(Looper.getMainLooper()).post{ Toast.makeText(application.applicationContext, "Joined", Toast.LENGTH_LONG).show()}
-            val gameUuid = ParcelUuid.fromString(gameId)
-            // waiting for game start is not necessary
-            Log.d(TAG, "start advertising on game id")
-            if (::host.isInitialized) bluetoothController.startAdvertising(gameUuid)
-            //val bluetoothGattServer = bluetoothController.openGattServer(object: BluetoothGattServerCallback(){})
-            //bluetoothGattServer.addService(GameService.createBroadcastService(UUID.fromString(gameId)))
-            Log.d(TAG, "start scanning for players on game id")
-            //if (::host.isInitialized) bluetoothController.stopScan(ParcelUuid(GameService.HOST_UUID)) // stop if not host
-            //else bluetoothController.stopAdvertising() // stop if host
-            bluetoothController.startScan(gameScanCallback, gameUuid)
-        }
-
-        override fun onGameLeave() {
-            Log.d(TAG, "on game leave")
-            // TODO host leaves game
-            bluetoothController.stopAdvertising()
-            bluetoothController.stopScan(gameScanCallback, ParcelUuid.fromString(gameId))
-            // Handler(Looper.getMainLooper()).post{}
-        }
-    }
+    fun isJoined(): Boolean = ::gameId.isInitialized
 
     fun onGameJoin() {
         Log.d(TAG, "on game join")
@@ -65,14 +38,20 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         val gameUuid = ParcelUuid.fromString(gameId)
         // waiting for game start is not necessary
         Log.d(TAG, "start advertising on game id")
-        if (::host.isInitialized) bluetoothController.startAdvertising(gameUuid)
-        //val bluetoothGattServer = bluetoothController.openGattServer(object: BluetoothGattServerCallback(){})
-        //bluetoothGattServer.addService(GameService.createBroadcastService(UUID.fromString(gameId)))
+        bluetoothController.startAdvertising(gameUuid)
         Log.d(TAG, "start scanning for players on game id")
-        if (::host.isInitialized) bluetoothController.stopScan(hostScanCallback, ParcelUuid(GameService.HOST_UUID)) // stop if not host
-        //else bluetoothController.stopAdvertising() // TODO stop if host
-        bluetoothController.startScan(gameScanCallback, gameUuid)
+        bluetoothController.stopScan(hostScanCallback, ParcelUuid(GameService.HOST_UUID))
     }
+
+    fun onGameLeave() {
+        Log.d(TAG, "on game leave")
+        // TODO host leaves game
+        bluetoothController.stopAdvertising()
+        bluetoothController.stopScan(gameScanCallback, ParcelUuid.fromString(gameId))
+        // Handler(Looper.getMainLooper()).post{}
+    }
+
+    private fun isHost(): Boolean = !::host.isInitialized
 
     val gameScanCallback: ScanCallback = object : ScanCallback() {
         override fun onScanResult(callbackType: Int, result: ScanResult) {
@@ -90,7 +69,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    lateinit var hostScanCallback: ScanCallback;
+    lateinit var hostScanCallback: ScanCallback
 
     init {
         bluetoothController.setContext(application.applicationContext)

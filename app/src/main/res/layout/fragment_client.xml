@@ -10,7 +10,7 @@
         <Button
                 android:text="@string/scan"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" android:id="@+id/button"
+                android:layout_height="wrap_content" android:id="@+id/button_scan"
                 app:layout_constraintTop_toTopOf="parent" app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent" android:layout_marginTop="16dp"/>
 
@@ -24,7 +24,7 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                 tools:listitem="@layout/item_bt_device" app:layout_constraintHorizontal_bias="0.0"
-                app:layout_constraintVertical_bias="1.0" app:layout_constraintTop_toBottomOf="@+id/button"
+                app:layout_constraintVertical_bias="1.0" app:layout_constraintTop_toBottomOf="@+id/button_scan"
                 android:layout_marginTop="32dp"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
