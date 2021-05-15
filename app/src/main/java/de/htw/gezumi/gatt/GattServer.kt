@@ -21,8 +21,7 @@ class GattServer(private val _context: Context, private val _bluetoothController
     var bluetoothGattServer: BluetoothGattServer? = null
     private val _bluetoothManager = _context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
 
-    /* Collection of notification subscribers */
-    private val _registeredDevices = mutableSetOf<BluetoothDevice>()
+    private val _subscribedDevices = mutableSetOf<BluetoothDevice>()
 
     /**
      * Listens for Bluetooth adapter events to enable/disable
@@ -60,7 +59,7 @@ class GattServer(private val _context: Context, private val _bluetoothController
         _bluetoothController.startAdvertising(ParcelUuid(GameService.HOST_UUID))
 
         Log.d(TAG, "start gatt server")
-        bluetoothGattServer = _bluetoothManager.openGattServer(_context, GattServerCallback(_registeredDevices, this, _connectCallback))
+        bluetoothGattServer = _bluetoothManager.openGattServer(_context, GattServerCallback(_subscribedDevices, this, _connectCallback))
 
         bluetoothGattServer?.addService(GameService.createGameService(GameService.HOST_UUID))
             ?: Log.w(TAG, "Unable to create GATT server")
@@ -107,5 +106,14 @@ class GattServer(private val _context: Context, private val _bluetoothController
         joinApprovedCharacteristic?.value = ByteBuffer.allocate(4).putInt(if (approved) 1 else 0).array()
         Log.d(TAG, "write join approve: $approved")
         bluetoothGattServer?.notifyCharacteristicChanged(device, joinApprovedCharacteristic, false)
+    }
+
+    fun notifyGameStart() {
+        Log.d(TAG, "notify game start")
+        val gameStartCharacteristic = bluetoothGattServer?.getService(GameService.HOST_UUID)?.getCharacteristic(GameService.GAME_EVENT_UUID)
+        gameStartCharacteristic?.value = ByteBuffer.allocate(4).putInt(GameService.GAME_START_EVENT).array()
+        for (device in _subscribedDevices) {
+            bluetoothGattServer?.notifyCharacteristicChanged(device, gameStartCharacteristic, false)
+        }
     }
 }

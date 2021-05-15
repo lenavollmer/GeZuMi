@@ -34,20 +34,18 @@ class GameFragment : Fragment() {
     private lateinit var _binding: FragmentGameBinding
     private val _gameViewModel: GameViewModel by viewModels()
 
-    // bluetooth stuff also in game fragment or is it possible to manage all that in client and host
+    // bluetooth stuff also in game fragment or is it possible to manage all that in client and host?
     private val _bluetoothController: BluetoothController = BluetoothController()
     private lateinit var _gattClient: GattClient
     private lateinit var _hostDevice: BluetoothDevice
 
-    private val scanCallback: ScanCallback = object : ScanCallback() {
+    private val gameScanCallback: ScanCallback = object : ScanCallback() {
         override fun onScanResult(callbackType: Int, result: ScanResult) {
             super.onScanResult(callbackType, result)
             Log.d(TAG, "BLE action type: $callbackType")
             when (callbackType) {
                 ScanSettings.CALLBACK_TYPE_ALL_MATCHES -> {
-                    if (!_gameViewModel.contains(result.device.address)) _gameViewModel.addDevice(Device(result.device.address, -70, result.device))
-                    Log.d(TAG, "read rssi of ${result.device.address}")
-                    _gameViewModel.getDevice(result.device.address)?.addRssi(result.rssi)
+                    _gameViewModel.onGameScanResult(result.device, result.rssi)
                 }
                 ScanSettings.CALLBACK_TYPE_MATCH_LOST -> {
                     Log.d(TAG, "lost " + result.device.name)
@@ -67,15 +65,16 @@ class GameFragment : Fragment() {
             Log.d(TAG, "on game join")
             Handler(Looper.getMainLooper()).post{Toast.makeText(requireContext(), "Joined", Toast.LENGTH_LONG).show()}
             val gameUuid = ParcelUuid.fromString(_gameViewModel.gameId)
-            // advertise on game id
+            // waiting for game start is not necessary
+            Log.d(TAG, "start advertising on game id")
             _bluetoothController.startAdvertising(gameUuid)
-            // scan all device on game id
-            Log.d(TAG, "start scanning for players")
-            _bluetoothController.scanForDevices(scanCallback, gameUuid)
+            Log.d(TAG, "start scanning for players on game id")
+            _bluetoothController.scanForDevices(gameScanCallback, gameUuid)
         }
 
         override fun onGameLeave() {
             Log.d(TAG, "on game leave")
+            // TODO
             Handler(Looper.getMainLooper()).post{}
         }
     }

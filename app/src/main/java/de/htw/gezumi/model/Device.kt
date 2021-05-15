@@ -26,7 +26,7 @@ class Device(val address: String, private val _txPower: Int, val bluetoothDevice
     fun addRssi(rssi: Int) {
         val curDist = Calculations.calculateDistance(rssi.toDouble(), _txPower)
         _distance.postValue(_filter.applyFilter(curDist))
-        // TODO we don't know how often the device is discovered by the scan, so maybe it would be good to limit the execution of the distance calculation
+        // TODO we don't know how often the device is discovered by the scan, so it might be good to limit the execution of the distance calculation
     }
 
 }

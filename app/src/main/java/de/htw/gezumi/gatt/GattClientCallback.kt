@@ -56,13 +56,18 @@ bitte noch nicht löschen :)
                 _gameViewModel.gameId = GameService.GAME_ID_PREFIX + gameId
                 Log.d(TAG, "callback: characteristic read successfully, gameId: ${_gameViewModel.gameId}")
                 gameJoinCallback.onGameJoin()
+                Log.d(TAG, "subscribe for game events")
+                gatt?.setCharacteristicNotification(gatt.getService(GameService.HOST_UUID)?.getCharacteristic(GameService.GAME_EVENT_UUID), true)
+                val subscribeDescriptor = gatt?.getService(GameService.HOST_UUID)?.getCharacteristic(GameService.GAME_EVENT_UUID)?.getDescriptor(GameService.CLIENT_CONFIG)
+                subscribeDescriptor?.value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
+                gatt?.writeDescriptor(subscribeDescriptor)
             }
         }
     }
 
     override fun onDescriptorWrite(gatt: BluetoothGatt?, descriptor: BluetoothGattDescriptor?, status: Int) {
         super.onDescriptorWrite(gatt, descriptor, status)
-
+        Log.d(TAG, "onDescriptorWrite")
         // send characteristic
         //val rssiCharacteristic = gatt?.getService(GameService.SERVER_UUID)?.getCharacteristic(GameService.RSSI_UUID)
         //rssiCharacteristic?.value = ByteBuffer.allocate(4).putInt(_lastRssi).array()
