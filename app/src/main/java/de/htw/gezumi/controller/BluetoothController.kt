@@ -56,7 +56,7 @@ class BluetoothController {
                 }, SCAN_PERIOD)
                 scanning = true
                 scanner.startScan(listOf(filter), scanSettings, leScanCallback)
-                Log.d(TAG, "scanning as client")
+                Log.d(TAG, "scanning ble")
             } else {
                 scanning = false
                 scanner.stopScan(leScanCallback)

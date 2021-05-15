@@ -53,8 +53,8 @@ bitte noch nicht löschen :)
         when (characteristic?.uuid) {
             GameService.GAME_ID_UUID -> {
                 val gameId = characteristic.value.toString(Charsets.UTF_8)
-                Log.d(TAG, "callback: characteristic read successfully, gameId: $gameId")
-                _gameViewModel.gameId = gameId
+                _gameViewModel.gameId = GameService.GAME_ID_PREFIX + gameId
+                Log.d(TAG, "callback: characteristic read successfully, gameId: ${_gameViewModel.gameId}")
                 gameJoinCallback.onGameJoin()
             }
         }
@@ -78,7 +78,7 @@ bitte noch nicht löschen :)
                 if (approved == 1) {
                     Log.d(TAG, "approved, read game id")
                     val gameIdCharacteristic = gatt?.getService(GameService.HOST_UUID)?.getCharacteristic(GameService.GAME_ID_UUID)
-                    Log.d(TAG, "read request success: " + gatt?.readCharacteristic(gameIdCharacteristic))
+                    gatt?.readCharacteristic(gameIdCharacteristic)
                 }
                 else {
                     // declined

@@ -19,6 +19,7 @@ object GameService {
     /* Mandatory Client Characteristic Config Descriptor */
     val CLIENT_CONFIG: UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
 
+    val GAME_ID_PREFIX = "00002672-0000-1000-"
     val gameId = getRandomUuidString()
 
     fun createGameService(uuid: UUID): BluetoothGattService {
@@ -44,7 +45,7 @@ object GameService {
         return service
     }
 
-    fun getGameId(): ByteArray {
+    private fun getGameId(): ByteArray {
         //return getRandomString(GAME_ID_LENGTH).toByteArray(Charsets.UTF_8)
         ///return UUID.randomUUID().toString().toByteArray(Charsets.UTF_8) is invalid
         //val s = getRandomUuidString()
@@ -56,10 +57,7 @@ object GameService {
     }
 
     private fun getRandomUuidString() : String {
-        return getRandomString( 8) + "-" +
-                getRandomString( 4) + "-" +
-                getRandomString( 4) + "-" +
-                getRandomString( 4) + "-" +
+        return getRandomString( 4) + "-" +
                 getRandomString( 12)
     }
 
