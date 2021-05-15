@@ -12,15 +12,8 @@ class Calculations {
          * @return the distance in meters
          */
         fun calculateDistance(rssi: Double, txPower: Int): Double {
-            if (rssi == 0.0) {
-                return -1.0
-            }
-            val ratio = rssi * 1.0 / txPower
-            return if (ratio < 1.0) {
-                ratio.pow(10.0)
-            } else {
-                (0.89976) * ratio.pow(7.7095) + 0.111
-            }
+            val envFactor = 3.0
+            return 10.0.pow((txPower.toDouble() - rssi) / (10.0 * envFactor))
         }
     }
 }
