@@ -8,6 +8,8 @@ import android.bluetooth.le.*
 import android.content.Context
 import android.os.ParcelUuid
 import android.util.Log
+import de.htw.gezumi.gatt.GameService
+import java.nio.ByteBuffer
 import java.util.*
 
 private const val SCAN_PERIOD = 10000L
@@ -23,7 +25,7 @@ class BluetoothController {
     private var _scanFilters = mutableListOf<ScanFilter>()
     private val _scanSettings = ScanSettings.Builder().setCallbackType(ScanSettings.CALLBACK_TYPE_ALL_MATCHES).build()
 
-    val _advertiseSettings = AdvertiseSettings.Builder()
+    val _advertiseSettings: AdvertiseSettings = AdvertiseSettings.Builder()
         .setAdvertiseMode(AdvertiseSettings.ADVERTISE_MODE_BALANCED)
         .setConnectable(true)
         .setTimeout(0)
@@ -50,8 +52,20 @@ class BluetoothController {
                 .build()
         if (!_scanFilters.contains(filter)) _scanFilters.add(filter)
 
+        val serviceUuidMaskString = "FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFF0000"
+        val filterS = ScanFilter.Builder()
+            .setServiceUuid(ParcelUuid(GameService.HOST_UUID), ParcelUuid.fromString(serviceUuidMaskString))
+            //.setServiceData(ParcelUuid(GameService.HOST_UUID), null)
+            .build()
+
         Log.d(TAG, "start ble scanning")
-        _bluetoothLeScanner?.startScan(_scanFilters, _scanSettings, leScanCallback)
+        _bluetoothLeScanner?.startScan(listOf(filterS), _scanSettings, leScanCallback)
+    }
+    private fun asBytes(uuid: UUID): ByteArray {
+        val bb: ByteBuffer = ByteBuffer.wrap(ByteArray(16))
+        bb.putLong(uuid.mostSignificantBits)
+        bb.putLong(uuid.leastSignificantBits)
+        return bb.array() + ByteArray(0)
     }
 
     /**
@@ -76,11 +90,22 @@ class BluetoothController {
             .setIncludeDeviceName(false)
             .setIncludeTxPowerLevel(true) // TODO include??
 
-        if (data.isEmpty())
-            advertiseData.addServiceUuid(uuid)
-        else
-            advertiseData.addServiceData(uuid, data)
-        bluetoothLeAdvertiser?.startAdvertising(_advertiseSettings, advertiseData.build(), advertiseCallback)
+
+            advertiseData.addServiceUuid(ParcelUuid(GameService.HOST_UUIDR))
+        //if (data.isNotEmpty())
+            //advertiseData.addServiceData(ParcelUuid(GameService.HOST_UUID), "a".toByteArray(Charsets.UTF_8))
+
+        val ad = advertiseData.build()
+
+
+        val advertiseSettings: AdvertiseSettings = AdvertiseSettings.Builder()
+            .setAdvertiseMode(AdvertiseSettings.ADVERTISE_MODE_BALANCED)
+            .setConnectable(true)
+            .setTimeout(0)
+            .setTxPowerLevel(AdvertiseSettings.ADVERTISE_TX_POWER_MEDIUM)
+            .build()
+
+        bluetoothLeAdvertiser?.startAdvertising(advertiseSettings, ad, advertiseCallback)
         ?: Log.d(TAG, "advertise failed")
     }
 
