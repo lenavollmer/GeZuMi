@@ -23,6 +23,18 @@ class GameFragment : Fragment() {
 
     private lateinit var _binding: FragmentGameBinding
     private val _devicesViewModel: DevicesViewModel by viewModels()
+    private lateinit var _surfaceHolder: SurfaceHolder
+    private val _paint = Paint(Paint.ANTI_ALIAS_FLAG)
+
+
+
+    private val testPoints = {
+        Point(1,2)
+        Point(4,2)
+        Point(1,3)
+    }
+
+    private val players = 3
 
     private lateinit var _gattClient: GattClient
 
@@ -56,6 +68,7 @@ class GameFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         _binding.lifecycleOwner = viewLifecycleOwner
         _binding.devicesViewModel = _devicesViewModel
+
     }
 
     override fun onPause() {
@@ -66,5 +79,47 @@ class GameFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         //_gattClient.reconnect()
+    }
+
+    fun tryDrawing(holder: SurfaceHolder) {
+        Log.i(TAG, "Trying to draw...");
+
+        val canvas = holder.lockCanvas();
+        if (canvas == null) {
+            Log.e(TAG, "Cannot draw onto the canvas as it's null");
+        } else {
+            drawMyStuff(canvas);
+            holder.unlockCanvasAndPost(canvas);
+        }
+    }
+
+    private fun drawMyStuff(canvas: Canvas) {
+
+        Log.i(TAG, "Drawing...");
+        // Clear screen
+                canvas.drawColor(Color.BLACK);
+
+                // Iterate on the list
+                for(int i=0; i<pointsList.size(); i++) {
+                    Point current = pointsList.get(i);
+
+                    // Draw points
+                    canvas.drawCircle(current.x, current.y, 10, paint);
+
+                    // Draw line with next point (if it exists)
+                    if(i + 1 < pointsList.size()) {
+                        Point next = pointsList.get(i+1);
+                        canvas.drawLine(current.x, current.y, next.x, next.y, paint);
+                    }
+                }
+
+
+    private fun generateGeometricObject(players: Int): List<Point> {
+        val generatedPoints = mutableListOf<Point>()
+        for (i in 1..players){
+        generatedPoints.add( Point((0..10).random(), (0..10).random())   )
+        }
+
+        return generatedPoints
     }
 }
