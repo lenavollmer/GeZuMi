@@ -36,7 +36,8 @@ android {
         xmlReport false
         htmlReport false
         checkReleaseBuilds false
-        lintConfig file("lint.xml")
+        disable "UnsafeExperimentalUsageError", "UnsafeExperimentalUsageWarning"
+        // lintConfig file("lint.xml")
     }
 
     buildTypes {
