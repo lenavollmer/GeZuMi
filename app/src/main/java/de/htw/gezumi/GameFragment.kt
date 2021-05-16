@@ -26,7 +26,7 @@ class GameFragment : Fragment() {
     private val _devicesViewModel: DevicesViewModel by viewModels()
     private lateinit var _surfaceView: SurfaceView
     private lateinit var _surfaceHolder: SurfaceHolder
-    private val _paint = Paint(Paint.ANTI_ALIAS_FLAG)
+
 
 
     private val _testPoints = listOf<Point>(Point(1, 2),
@@ -69,10 +69,14 @@ class GameFragment : Fragment() {
         _binding.lifecycleOwner = viewLifecycleOwner
         _binding.devicesViewModel = _devicesViewModel
 
+
         _surfaceView = _binding.surfaceView
         _surfaceHolder = _surfaceView.holder
+//        _surfaceHolder.addCallback()
+        _surfaceHolder.addCallback(SurfaceCallback(_players, _testPoints))
 
-        tryDrawing(_surfaceHolder)
+        Log.i(TAG, "surface is valid: ${_surfaceHolder.surface.isValid}")
+
     }
 
     override fun onPause() {
@@ -85,60 +89,4 @@ class GameFragment : Fragment() {
         //_gattClient.reconnect()
     }
 
-    private fun tryDrawing(holder: SurfaceHolder) {
-        Log.i(TAG, "Trying to draw...");
-
-        val canvas = holder.lockCanvas();
-        if (canvas == null) {
-            Log.e(TAG, "Cannot draw onto the canvas as it's null");
-        } else {
-            drawMyStuff(canvas);
-            holder.unlockCanvasAndPost(canvas);
-        }
-    }
-
-    private fun drawMyStuff(canvas: Canvas) {
-        Log.i(TAG, "Drawing...");
-
-        // Clear screen
-        canvas.drawColor(Color.BLACK);
-
-        // Iterate on the list of generated points
-        val generatedPoints = generateGeometricObject(_players)
-        drawFigures(canvas, generatedPoints, _paint)
-
-        // Iterate on the list of player locations
-        val playerPaint = Paint().apply {
-            isAntiAlias = true
-            color = Color.RED
-            style = Paint.Style.STROKE
-        }
-        drawFigures(canvas, _testPoints, playerPaint)
-    }
-
-    private fun drawFigures(canvas: Canvas, points: List<Point>, paint: Paint) {
-        for (i in 0..points.size) {
-            val current = points[i]
-            val x = current.x.toFloat()
-            val y = current.y.toFloat()
-
-            // Draw points
-            canvas.drawCircle(x, y, 10F, paint);
-
-            // Draw line with next point (if it exists)
-            if (i + 1 < points.size) {
-                val next = points[i + 1]
-                canvas.drawLine(x, y, next.x.toFloat(), next.y.toFloat(), paint);
-            }
-        }
-    }
-
-    private fun generateGeometricObject(players: Int): List<Point> {
-        val generatedPoints = mutableListOf<Point>()
-        for (i in 1..players) {
-            generatedPoints.add(Point((0..10).random(), (0..10).random()))
-        }
-
-        return generatedPoints
-    }
 }

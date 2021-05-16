@@ -34,7 +34,7 @@ class DevicesViewModel : ViewModel() {
     fun addDevices(devices: ArrayList<BluetoothDevice>) {
         devices.forEach { d ->
             val device = Device(d.address, -70)
-                device.setName(d.name)
+//                device.setName(d.name)
 
             _devices.add(device)
         }
