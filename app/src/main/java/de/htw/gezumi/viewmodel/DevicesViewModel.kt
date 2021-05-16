@@ -11,6 +11,7 @@ class DevicesViewModel : ViewModel() {
     private val _devices = mutableListOf<Device>()
     val devices: List<Device> get() = _devices
 
+    // https://stackoverflow.com/questions/6662216/display-android-bluetooth-device-name
     lateinit var host: Device
 
     /*init {
