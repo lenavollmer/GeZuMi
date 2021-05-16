@@ -15,6 +15,7 @@ import android.util.Log
 import android.graphics.Canvas
 import android.graphics.Color
 import android.util.DisplayMetrics
+import de.htw.gezumi.callbacks.SurfaceCallback
 
 private const val TAG = "GameFragment"
 
@@ -45,12 +46,10 @@ class GameFragment : Fragment() {
         super.onCreate(savedInstanceState)
 
         //Check is host im viewmodel ist set -> ansonsten ist man host
-        if (false) {
 //            val hostDevice = Device(_hostDevice.address, -70)
 //            hostDevice.setName(_hostDevice.name)
 //            _devicesViewModel.host = hostDevice
 //            Log.d(TAG, "host: ${hostDevice.name} address: ${hostDevice.address}")
-        }
 
         val gattClientCallback = GattClientCallback(_devicesViewModel)
         _gattClient = GattClient(requireContext())
