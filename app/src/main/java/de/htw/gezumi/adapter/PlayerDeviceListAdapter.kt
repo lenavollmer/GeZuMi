@@ -4,11 +4,7 @@ import android.bluetooth.BluetoothDevice
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.core.os.bundleOf
-import androidx.navigation.findNavController
 import androidx.recyclerview.widget.RecyclerView
-import de.htw.gezumi.R
-import de.htw.gezumi.databinding.ItemBtDeviceBinding
 import de.htw.gezumi.databinding.ItemPlayerBinding
 
 private const val TAG = "PlayerDeviceLA"

@@ -23,7 +23,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                tools:listitem="@layout/item_bt_device" app:layout_constraintHorizontal_bias="0.0"
+                tools:listitem="@layout/item_approved_device" app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintVertical_bias="1.0" app:layout_constraintTop_toBottomOf="@+id/button"
                 android:layout_marginTop="32dp"/>
 

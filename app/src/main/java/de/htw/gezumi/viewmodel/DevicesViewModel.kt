@@ -1,5 +1,6 @@
 package de.htw.gezumi.viewmodel
 
+import android.bluetooth.BluetoothDevice
 import androidx.lifecycle.ViewModel
 import de.htw.gezumi.model.Device
 
@@ -28,5 +29,14 @@ class DevicesViewModel : ViewModel() {
 
     fun addDevice(device: Device) {
         _devices.add(device)
+    }
+
+    fun addDevices(devices: ArrayList<BluetoothDevice>) {
+        devices.forEach { d ->
+            val device = Device(d.address, -70)
+                device.setName(d.name)
+
+            _devices.add(device)
+        }
     }
 }

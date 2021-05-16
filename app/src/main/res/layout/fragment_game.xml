@@ -28,22 +28,15 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             tools:context=".GameFragment">
-
-        <TextView
-                android:text="@{devicesViewModel.host.name}"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" android:id="@+id/text_host_device_name"
-                app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintHorizontal_bias="0.524" app:layout_constraintVertical_bias="0.216"
-                app:layout_constraintTop_toTopOf="parent" tools:text="device"/>
-        <TextView
-                android:text="@{@string/distance(devicesViewModel.host.distance)}"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" android:id="@+id/text_host_distance"
-                app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintVertical_bias="0.293"
-                app:layout_constraintTop_toBottomOf="@+id/text_host_device_name" tools:text="rssi"/>
+        <SurfaceView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:id="@+id/surfaceView"
+                android:layout_marginEnd="170dp" app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent" android:layout_marginStart="162dp"
+                app:layout_constraintTop_toTopOf="parent" android:layout_marginTop="220dp"
+                app:layout_constraintBottom_toBottomOf="parent" android:layout_marginBottom="492dp"
+                app:layout_constraintHorizontal_bias="0.0" app:layout_constraintVertical_bias="0.0"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

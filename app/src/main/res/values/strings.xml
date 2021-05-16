@@ -22,5 +22,7 @@
     <string name="approve">Approve</string>
     <string name="decline">Decline</string>
     <string name="description_design_element">Design element</string>
+    <string name="direct_to_game">Direct to Game</string>
+    <string name="start_game">Start Game</string>
 
 </resources>

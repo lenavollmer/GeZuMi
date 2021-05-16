@@ -1,6 +1,7 @@
 package de.htw.gezumi
 
 import android.bluetooth.BluetoothDevice
+import android.graphics.Point
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -9,7 +10,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.os.bundleOf
 import androidx.databinding.DataBindingUtil
+import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import de.htw.gezumi.adapter.ConnectedPlayerDeviceAdapter
@@ -17,6 +21,7 @@ import de.htw.gezumi.adapter.PlayerDeviceListAdapter
 import de.htw.gezumi.controller.BluetoothController
 import de.htw.gezumi.databinding.FragmentHostBinding
 import de.htw.gezumi.gatt.GattServer
+import de.htw.gezumi.viewmodel.DevicesViewModel
 
 private const val TAG = "HostFragment"
 
@@ -24,6 +29,8 @@ class HostFragment : Fragment() {
 
     private lateinit var _binding: FragmentHostBinding
     private lateinit var _bottomSheetBehavior: BottomSheetBehavior<ConstraintLayout>
+
+    private val _devicesViewModel: DevicesViewModel by viewModels()
 
     private val _bluetoothController: BluetoothController = BluetoothController()
     private lateinit var _gattServer: GattServer
@@ -97,6 +104,12 @@ class HostFragment : Fragment() {
 
         _bottomSheetBehavior.isHideable = false
         _bottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
+
+        _binding.startGame.setOnClickListener {
+            _devicesViewModel.addDevices(_approvedDevices)
+            findNavController().navigate(R.id.action_HostFragment_to_Game)
+            //findNavController().navigate(R.id.action_ClientFragment_to_Game, Bundle().putBoolean("client",false))
+        }
     }
 
     // TODO handle lifecycle actions for gatt server

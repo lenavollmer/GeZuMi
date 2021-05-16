@@ -15,10 +15,15 @@ import android.view.ViewGroup
 import androidx.core.app.ActivityCompat
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.DividerItemDecoration
-import de.htw.gezumi.adapter.BtDeviceListAdapter
+import de.htw.gezumi.adapter.JoinGameListAdapter
 import de.htw.gezumi.controller.BluetoothController
 import de.htw.gezumi.databinding.FragmentClientBinding
+import de.htw.gezumi.gatt.GattClient
+import de.htw.gezumi.gatt.GattClientCallback
+import de.htw.gezumi.model.Device
+import de.htw.gezumi.viewmodel.DevicesViewModel
 
 private const val TAG = "ClientFragment"
 
@@ -26,9 +31,20 @@ class ClientFragment : Fragment() {
 
     private lateinit var _binding: FragmentClientBinding
 
+    private val _devicesViewModel: DevicesViewModel by viewModels()
+
     private val _bluetoothController: BluetoothController = BluetoothController()
     private val _btDevices: ArrayList<BluetoothDevice> = ArrayList()
-    private val _deviceListAdapter: BtDeviceListAdapter = BtDeviceListAdapter(_btDevices)
+    private val _deviceListAdapter: JoinGameListAdapter = JoinGameListAdapter(_btDevices){
+        val hostDevice = Device(_btDevices[it].address, -70)
+        hostDevice.setName(_btDevices[it].name)
+        _devicesViewModel.host = hostDevice
+        val gattClientCallback = GattClientCallback(_devicesViewModel)
+        val _gattClient = GattClient(requireContext())
+        _gattClient.connect(_btDevices[it], gattClientCallback)
+
+        // todo loop and wait for feedback
+    }
 
     private val leScanCallback: ScanCallback = object : ScanCallback() {
         override fun onScanResult(callbackType: Int, result: ScanResult) {
@@ -77,18 +93,16 @@ class ClientFragment : Fragment() {
     }
 
     private fun checkPermission() {
-        if (Build.VERSION.SDK_INT >= 23) {
-            if (!(context?.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && context?.checkSelfPermission(
+        if (!(context?.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && context?.checkSelfPermission(
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED)
+        ) {
+            ActivityCompat.requestPermissions(
+                context as Activity, arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
                     Manifest.permission.ACCESS_COARSE_LOCATION
-                ) == PackageManager.PERMISSION_GRANTED)
-            ) {
-                ActivityCompat.requestPermissions(
-                    context as Activity, arrayOf(
-                        Manifest.permission.ACCESS_FINE_LOCATION,
-                        Manifest.permission.ACCESS_COARSE_LOCATION
-                    ), 1
-                )
-            }
+                ), 1
+            )
         }
     }
 
