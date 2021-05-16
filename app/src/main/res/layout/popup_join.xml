@@ -12,15 +12,26 @@
             tools:context=".ClientFragment">
         <TextView
                 android:text="@{devicesViewModel.host.name}"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" android:id="@+id/textView"
-                app:layout_constraintEnd_toEndOf="parent" app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" android:layout_marginTop="208dp"/>
+                android:layout_width="31dp"
+                android:layout_height="15dp" android:id="@+id/name"
+                app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent"
+                tools:text="Name"
+                app:layout_constraintTop_toBottomOf="@+id/join_text" android:layout_marginTop="44dp"
+                app:layout_constraintHorizontal_bias="0.505"/>
         <TextView
                 android:text="@{@string/distance(devicesViewModel.host.distance)}"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" android:id="@+id/textView2"
+                android:layout_height="wrap_content" android:id="@+id/rssi"
                 app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/textView" android:layout_marginTop="160dp"/>
+                tools:text="RSSI"
+                app:layout_constraintTop_toBottomOf="@+id/name"
+                app:layout_constraintHorizontal_bias="0.502" android:layout_marginTop="44dp"/>
+        <TextView
+                android:text="Please wait until the host admits you"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" android:id="@+id/join_text"
+                app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" android:layout_marginTop="32dp"
+                app:layout_constraintHorizontal_bias="0.55"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

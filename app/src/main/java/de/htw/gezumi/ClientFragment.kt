@@ -2,6 +2,7 @@ package de.htw.gezumi
 
 import android.Manifest
 import android.app.Activity
+import android.app.AlertDialog
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
@@ -20,6 +21,7 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import de.htw.gezumi.adapter.JoinGameListAdapter
 import de.htw.gezumi.controller.BluetoothController
 import de.htw.gezumi.databinding.FragmentClientBinding
+import de.htw.gezumi.databinding.PopupJoinBinding
 import de.htw.gezumi.gatt.GattClient
 import de.htw.gezumi.gatt.GattClientCallback
 import de.htw.gezumi.model.Device
@@ -30,6 +32,7 @@ private const val TAG = "ClientFragment"
 class ClientFragment : Fragment() {
 
     private lateinit var _binding: FragmentClientBinding
+    private lateinit var _popupBinding: PopupJoinBinding
 
     private val _devicesViewModel: DevicesViewModel by viewModels()
 
@@ -39,11 +42,20 @@ class ClientFragment : Fragment() {
         val hostDevice = Device(_btDevices[it].address, -70)
         hostDevice.setName(_btDevices[it].name)
         _devicesViewModel.host = hostDevice
-        val gattClientCallback = GattClientCallback(_devicesViewModel)
-        val _gattClient = GattClient(requireContext())
-        _gattClient.connect(_btDevices[it], gattClientCallback)
+        _devicesViewModel.addDevice(hostDevice)
 
-        // todo loop and wait for feedback
+        val gattClientCallback = GattClientCallback(_devicesViewModel)
+        val gattClient = GattClient(requireContext())
+        gattClient.connect(_btDevices[it], gattClientCallback)
+
+
+        val dialogBuilder = AlertDialog.Builder(activity)
+        dialogBuilder.setView(_popupBinding.root)
+        dialogBuilder.create()
+        dialogBuilder.show().setOnDismissListener{
+            gattClient.disconnect()
+        }
+
     }
 
     private val leScanCallback: ScanCallback = object : ScanCallback() {
@@ -64,6 +76,8 @@ class ClientFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = DataBindingUtil.inflate(inflater, R.layout.fragment_client, container, false)
+        _popupBinding = DataBindingUtil.inflate(inflater, R.layout.popup_join, null, false)
+
         return _binding.root
     }
 
