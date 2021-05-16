@@ -74,12 +74,14 @@ class SurfaceCallback(private val _players: Int, private val _testPoints: List<P
                 canvas.drawLine(x, y, next.x.toFloat(), next.y.toFloat(), paint);
             }
         }
+
+        canvas.drawLine(points[0].x.toFloat(), points[0].y.toFloat(), points[points.size - 1].x.toFloat(), points[points.size - 1].y.toFloat(), paint)
     }
 
     private fun generateGeometricObject(players: Int): List<Point> {
         val generatedPoints = mutableListOf<Point>()
         for (i in 1..players) {
-            generatedPoints.add(Point((0..10).random(), (0..10).random()))
+            generatedPoints.add(Point((0..250).random(), (0..400).random()))
         }
 
         return generatedPoints

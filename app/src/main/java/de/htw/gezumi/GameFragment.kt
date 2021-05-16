@@ -14,6 +14,7 @@ import de.htw.gezumi.viewmodel.DevicesViewModel
 import android.util.Log
 import android.graphics.Canvas
 import android.graphics.Color
+import android.util.DisplayMetrics
 
 private const val TAG = "GameFragment"
 
@@ -29,14 +30,16 @@ class GameFragment : Fragment() {
 
 
 
-    private val _testPoints = listOf<Point>(Point(1, 2),
-            Point(4, 2),
-            Point(1, 3))
+    private val _testPoints = listOf<Point>(Point(100, 20),
+            Point(45, 250),
+            Point(70, 300))
 
 
     private val _players = 3
 
     private lateinit var _gattClient: GattClient
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -72,7 +75,6 @@ class GameFragment : Fragment() {
 
         _surfaceView = _binding.surfaceView
         _surfaceHolder = _surfaceView.holder
-//        _surfaceHolder.addCallback()
         _surfaceHolder.addCallback(SurfaceCallback(_players, _testPoints))
 
         Log.i(TAG, "surface is valid: ${_surfaceHolder.surface.isValid}")
