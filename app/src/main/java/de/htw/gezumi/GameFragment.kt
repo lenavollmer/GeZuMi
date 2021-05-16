@@ -12,7 +12,6 @@ import de.htw.gezumi.gatt.GattClient
 import de.htw.gezumi.gatt.GattClientCallback
 import de.htw.gezumi.model.Device
 import de.htw.gezumi.viewmodel.DevicesViewModel
-import java.util.*
 
 private const val TAG = "GameFragment"
 
@@ -60,6 +59,7 @@ class GameFragment : Fragment() {
 
     override fun onPause() {
         super.onPause()
+        _devicesViewModel.writeRSSILog(context)
         _gattClient.disconnect()
     }
 
