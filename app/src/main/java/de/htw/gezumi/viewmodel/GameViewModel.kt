@@ -28,26 +28,26 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     val devices: Set<Device> get() = _devices.keys
 
     lateinit var host: Device // is null for host themselves
-    lateinit var gameId: String
+    lateinit var gameId: UUID
 
     fun isJoined(): Boolean = ::gameId.isInitialized
 
     fun onGameJoin() {
         Log.d(TAG, "on game join")
         Handler(Looper.getMainLooper()).post{ Toast.makeText(getApplication<Application>().applicationContext, "Joined", Toast.LENGTH_LONG).show()}
-        val gameUuid = ParcelUuid.fromString(gameId)
         // waiting for game start is not necessary
-        Log.d(TAG, "start advertising on game id")
-        bluetoothController.startAdvertising(gameUuid)
+        Log.d(TAG, "start advertising on game id: ${gameId}")
+        bluetoothController.startAdvertising(ParcelUuid(gameId))
         Log.d(TAG, "start scanning for players on game id")
-        bluetoothController.stopScan(hostScanCallback, ParcelUuid(GameService.HOST_UUID))
+        bluetoothController.stopScan(hostScanCallback, ParcelUuid(GameService.getGameId()), true)
+        bluetoothController.startScan(gameScanCallback, ParcelUuid(gameId))
     }
 
     fun onGameLeave() {
         Log.d(TAG, "on game leave")
         // TODO host leaves game
         bluetoothController.stopAdvertising()
-        bluetoothController.stopScan(gameScanCallback, ParcelUuid.fromString(gameId))
+        bluetoothController.stopScan(gameScanCallback, ParcelUuid(gameId))
         // Handler(Looper.getMainLooper()).post{}
     }
 
@@ -56,7 +56,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     val gameScanCallback: ScanCallback = object : ScanCallback() {
         override fun onScanResult(callbackType: Int, result: ScanResult) {
             super.onScanResult(callbackType, result)
-            Log.d(TAG, "gameScanCallback: $callbackType, ${result.device.address}")
+            Log.d(TAG, "gameScanCallback, ${result.device.address}")
             when (callbackType) {
                 ScanSettings.CALLBACK_TYPE_ALL_MATCHES -> {
                     onGameScanResult(result.device, result.rssi)

@@ -38,7 +38,6 @@ class ClientFragment : Fragment() {
         _gameViewModel.hostScanCallback = object : ScanCallback() {
             override fun onScanResult(callbackType: Int, result: ScanResult) {
                 super.onScanResult(callbackType, result)
-                Log.d(TAG, "${result.scanRecord?.serviceData}")
                 Log.d(TAG, "host scan callback")
                 when (callbackType) {
                     ScanSettings.CALLBACK_TYPE_ALL_MATCHES -> {// first match does not have a name
@@ -70,7 +69,7 @@ class ClientFragment : Fragment() {
             addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
         }
         _binding.buttonScan.setOnClickListener {
-            _gameViewModel.bluetoothController.startScan(_gameViewModel.hostScanCallback, ParcelUuid(GameService.HOST_UUID))
+            _gameViewModel.bluetoothController.startScan(_gameViewModel.hostScanCallback, ParcelUuid(GameService.getGameId()), true)
         }
 
         checkPermission()

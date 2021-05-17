@@ -31,7 +31,7 @@ class GattClientCallback(private val _gameViewModel: GameViewModel) : BluetoothG
         when (characteristic?.uuid) {
             GameService.GAME_ID_UUID -> {
                 val gameIdPostfix = characteristic.value.toString(Charsets.UTF_8)
-                _gameViewModel.gameId = GameService.GAME_ID_PREFIX + gameIdPostfix
+                _gameViewModel.gameId = UUID.fromString(GameService.GAME_ID_PREFIX + gameIdPostfix)
                 Log.d(TAG, "callback: characteristic read successfully, gameId: ${_gameViewModel.gameId}")
                 _gameViewModel.onGameJoin()
                 Log.d(TAG, "subscribe for game events")

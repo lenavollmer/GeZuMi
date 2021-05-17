@@ -13,6 +13,7 @@ import java.nio.ByteBuffer
 import java.util.*
 
 private const val SCAN_PERIOD = 10000L
+private const val SERVICE_UUID_MASK_STRING = "FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFF0000"
 private const val TAG = "BTController"
 
 class BluetoothController {
@@ -46,36 +47,30 @@ class BluetoothController {
         checkBluetoothSupport()
     }
 
-    fun startScan(leScanCallback: ScanCallback, serviceUUID: ParcelUuid) {
-        val filter = ScanFilter.Builder()
-                .setServiceUuid(serviceUUID)
-                .build()
+    fun startScan(leScanCallback: ScanCallback, serviceUUID: ParcelUuid, masked: Boolean = false) {
+        val filterBuilder = ScanFilter.Builder()
+        if (masked)
+            filterBuilder.setServiceUuid(serviceUUID, ParcelUuid.fromString(SERVICE_UUID_MASK_STRING))
+        else
+            filterBuilder.setServiceUuid(serviceUUID)
+        val filter = filterBuilder.build() // TODO: make host uuid with variable end part
         if (!_scanFilters.contains(filter)) _scanFilters.add(filter)
 
-        val serviceUuidMaskString = "FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFF0000"
-        val filterS = ScanFilter.Builder()
-            .setServiceUuid(ParcelUuid(GameService.HOST_UUID), ParcelUuid.fromString(serviceUuidMaskString))
-            //.setServiceData(ParcelUuid(GameService.HOST_UUID), null)
-            .build()
-
         Log.d(TAG, "start ble scanning")
-        _bluetoothLeScanner?.startScan(listOf(filterS), _scanSettings, leScanCallback)
-    }
-    private fun asBytes(uuid: UUID): ByteArray {
-        val bb: ByteBuffer = ByteBuffer.wrap(ByteArray(16))
-        bb.putLong(uuid.mostSignificantBits)
-        bb.putLong(uuid.leastSignificantBits)
-        return bb.array() + ByteArray(0)
+        _bluetoothLeScanner?.startScan(_scanFilters, _scanSettings, leScanCallback)
     }
 
     /**
      * Stop scanning for the specified uuid.
      * @param leScanCallback if another scan is still running, leScanCallback has to be passed again
      */
-    fun stopScan(leScanCallback: ScanCallback, serviceUUID: ParcelUuid) {
-        val filter = ScanFilter.Builder()
-            .setServiceUuid(serviceUUID)
-            .build()
+    fun stopScan(leScanCallback: ScanCallback, serviceUUID: ParcelUuid, masked: Boolean = false) {
+        val filterBuilder = ScanFilter.Builder()
+        if (masked)
+            filterBuilder.setServiceUuid(serviceUUID, ParcelUuid.fromString(SERVICE_UUID_MASK_STRING))
+        else
+            filterBuilder.setServiceUuid(serviceUUID)
+        val filter = filterBuilder.build()
         require(_scanFilters.contains(filter)) { "Filter not present in scan filters" }
         _scanFilters.remove(filter)
         _bluetoothLeScanner?.stopScan(leScanCallback)
@@ -83,19 +78,14 @@ class BluetoothController {
             _bluetoothLeScanner?.startScan(_scanFilters, _scanSettings, leScanCallback)
     }
 
-    fun startAdvertising(uuid: ParcelUuid, data: ByteArray = ByteArray(0)) {
+    fun startAdvertising(uuid: ParcelUuid) {
         require(::_bluetoothManager.isInitialized) {"Must have context set"}
         val bluetoothLeAdvertiser: BluetoothLeAdvertiser? = _bluetoothManager.adapter.bluetoothLeAdvertiser
         val advertiseData = AdvertiseData.Builder()
             .setIncludeDeviceName(false)
             .setIncludeTxPowerLevel(true) // TODO include??
-
-
-            advertiseData.addServiceUuid(ParcelUuid(GameService.HOST_UUIDR))
-        //if (data.isNotEmpty())
-            //advertiseData.addServiceData(ParcelUuid(GameService.HOST_UUID), "a".toByteArray(Charsets.UTF_8))
-
-        val ad = advertiseData.build()
+            .addServiceUuid(uuid)
+            .build()
 
 
         val advertiseSettings: AdvertiseSettings = AdvertiseSettings.Builder()
@@ -105,7 +95,7 @@ class BluetoothController {
             .setTxPowerLevel(AdvertiseSettings.ADVERTISE_TX_POWER_MEDIUM)
             .build()
 
-        bluetoothLeAdvertiser?.startAdvertising(advertiseSettings, ad, advertiseCallback)
+        bluetoothLeAdvertiser?.startAdvertising(advertiseSettings, advertiseData, advertiseCallback)
         ?: Log.d(TAG, "advertise failed")
     }
 

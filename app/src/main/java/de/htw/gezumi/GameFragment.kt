@@ -45,7 +45,7 @@ class GameFragment : Fragment() {
         _hostDevice = arguments?.getParcelable("hostDevice")!!
 
         val hostDevice = Device(_hostDevice.address, -70, _hostDevice)
-        hostDevice.setName(_hostDevice.name)
+        //hostDevice.setName(_hostDevice.name)
         _gameViewModel.host = hostDevice
         Log.d(TAG, "host: ${hostDevice.name} address: ${hostDevice.address}")
         _gameViewModel.addDevice(hostDevice)

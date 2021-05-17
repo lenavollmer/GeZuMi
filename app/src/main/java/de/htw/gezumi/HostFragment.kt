@@ -75,14 +75,15 @@ class HostFragment : Fragment() {
         arguments?.let {
 
         }
-        _gameViewModel.gameId = GameService.GAME_ID_PREFIX + GameService.gameIdPostfix
+        _gameViewModel.gameId = GameService.getGameId()
 
         Log.d(TAG, "start gatt server and game service")
         _gattServer = GattServer(requireContext(), _gameViewModel.bluetoothController, connectCallback)
         _gattServer.startServer(GameService.createHostService())
-        _gameViewModel.bluetoothController.startAdvertising(ParcelUuid(GameService.HOST_UUID), GameService.gameIdPostfix.toByteArray(Charsets.UTF_8))
+        _gameViewModel.bluetoothController.startAdvertising(ParcelUuid(GameService.getGameId()))
         //else bluetoothController.stopAdvertising() // TODO stop host advertise when game starts?
-        _gameViewModel.bluetoothController.startScan(_gameViewModel.gameScanCallback, ParcelUuid.fromString(_gameViewModel.gameId))
+        Log.d(TAG, "start game scan: ${_gameViewModel.gameId}")
+        _gameViewModel.bluetoothController.startScan(_gameViewModel.gameScanCallback, ParcelUuid(_gameViewModel.gameId))
     }
 
     override fun onCreateView(
