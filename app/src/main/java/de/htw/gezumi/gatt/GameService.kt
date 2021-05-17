@@ -14,6 +14,7 @@ object GameService {
 
     const val GAME_START_EVENT = 0
 
+    val TEST_UUID: UUID = UUID.fromString("00002672-0000-1000-8000-00805f9babcd")
     val HOST_UUID: UUID = UUID.fromString("00002672-0000-1000-8000-00805f9b34fc")
     val GAME_ID_UUID: UUID = UUID.fromString("00002672-0000-1000-8000-00805f9b34fb")
     val RSSI_UUID: UUID = UUID.fromString("00002672-0000-1000-8000-00805f9b34fa")

@@ -53,7 +53,7 @@ class BluetoothController {
             filterBuilder.setServiceUuid(serviceUUID, ParcelUuid.fromString(SERVICE_UUID_MASK_STRING))
         else
             filterBuilder.setServiceUuid(serviceUUID)
-        val filter = filterBuilder.build() // TODO: make host uuid with variable end part
+        val filter = filterBuilder.build()
         if (!_scanFilters.contains(filter)) _scanFilters.add(filter)
 
         Log.d(TAG, "start ble scanning")
@@ -65,6 +65,7 @@ class BluetoothController {
      * @param leScanCallback if another scan is still running, leScanCallback has to be passed again
      */
     fun stopScan(leScanCallback: ScanCallback, serviceUUID: ParcelUuid, masked: Boolean = false) {
+        _bluetoothLeScanner?.stopScan(leScanCallback)
         val filterBuilder = ScanFilter.Builder()
         if (masked)
             filterBuilder.setServiceUuid(serviceUUID, ParcelUuid.fromString(SERVICE_UUID_MASK_STRING))
@@ -73,7 +74,7 @@ class BluetoothController {
         val filter = filterBuilder.build()
         require(_scanFilters.contains(filter)) { "Filter not present in scan filters" }
         _scanFilters.remove(filter)
-        _bluetoothLeScanner?.stopScan(leScanCallback)
+
         if (_scanFilters.isNotEmpty())
             _bluetoothLeScanner?.startScan(_scanFilters, _scanSettings, leScanCallback)
     }

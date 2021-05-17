@@ -38,8 +38,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         // waiting for game start is not necessary
         Log.d(TAG, "start advertising on game id: ${gameId}")
         bluetoothController.startAdvertising(ParcelUuid(gameId))
-        Log.d(TAG, "start scanning for players on game id")
-        bluetoothController.stopScan(hostScanCallback, ParcelUuid(GameService.getGameId()), true)
+        Log.d(TAG, "start scanning for players on game id: ${gameId}")
+        bluetoothController.stopScan(hostScanCallback, ParcelUuid(GameService.HOST_UUID), true)
         bluetoothController.startScan(gameScanCallback, ParcelUuid(gameId))
     }
 

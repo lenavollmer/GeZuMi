@@ -52,6 +52,11 @@ class ClientFragment : Fragment() {
                 }
                 updateBtDeviceListAdapter()
             }
+
+            override fun onScanFailed(errorCode: Int) {
+                super.onScanFailed(errorCode)
+                Log.d(TAG, "scan failed: $errorCode")
+            }
         }
     }
 
