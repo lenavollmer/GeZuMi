@@ -8,9 +8,6 @@ import android.bluetooth.le.*
 import android.content.Context
 import android.os.ParcelUuid
 import android.util.Log
-import de.htw.gezumi.gatt.GameService
-import java.nio.ByteBuffer
-import java.util.*
 
 private const val SCAN_PERIOD = 10000L
 private const val SERVICE_UUID_MASK_STRING = "FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFF0000"
@@ -26,7 +23,7 @@ class BluetoothController {
     private var _scanFilters = mutableListOf<ScanFilter>()
     private val _scanSettings = ScanSettings.Builder().setCallbackType(ScanSettings.CALLBACK_TYPE_ALL_MATCHES).build()
 
-    val _advertiseSettings: AdvertiseSettings = AdvertiseSettings.Builder()
+    private val _advertiseSettings: AdvertiseSettings = AdvertiseSettings.Builder()
         .setAdvertiseMode(AdvertiseSettings.ADVERTISE_MODE_BALANCED)
         .setConnectable(true)
         .setTimeout(0)
@@ -48,52 +45,26 @@ class BluetoothController {
     }
 
     fun startScan(leScanCallback: ScanCallback, serviceUUID: ParcelUuid, masked: Boolean = false) {
-        /*val filterBuilder = ScanFilter.Builder()
-        if (masked)
-            filterBuilder.setServiceUuid(serviceUUID, ParcelUuid.fromString(SERVICE_UUID_MASK_STRING))
-        else
-            filterBuilder.setServiceUuid(serviceUUID)
-        val filter = filterBuilder.build()
-        if (!_scanFilters.contains(filter)) _scanFilters.add(filter)*/
-
-
-        val bytes = decodeHex(serviceUUID.toString().replace("-", ""))
+        val uuidBytes = decodeHex(serviceUUID.toString().replace("-", ""))
         val mask = byteArrayOf(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0)
 
         val filterBuilder = ScanFilter.Builder()
         if (masked)
-            filterBuilder.setManufacturerData(76, bytes, mask)
+            filterBuilder.setManufacturerData(76, uuidBytes, mask)
         else
-            filterBuilder.setManufacturerData(76, bytes)
+            filterBuilder.setManufacturerData(76, uuidBytes)
 
+        val filter = filterBuilder.build()
+        if (!_scanFilters.contains(filter)) _scanFilters.add(filter)
         Log.d(TAG, "start ble scanning")
-        _bluetoothLeScanner?.startScan(listOf(filterBuilder.build()), _scanSettings, leScanCallback)
+        _bluetoothLeScanner?.startScan(_scanFilters, _scanSettings, leScanCallback)
     }
 
     /**
-     * Stop scanning for the specified uuid.
-     * @param leScanCallback if another scan is still running, leScanCallback has to be passed again
+     * Stop scanning.
      */
-    fun stopScan(leScanCallback: ScanCallback, serviceUUID: ParcelUuid, masked: Boolean = false) {
+    fun stopScan(leScanCallback: ScanCallback) {
         _bluetoothLeScanner?.stopScan(leScanCallback)
-        /*val filterBuilder = ScanFilter.Builder()
-        if (masked)
-            filterBuilder.setServiceUuid(serviceUUID, ParcelUuid.fromString(SERVICE_UUID_MASK_STRING))
-        else
-            filterBuilder.setServiceUuid(serviceUUID)
-        val filter = filterBuilder.build()
-        require(_scanFilters.contains(filter)) { "Filter not present in scan filters" }
-        _scanFilters.remove(filter)
-
-        if (_scanFilters.isNotEmpty())
-            _bluetoothLeScanner?.startScan(_scanFilters, _scanSettings, leScanCallback)*/
-    }
-
-    private fun decodeHex(hexString: String): ByteArray {
-        require(hexString.length % 2 == 0) { "Must have an even length" }
-        return hexString.chunked(2)
-            .map { it.toInt(16).toByte() }
-            .toByteArray()
     }
 
     fun startAdvertising(uuid: ParcelUuid) {
@@ -101,20 +72,11 @@ class BluetoothController {
         val bluetoothLeAdvertiser: BluetoothLeAdvertiser? = _bluetoothManager.adapter.bluetoothLeAdvertiser
         val advertiseData = AdvertiseData.Builder()
             .setIncludeDeviceName(false)
-            .setIncludeTxPowerLevel(true) // TODO include??
-            //.addServiceUuid(uuid)
+            .setIncludeTxPowerLevel(true)
             .addManufacturerData(76, decodeHex(uuid.toString().replace("-", "")))
             .build()
 
-
-        val advertiseSettings: AdvertiseSettings = AdvertiseSettings.Builder()
-            .setAdvertiseMode(AdvertiseSettings.ADVERTISE_MODE_BALANCED)
-            .setConnectable(true)
-            .setTimeout(0)
-            .setTxPowerLevel(AdvertiseSettings.ADVERTISE_TX_POWER_MEDIUM)
-            .build()
-
-        bluetoothLeAdvertiser?.startAdvertising(advertiseSettings, advertiseData, advertiseCallback)
+        bluetoothLeAdvertiser?.startAdvertising(_advertiseSettings, advertiseData, advertiseCallback)
         ?: Log.d(TAG, "advertise failed")
     }
 
@@ -160,6 +122,13 @@ class BluetoothController {
     fun setContext(context: Context) {
         _context = context
         _bluetoothManager = _context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+    }
+
+    private fun decodeHex(hexString: String): ByteArray {
+        require(hexString.length % 2 == 0) { "Must have an even length" }
+        return hexString.chunked(2)
+            .map { it.toInt(16).toByte() }
+            .toByteArray()
     }
 
 }

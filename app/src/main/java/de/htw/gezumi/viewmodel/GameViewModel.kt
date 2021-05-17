@@ -39,7 +39,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         Log.d(TAG, "start advertising on game id: ${gameId}")
         bluetoothController.startAdvertising(ParcelUuid(gameId))
         Log.d(TAG, "start scanning for players on game id: ${gameId}")
-        bluetoothController.stopScan(hostScanCallback, ParcelUuid(GameService.HOST_UUID), true)
+        bluetoothController.stopScan(hostScanCallback)
         bluetoothController.startScan(gameScanCallback, ParcelUuid(gameId))
     }
 
@@ -47,7 +47,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         Log.d(TAG, "on game leave")
         // TODO host leaves game
         bluetoothController.stopAdvertising()
-        bluetoothController.stopScan(gameScanCallback, ParcelUuid(gameId))
+        bluetoothController.stopScan(gameScanCallback)
         // Handler(Looper.getMainLooper()).post{}
     }
 
