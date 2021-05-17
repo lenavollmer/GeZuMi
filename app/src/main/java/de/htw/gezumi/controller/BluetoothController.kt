@@ -48,16 +48,29 @@ class BluetoothController {
     }
 
     fun startScan(leScanCallback: ScanCallback, serviceUUID: ParcelUuid, masked: Boolean = false) {
-        val filterBuilder = ScanFilter.Builder()
+        /*val filterBuilder = ScanFilter.Builder()
         if (masked)
             filterBuilder.setServiceUuid(serviceUUID, ParcelUuid.fromString(SERVICE_UUID_MASK_STRING))
         else
             filterBuilder.setServiceUuid(serviceUUID)
         val filter = filterBuilder.build()
-        if (!_scanFilters.contains(filter)) _scanFilters.add(filter)
+        if (!_scanFilters.contains(filter)) _scanFilters.add(filter)*/
+
+
+        val manData = byteArrayOf(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+        val mask = byteArrayOf(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1)
+
+        System.arraycopy(
+            decodeHex(serviceUUID.toString().replace("-", "")),
+            0,
+            manData,
+            0,
+            16
+        )
+        val filter = ScanFilter.Builder().setManufacturerData(76, manData, mask).build()
 
         Log.d(TAG, "start ble scanning")
-        _bluetoothLeScanner?.startScan(_scanFilters, _scanSettings, leScanCallback)
+        _bluetoothLeScanner?.startScan(listOf(filter), _scanSettings, leScanCallback)
     }
 
     /**
@@ -66,7 +79,7 @@ class BluetoothController {
      */
     fun stopScan(leScanCallback: ScanCallback, serviceUUID: ParcelUuid, masked: Boolean = false) {
         _bluetoothLeScanner?.stopScan(leScanCallback)
-        val filterBuilder = ScanFilter.Builder()
+        /*val filterBuilder = ScanFilter.Builder()
         if (masked)
             filterBuilder.setServiceUuid(serviceUUID, ParcelUuid.fromString(SERVICE_UUID_MASK_STRING))
         else
@@ -76,7 +89,14 @@ class BluetoothController {
         _scanFilters.remove(filter)
 
         if (_scanFilters.isNotEmpty())
-            _bluetoothLeScanner?.startScan(_scanFilters, _scanSettings, leScanCallback)
+            _bluetoothLeScanner?.startScan(_scanFilters, _scanSettings, leScanCallback)*/
+    }
+
+    private fun decodeHex(hexString: String): ByteArray {
+        require(hexString.length % 2 == 0) { "Must have an even length" }
+        return hexString.chunked(2)
+            .map { it.toInt(16).toByte() }
+            .toByteArray()
     }
 
     fun startAdvertising(uuid: ParcelUuid) {
@@ -85,7 +105,8 @@ class BluetoothController {
         val advertiseData = AdvertiseData.Builder()
             .setIncludeDeviceName(false)
             .setIncludeTxPowerLevel(true) // TODO include??
-            .addServiceUuid(uuid)
+            //.addServiceUuid(uuid)
+            .addManufacturerData(76, decodeHex(uuid.toString().replace("-", "")))
             .build()
 
 

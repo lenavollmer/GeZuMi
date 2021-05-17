@@ -80,7 +80,7 @@ class HostFragment : Fragment() {
         Log.d(TAG, "start gatt server and game service")
         _gattServer = GattServer(requireContext(), _gameViewModel.bluetoothController, connectCallback)
         _gattServer.startServer(GameService.createHostService())
-        _gameViewModel.bluetoothController.startAdvertising(ParcelUuid(_gameViewModel.gameId))
+        _gameViewModel.bluetoothController.startAdvertising(ParcelUuid(/*_gameViewModel.gameId*/GameService.HOST_UUID))
         //else bluetoothController.stopAdvertising() // TODO stop host advertise when game starts?
         Log.d(TAG, "start game scan: ${_gameViewModel.gameId}")
         _gameViewModel.bluetoothController.startScan(_gameViewModel.gameScanCallback, ParcelUuid(_gameViewModel.gameId))
