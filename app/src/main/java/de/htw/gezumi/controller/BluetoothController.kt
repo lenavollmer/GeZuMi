@@ -57,20 +57,17 @@ class BluetoothController {
         if (!_scanFilters.contains(filter)) _scanFilters.add(filter)*/
 
 
-        val manData = byteArrayOf(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-        val mask = byteArrayOf(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1)
+        val bytes = decodeHex(serviceUUID.toString().replace("-", ""))
+        val mask = byteArrayOf(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0)
 
-        System.arraycopy(
-            decodeHex(serviceUUID.toString().replace("-", "")),
-            0,
-            manData,
-            0,
-            16
-        )
-        val filter = ScanFilter.Builder().setManufacturerData(76, manData, mask).build()
+        val filterBuilder = ScanFilter.Builder()
+        if (masked)
+            filterBuilder.setManufacturerData(76, bytes, mask)
+        else
+            filterBuilder.setManufacturerData(76, bytes)
 
         Log.d(TAG, "start ble scanning")
-        _bluetoothLeScanner?.startScan(listOf(filter), _scanSettings, leScanCallback)
+        _bluetoothLeScanner?.startScan(listOf(filterBuilder.build()), _scanSettings, leScanCallback)
     }
 
     /**
