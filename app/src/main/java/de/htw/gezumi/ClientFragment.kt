@@ -42,8 +42,8 @@ class ClientFragment : Fragment() {
                 when (callbackType) {
                     ScanSettings.CALLBACK_TYPE_ALL_MATCHES -> {// first match does not have a name
                         if (!_availableHostDevices.contains(result.device)) _availableHostDevices.add(result.device)
-                        // read host rssi if joined
-                        if (_gameViewModel.isJoined()) _gameViewModel.gameScanCallback.onScanResult(callbackType, result)
+                        // read host rssi if already joined
+                        //if (_gameViewModel.isJoined()) _gameViewModel.gameScanCallback.onScanResult(callbackType, result)
                     }
                     ScanSettings.CALLBACK_TYPE_MATCH_LOST -> {
                         _availableHostDevices.remove(result.device) // todo doesn't work with adapted scan settings
@@ -69,7 +69,7 @@ class ClientFragment : Fragment() {
             addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
         }
         _binding.buttonScan.setOnClickListener {
-            _gameViewModel.bluetoothController.startScan(_gameViewModel.hostScanCallback, ParcelUuid(GameService.getGameId()), true)
+            _gameViewModel.bluetoothController.startScan(_gameViewModel.hostScanCallback, ParcelUuid(GameService.HOST_UUID), true)// ParcelUuid(GameService.getGameId()), true) <- doesn't work, why???
         }
 
         checkPermission()
