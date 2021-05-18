@@ -2,10 +2,10 @@ package de.htw.gezumi.viewmodel
 
 import android.app.Application
 import android.bluetooth.BluetoothDevice
-import android.bluetooth.BluetoothGattServerCallback
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
+import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import android.os.ParcelUuid
@@ -13,9 +13,8 @@ import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
 import de.htw.gezumi.controller.BluetoothController
-import de.htw.gezumi.gatt.GameService
-import de.htw.gezumi.gatt.GattServerCallback
 import de.htw.gezumi.model.Device
+import de.htw.gezumi.util.FileStorage
 import java.util.*
 
 private const val TAG = "GameViewModel"
@@ -103,6 +102,14 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             device.addRssi(rssi)
             _devices[device] = System.currentTimeMillis()
         }
+    }
+
+    fun writeRSSILog() {
+        FileStorage.writeFile(
+            getApplication<Application>().applicationContext,
+            "${Calendar.getInstance().time}_distance_log.txt",
+            devices.iterator().next().rssiHistory.toString()
+        )
     }
 
 
