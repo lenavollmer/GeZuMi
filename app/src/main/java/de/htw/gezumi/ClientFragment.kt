@@ -2,12 +2,12 @@ package de.htw.gezumi
 
 import android.Manifest
 import android.app.Activity
-import android.app.AlertDialog
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
 import android.content.pm.PackageManager
+import android.nfc.Tag
 import android.os.*
 import android.util.Log
 import android.view.LayoutInflater
@@ -17,8 +17,10 @@ import androidx.core.app.ActivityCompat
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import de.htw.gezumi.adapter.JoinGameListAdapter
+import de.htw.gezumi.callbacks.PlayerCallback
 import de.htw.gezumi.databinding.FragmentClientBinding
 import de.htw.gezumi.databinding.PopupJoinBinding
 import de.htw.gezumi.gatt.GattClient
@@ -36,7 +38,6 @@ class ClientFragment : Fragment() {
     private lateinit var _binding: FragmentClientBinding
     private lateinit var _popupBinding: PopupJoinBinding
 
-
     private val _availableHostDevices: ArrayList<BluetoothDevice> = ArrayList()
     private val _hostDeviceListAdapter: JoinGameListAdapter = JoinGameListAdapter(_availableHostDevices) {
         val hostDevice = Device(_availableHostDevices[it].address, -70, _availableHostDevices[it])
@@ -48,12 +49,27 @@ class ClientFragment : Fragment() {
         val gattClient = GattClient(requireContext())
         gattClient.connect(_availableHostDevices[it], gattClientCallback)
 
-        val dialogBuilder = AlertDialog.Builder(activity)
-        dialogBuilder.setView(_popupBinding.root)
-        dialogBuilder.create()
-        dialogBuilder.show().setOnDismissListener{
-            gattClient.disconnect()
+        _gameViewModel.setCallBack(playerCallback)
+
+        // Todo Create Popup Window which is dismissable
+
+    }
+
+    private val playerCallback = object : PlayerCallback {
+        override fun gameJoined() {
+            Handler(Looper.getMainLooper()).post{
+                _popupBinding.joinText.text = getString(R.string.join_approved)
+            }
         }
+
+        override fun gameDeclined() {
+            _popupBinding.joinText.text = getString(R.string.join_declined)
+        }
+
+        override fun gameStarted() {
+            findNavController().navigate(R.id.action_ClientFragment_to_Game)
+        }
+
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -103,6 +119,7 @@ class ClientFragment : Fragment() {
         }
 
         checkPermission()
+
     }
 
     override fun onPause() {

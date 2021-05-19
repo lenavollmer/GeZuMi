@@ -5,13 +5,10 @@ import android.bluetooth.BluetoothDevice
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
-import android.content.Context
-import android.os.Handler
-import android.os.Looper
 import android.os.ParcelUuid
 import android.util.Log
-import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
+import de.htw.gezumi.callbacks.PlayerCallback
 import de.htw.gezumi.controller.BluetoothController
 import de.htw.gezumi.model.Device
 import de.htw.gezumi.util.FileStorage
@@ -21,6 +18,9 @@ private const val TAG = "GameViewModel"
 const val RSSI_READ_INTERVAL = 500
 
 class GameViewModel(application: Application) : AndroidViewModel(application) {
+
+
+    private var playerCallback: PlayerCallback? = null
 
     val bluetoothController: BluetoothController = BluetoothController()
     private val _devices = mutableMapOf<Device, Long>()
@@ -33,13 +33,18 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     fun onGameJoin() {
         Log.d(TAG, "on game join")
-        Handler(Looper.getMainLooper()).post{ Toast.makeText(getApplication<Application>().applicationContext, "Joined", Toast.LENGTH_LONG).show()}
+        playerCallback?.gameJoined()
         // waiting for game start is not necessary
-        Log.d(TAG, "start advertising on game id: ${gameId}")
+        Log.d(TAG, "start advertising on game id: $gameId")
         bluetoothController.startAdvertising(ParcelUuid(gameId))
-        Log.d(TAG, "start scanning for players on game id: ${gameId}")
+        Log.d(TAG, "start scanning for players on game id: $gameId")
         bluetoothController.stopScan(hostScanCallback)
         bluetoothController.startScan(gameScanCallback, ParcelUuid(gameId))
+    }
+
+
+    fun setCallBack(playerCallback : PlayerCallback) {
+        this.playerCallback = playerCallback
     }
 
     fun onGameLeave() {
@@ -48,6 +53,14 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         bluetoothController.stopAdvertising()
         bluetoothController.stopScan(gameScanCallback)
         // Handler(Looper.getMainLooper()).post{}
+    }
+
+    fun onGameStart() {
+        playerCallback?.gameStarted()
+    }
+
+    fun onGameDecline() {
+        playerCallback?.gameDeclined()
     }
 
     private fun isHost(): Boolean = !::host.isInitialized
@@ -104,6 +117,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    // Todo currently broken
     fun writeRSSILog() {
         FileStorage.writeFile(
             getApplication<Application>().applicationContext,

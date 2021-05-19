@@ -121,6 +121,7 @@ class HostFragment : Fragment() {
                 device.setName("BT Device")
                 _gameViewModel.addDevice(device)
             }
+            _gattServer.notifyGameStart()
             findNavController().navigate(R.id.action_HostFragment_to_Game)
             //findNavController().navigate(R.id.action_ClientFragment_to_Game, Bundle().putBoolean("client",false))
         }
