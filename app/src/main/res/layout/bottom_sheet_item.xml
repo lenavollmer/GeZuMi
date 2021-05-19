@@ -10,6 +10,7 @@
 
         <TextView
                 android:id="@+id/device_name"
+                android:textColor="?android:textColorPrimaryInverse"
                 android:layout_width="109dp"
                 android:layout_height="33dp"
                 android:layout_weight="1" />
@@ -25,7 +26,7 @@
                 android:layout_marginStart="10dp"
                 app:layout_constraintStart_toEndOf="@+id/approve"
                 android:backgroundTint="?android:colorAccent"
-                android:textColor="?android:textColorSecondary"
+                android:textColor="?android:textColorPrimaryInverse"
         />
         <Button
                 android:id="@+id/approve"
@@ -39,7 +40,7 @@
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/device_name"
                 android:backgroundTint="?android:colorAccent"
-                android:textColor="?android:textColorSecondary"
+                android:textColor="?android:textColorPrimaryInverse"
         />
 
     </LinearLayout>
