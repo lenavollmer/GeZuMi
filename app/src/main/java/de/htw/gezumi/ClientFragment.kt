@@ -69,14 +69,18 @@ class ClientFragment : Fragment() {
         }
 
         override fun gameDeclined() {
-            popupWindow.dismiss()
-            _popupBinding.joinText.text = getString(R.string.join_declined)
-            popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0)
+            Handler(Looper.getMainLooper()).post{
+                popupWindow.dismiss()
+                _popupBinding.joinText.text = getString(R.string.join_declined)
+                popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0)
+            }
         }
 
         override fun gameStarted() {
-            popupWindow.dismiss()
-            findNavController().navigate(R.id.action_ClientFragment_to_Game)
+            Handler(Looper.getMainLooper()).post{
+                popupWindow.dismiss()
+                findNavController().navigate(R.id.action_ClientFragment_to_Game)
+            }
         }
 
     }
