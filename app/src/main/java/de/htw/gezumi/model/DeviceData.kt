@@ -1,9 +1,11 @@
 package de.htw.gezumi.model
 
+import android.annotation.SuppressLint
 import java.nio.ByteBuffer
 
 class DeviceData(val deviceAddress: String, val value: Float) {
-
+    @kotlin.ExperimentalUnsignedTypes
+    @SuppressLint("DefaultLocale")
     companion object {
 
         fun fromBytes(bytes: ByteArray): DeviceData {
@@ -11,8 +13,11 @@ class DeviceData(val deviceAddress: String, val value: Float) {
             val value = ByteBuffer.wrap(bytes.slice(6 until bytes.size).toByteArray()).float
             return DeviceData(deviceAddress, value)
         }
-
-        private fun toHexString(bytes: ByteArray) = bytes.asUByteArray().joinToString(":") { it.toString(16).padStart(2, '0') }.capitalize()
+        private fun toHexString(bytes: ByteArray) = bytes.asUByteArray().joinToString(":") { it.toString(16).padStart(
+            2,
+            '0'
+        )
+        }.capitalize()
     }
 
     fun toByteArray(): ByteArray {
