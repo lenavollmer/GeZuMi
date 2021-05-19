@@ -1,10 +1,11 @@
 package de.htw.gezumi.model
 
+import android.annotation.SuppressLint
 import java.nio.ByteBuffer
-import java.util.*
 
 class DeviceData(val deviceAddress: String, val value: Float) {
     @kotlin.ExperimentalUnsignedTypes
+    @SuppressLint("DefaultLocale")
     companion object {
 
         fun fromBytes(bytes: ByteArray): DeviceData {
@@ -16,7 +17,7 @@ class DeviceData(val deviceAddress: String, val value: Float) {
             2,
             '0'
         )
-        }.capitalize(Locale.ROOT)
+        }.capitalize()
     }
 
     fun toByteArray(): ByteArray {
