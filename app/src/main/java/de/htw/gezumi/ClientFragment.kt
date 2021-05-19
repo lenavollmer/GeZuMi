@@ -133,10 +133,7 @@ class ClientFragment : Fragment() {
 
         checkPermission()
 
-        val wrapContent: Int = LinearLayout.LayoutParams.WRAP_CONTENT
-        val focusable = true
-
-        popupWindow = PopupWindow(_popupBinding.root, wrapContent, wrapContent, focusable)
+        popupWindow = PopupWindow(_popupBinding.root, LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT, true)
     }
 
     override fun onPause() {

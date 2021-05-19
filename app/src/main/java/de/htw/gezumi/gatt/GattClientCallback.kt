@@ -28,10 +28,7 @@ class GattClientCallback(private val _gameViewModel: GameViewModel) : BluetoothG
 
     override fun onCharacteristicRead(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic?, status: Int) {
         super.onCharacteristicRead(gatt, characteristic, status)
-
-        Log.d(TAG, "called " + characteristic?.uuid)
         when (characteristic?.uuid) {
-
             GameService.GAME_ID_UUID -> {
                 val gameIdPostfix = characteristic.value.toString(Charsets.UTF_8)
                 _gameViewModel.gameId = UUID.fromString(GameService.GAME_ID_PREFIX + gameIdPostfix)
