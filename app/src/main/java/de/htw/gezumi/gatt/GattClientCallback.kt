@@ -47,11 +47,11 @@ class GattClientCallback(private val _gameViewModel: GameViewModel) : BluetoothG
         when (descriptor?.uuid) {
             GameService.CLIENT_CONFIG -> {
                 if (status == BluetoothGatt.GATT_SUCCESS) {
-                    if (Arrays.equals(descriptor?.value, BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE)) {
+                    if (Arrays.equals(descriptor.value, BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE)) {
                         Log.d(TAG, "game event subscribe successful")
                         gatt?.setCharacteristicNotification(gatt.getService(GameService.HOST_UUID)?.getCharacteristic(GameService.GAME_EVENT_UUID), true)
                     }
-                    else if (Arrays.equals(descriptor?.value, BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE)) {
+                    else if (Arrays.equals(descriptor.value, BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE)) {
                         Log.d(TAG, "game event unsubscribe successful")
                         gatt?.setCharacteristicNotification(gatt.getService(GameService.HOST_UUID)?.getCharacteristic(GameService.GAME_EVENT_UUID), false)
                     }

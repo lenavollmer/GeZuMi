@@ -51,6 +51,7 @@ class GattServerCallback(private val _subscribedDevices: MutableSet<BluetoothDev
         }
     }
 
+    @kotlin.ExperimentalUnsignedTypes
     override fun onCharacteristicWriteRequest(
         device: BluetoothDevice?,
         requestId: Int,
