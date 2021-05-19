@@ -11,7 +11,7 @@ class ApprovedDevicesAdapter(private val _btDevices: List<BluetoothDevice>) : Re
     class ItemViewHolder(private val binding: ItemApprovedDeviceBinding): RecyclerView.ViewHolder(binding.root) {
         fun bind(device: BluetoothDevice) {
             // todo move to item_bt_device per data binding
-            binding.deviceName.text = device.name
+            binding.deviceName.text = device.address
             // make sure to include this so your view will be updated
             binding.invalidateAll()
             binding.executePendingBindings()

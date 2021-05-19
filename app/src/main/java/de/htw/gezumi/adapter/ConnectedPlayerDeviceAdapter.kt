@@ -15,7 +15,7 @@ class ConnectedPlayerDeviceAdapter(private val _btDevices: List<BluetoothDevice>
     inner class ItemViewHolder(private val binding: BottomSheetItemBinding): RecyclerView.ViewHolder(binding.root) {
 
         fun bind(device: BluetoothDevice) {
-            binding.deviceName.text = device.name
+            binding.deviceName.text = device.address
 
 
             val approveButton = binding.approve
