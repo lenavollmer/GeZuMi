@@ -15,34 +15,48 @@ import android.view.ViewGroup
 import androidx.core.app.ActivityCompat
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.DividerItemDecoration
-import de.htw.gezumi.adapter.BtDeviceListAdapter
-import de.htw.gezumi.controller.BluetoothController
+import de.htw.gezumi.adapter.HostDeviceListAdapter
 import de.htw.gezumi.databinding.FragmentClientBinding
+import de.htw.gezumi.gatt.GameService
+import de.htw.gezumi.viewmodel.GameViewModel
 
 private const val TAG = "ClientFragment"
 
 class ClientFragment : Fragment() {
 
+    private val _gameViewModel: GameViewModel by activityViewModels()
+
     private lateinit var _binding: FragmentClientBinding
 
-    private val _bluetoothController: BluetoothController = BluetoothController()
-    private val _btDevices: ArrayList<BluetoothDevice> = ArrayList()
-    private val _deviceListAdapter: BtDeviceListAdapter = BtDeviceListAdapter(_btDevices)
+    private val _availableHostDevices: ArrayList<BluetoothDevice> = ArrayList()
+    private val _hostDeviceListAdapter: HostDeviceListAdapter = HostDeviceListAdapter(_availableHostDevices)
 
-    private val leScanCallback: ScanCallback = object : ScanCallback() {
-        override fun onScanResult(callbackType: Int, result: ScanResult) {
-            super.onScanResult(callbackType, result)
-            Log.d(TAG, "BLE action type: $callbackType")
-            when (callbackType) {
-                ScanSettings.CALLBACK_TYPE_ALL_MATCHES -> // first match does not have a name
-                    if (!_btDevices.contains(result.device)) _btDevices.add(result.device)
-                ScanSettings.CALLBACK_TYPE_MATCH_LOST -> {
-                    _btDevices.remove(result.device) // todo doesn't work with adapted scan settings
-                    Log.d(TAG, "lost " + result.device.name)
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        _gameViewModel.hostScanCallback = object : ScanCallback() {
+            override fun onScanResult(callbackType: Int, result: ScanResult) {
+                super.onScanResult(callbackType, result)
+                Log.d(TAG, "host scan callback")
+                when (callbackType) {
+                    ScanSettings.CALLBACK_TYPE_ALL_MATCHES -> {// first match does not have a name
+                        if (!_availableHostDevices.contains(result.device)) _availableHostDevices.add(result.device)
+                        // read host rssi if already joined
+                        //if (_gameViewModel.isJoined()) _gameViewModel.gameScanCallback.onScanResult(callbackType, result)
+                    }
+                    ScanSettings.CALLBACK_TYPE_MATCH_LOST -> {
+                        _availableHostDevices.remove(result.device) // todo doesn't work with adapted scan settings
+                        Log.d(TAG, "lost " + result.device.name)
+                    }
                 }
+                updateBtDeviceListAdapter()
             }
-            updateBtDeviceListAdapter()
+
+            override fun onScanFailed(errorCode: Int) {
+                super.onScanFailed(errorCode)
+                Log.d(TAG, "scan failed: $errorCode")
+            }
         }
     }
 
@@ -54,13 +68,13 @@ class ClientFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding.lifecycleOwner = viewLifecycleOwner
-        _binding.recyclerBtDevices.adapter = _deviceListAdapter
+        _binding.recyclerBtDevices.adapter = _hostDeviceListAdapter
         _binding.recyclerBtDevices.apply {
             setHasFixedSize(true)
             addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
         }
-        _binding.button.setOnClickListener {
-            _bluetoothController.scanForDevices(leScanCallback)
+        _binding.buttonScan.setOnClickListener {
+            _gameViewModel.bluetoothController.startScan(_gameViewModel.hostScanCallback, ParcelUuid(GameService.HOST_UUID), true)// ParcelUuid(GameService.getGameId()), true) <- doesn't work, why???
         }
 
         checkPermission()
@@ -73,7 +87,7 @@ class ClientFragment : Fragment() {
     }
 
     private fun updateBtDeviceListAdapter() {
-        _deviceListAdapter.notifyDataSetChanged()
+        _hostDeviceListAdapter.notifyDataSetChanged()
     }
 
     private fun checkPermission() {

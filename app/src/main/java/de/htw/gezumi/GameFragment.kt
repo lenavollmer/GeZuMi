@@ -1,17 +1,20 @@
 package de.htw.gezumi
 
-import android.bluetooth.*
+import android.bluetooth.BluetoothDevice
 import android.os.Bundle
 import android.util.Log
-import android.view.*
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
+import androidx.fragment.app.activityViewModels
 import de.htw.gezumi.databinding.FragmentGameBinding
 import de.htw.gezumi.gatt.GattClient
 import de.htw.gezumi.gatt.GattClientCallback
 import de.htw.gezumi.model.Device
-import de.htw.gezumi.viewmodel.DevicesViewModel
+import de.htw.gezumi.viewmodel.GameViewModel
+import java.util.*
 
 private const val TAG = "GameFragment"
 
@@ -20,9 +23,11 @@ private const val TAG = "GameFragment"
  */
 class GameFragment : Fragment() {
 
-    private lateinit var _binding: FragmentGameBinding
-    private val _devicesViewModel: DevicesViewModel by viewModels()
+    private val _gameViewModel: GameViewModel by activityViewModels()
 
+    private lateinit var _binding: FragmentGameBinding
+
+    // bluetooth stuff also in game fragment or is it possible to manage all that in client and host?
     private lateinit var _gattClient: GattClient
     private lateinit var _hostDevice: BluetoothDevice
 
@@ -30,13 +35,13 @@ class GameFragment : Fragment() {
         super.onCreate(savedInstanceState)
         _hostDevice = arguments?.getParcelable("hostDevice")!!
 
-        val hostDevice = Device(_hostDevice.address, -70)
-        hostDevice.setName(_hostDevice.name)
-        _devicesViewModel.host = hostDevice
+        val hostDevice = Device(_hostDevice.address, -70, _hostDevice)
+        //hostDevice.setName(_hostDevice.name)
+        _gameViewModel.host = hostDevice
         Log.d(TAG, "host: ${hostDevice.name} address: ${hostDevice.address}")
-        _devicesViewModel.addDevice(_devicesViewModel.host)
+        _gameViewModel.addDevice(hostDevice)
 
-        val gattClientCallback = GattClientCallback(_devicesViewModel)
+        val gattClientCallback = GattClientCallback(_gameViewModel)
         _gattClient = GattClient(requireContext())
 
         // connect
@@ -54,17 +59,24 @@ class GameFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding.lifecycleOwner = viewLifecycleOwner
-        _binding.devicesViewModel = _devicesViewModel
+        _binding.gameViewModel = _gameViewModel
     }
 
     override fun onPause() {
         super.onPause()
-        _devicesViewModel.writeRSSILog(context)
+        _gameViewModel.writeRSSILog()
         _gattClient.disconnect()
     }
 
     override fun onResume() {
         super.onResume()
         _gattClient.reconnect()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        // stop scan and advertise
+        // TODO on resume has to start it again (but not twice!) -> implement pause/disconnect functionality
+        _gameViewModel.onGameLeave()
     }
 }

@@ -9,7 +9,7 @@ import androidx.recyclerview.widget.RecyclerView
 import de.htw.gezumi.R
 import de.htw.gezumi.databinding.ItemBtDeviceBinding
 
-class BtDeviceListAdapter(private val _btDevices: List<BluetoothDevice>) : RecyclerView.Adapter<BtDeviceListAdapter.ItemViewHolder>() {
+class HostDeviceListAdapter(private val _availableHostDevices: List<BluetoothDevice>) : RecyclerView.Adapter<HostDeviceListAdapter.ItemViewHolder>() {
 
     class ItemViewHolder(private val binding: ItemBtDeviceBinding): RecyclerView.ViewHolder(binding.root) {
         fun bind(device: BluetoothDevice) {
@@ -37,12 +37,12 @@ class BtDeviceListAdapter(private val _btDevices: List<BluetoothDevice>) : Recyc
     // Involves populating data into the item through holder
     override fun onBindViewHolder(viewHolder: ItemViewHolder, position: Int) {
         // Get the data model based on position
-        val device: BluetoothDevice = _btDevices[position]
+        val device: BluetoothDevice = _availableHostDevices[position]
         viewHolder.bind(device)
     }
 
     // Returns the total count of items in the list
     override fun getItemCount(): Int {
-        return _btDevices.size
+        return _availableHostDevices.size
     }
 }
