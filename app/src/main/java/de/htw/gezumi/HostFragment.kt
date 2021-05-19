@@ -4,45 +4,50 @@ import android.bluetooth.BluetoothDevice
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import androidx.fragment.app.Fragment
+import android.os.ParcelUuid
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.databinding.DataBindingUtil
-import androidx.fragment.app.viewModels
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+import de.htw.gezumi.adapter.ApprovedDevicesAdapter
 import de.htw.gezumi.adapter.ConnectedPlayerDeviceAdapter
-import de.htw.gezumi.adapter.PlayerDeviceListAdapter
-import de.htw.gezumi.controller.BluetoothController
 import de.htw.gezumi.databinding.FragmentHostBinding
+import de.htw.gezumi.gatt.GameService
 import de.htw.gezumi.gatt.GattServer
+import de.htw.gezumi.viewmodel.GameViewModel
+import kotlin.collections.ArrayList
 import de.htw.gezumi.model.Device
-import de.htw.gezumi.viewmodel.DevicesViewModel
 
 private const val TAG = "HostFragment"
 
 class HostFragment : Fragment() {
 
+    private val _gameViewModel: GameViewModel by activityViewModels()
+
     private lateinit var _binding: FragmentHostBinding
     private lateinit var _bottomSheetBehavior: BottomSheetBehavior<ConstraintLayout>
 
-    private val _devicesViewModel: DevicesViewModel by viewModels()
-
-    private val _bluetoothController: BluetoothController = BluetoothController()
     private lateinit var _gattServer: GattServer
 
-    private val _connectedDevices: ArrayList<BluetoothDevice> = ArrayList()
+    private val _connectedDevices: ArrayList<BluetoothDevice> = ArrayList() // devices that are connected, but neither approved nor declined
     private val _approvedDevices: ArrayList<BluetoothDevice> = ArrayList()
-    private val _playerListAdapter: PlayerDeviceListAdapter = PlayerDeviceListAdapter(_approvedDevices)
-    private val _connectedListAdapter: ConnectedPlayerDeviceAdapter = ConnectedPlayerDeviceAdapter(_connectedDevices) { position, status ->
-        if(status == ConnectedPlayerDeviceAdapter.STATUS.APPROVED){
+    private val _playerListAdapter: ApprovedDevicesAdapter = ApprovedDevicesAdapter(_approvedDevices)
+    private val _connectedListAdapter = ConnectedPlayerDeviceAdapter(_connectedDevices) { position, status ->
+        if (status == ConnectedPlayerDeviceAdapter.STATUS.APPROVED) {
             _approvedDevices.add(_connectedDevices[position])
+            _gattServer.notifyJoinApproved(_connectedDevices[position], true)
             _connectedDevices.removeAt(position)
-        }else{
+        }
+        else {
             // Todo add code to let device know that they are rejected
+            _gattServer.notifyJoinApproved(_connectedDevices[position], false)
             _connectedDevices.removeAt(position)
         }
         updateAdapters()
@@ -56,7 +61,7 @@ class HostFragment : Fragment() {
     private val connectCallback = object : GattConnectCallback {
         override fun onGattConnect(device: BluetoothDevice) {
             _connectedDevices.add(device)
-            _bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
+            Handler(Looper.getMainLooper()).post{_bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED}
             Handler(Looper.getMainLooper()).post{updateAdapters()}
         }
 
@@ -71,10 +76,15 @@ class HostFragment : Fragment() {
         arguments?.let {
 
         }
-        // start gatt server
-        _gattServer = GattServer(requireContext(), _bluetoothController, connectCallback)
-        _gattServer.startAdvertising()
-        _gattServer.startServer()
+        _gameViewModel.gameId = GameService.getGameId()
+
+        Log.d(TAG, "start gatt server and game service")
+        _gattServer = GattServer(requireContext(), _gameViewModel.bluetoothController, connectCallback)
+        _gattServer.startServer(GameService.createHostService())
+        _gameViewModel.bluetoothController.startAdvertising(ParcelUuid(_gameViewModel.gameId))
+        //else bluetoothController.stopAdvertising() // TODO stop host advertise when game starts?
+        Log.d(TAG, "start game scan: ${_gameViewModel.gameId}")
+        _gameViewModel.bluetoothController.startScan(_gameViewModel.gameScanCallback, ParcelUuid(_gameViewModel.gameId))
     }
 
     override fun onCreateView(
@@ -107,9 +117,9 @@ class HostFragment : Fragment() {
         _binding.startGame.setOnClickListener {
             _approvedDevices.forEach{
                 // Todo fix NAME and TXPOWER
-                val device = Device(it.address, -70)
+                val device = Device(it.address, -70, it)
                 device.setName("BT Device")
-                _devicesViewModel.addDevice(device)
+                _gameViewModel.addDevice(device)
             }
             findNavController().navigate(R.id.action_HostFragment_to_Game)
             //findNavController().navigate(R.id.action_ClientFragment_to_Game, Bundle().putBoolean("client",false))

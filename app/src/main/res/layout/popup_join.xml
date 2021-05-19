@@ -3,7 +3,7 @@
         xmlns:tools="http://schemas.android.com/tools">
 
     <data>
-        <variable name="devicesViewModel" type="de.htw.gezumi.viewmodel.DevicesViewModel"/>
+        <variable name="gameViewModel" type="de.htw.gezumi.viewmodel.GameViewModel"/>
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -11,7 +11,7 @@
             android:layout_height="match_parent"
             tools:context=".ClientFragment">
         <TextView
-                android:text="@{devicesViewModel.host.name}"
+                android:text="@{gameViewModel.host.name}"
                 android:layout_width="31dp"
                 android:layout_height="15dp" android:id="@+id/name"
                 app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent"
@@ -19,7 +19,7 @@
                 app:layout_constraintTop_toBottomOf="@+id/join_text" android:layout_marginTop="44dp"
                 app:layout_constraintHorizontal_bias="0.505"/>
         <TextView
-                android:text="@{@string/distance(devicesViewModel.host.distance)}"
+                android:text="@{@string/distance(gameViewModel.host.distance)}"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" android:id="@+id/rssi"
                 app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent"
