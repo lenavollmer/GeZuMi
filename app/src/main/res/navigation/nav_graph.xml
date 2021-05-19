@@ -17,6 +17,7 @@
         <action android:id="@+id/action_MainFragment_to_Client" app:destination="@id/Client">
             <argument android:name="isHost" android:defaultValue="false"/>
         </action>
+        <action android:id="@+id/action_MainFragment_to_Game" app:destination="@id/Game"/>
     </fragment>
     <fragment
             android:id="@+id/Host"
@@ -45,9 +46,6 @@
             android:name="de.htw.gezumi.GameFragment"
             android:label="@string/game_label"
             tools:layout="@layout/fragment_game">
-        <argument
-                android:name="device"
-                app:argType="android.bluetooth.BluetoothDevice" />
-        <argument android:name="isHost" app:argType="boolean"/>
+        <argument android:name="isClient" app:argType="boolean" android:defaultValue="false"/>
     </fragment>
 </navigation>

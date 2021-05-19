@@ -72,7 +72,13 @@ class GattClientCallback(private val _gameViewModel: GameViewModel) : BluetoothG
                     gatt?.readCharacteristic(gameIdCharacteristic)
                 }
                 else {
-                    // declined
+                    _gameViewModel.onGameDecline()
+                }
+            }
+            GameService.GAME_EVENT_UUID -> {
+                val event = ByteBuffer.wrap(characteristic.value).int
+                if(event == GameService.GAME_START_EVENT){
+                    _gameViewModel.onGameStart()
                 }
             }
         }

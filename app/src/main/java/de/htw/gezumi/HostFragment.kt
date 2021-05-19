@@ -13,16 +13,17 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+import de.htw.gezumi.adapter.ApprovedDevicesAdapter
 import de.htw.gezumi.adapter.ConnectedPlayerDeviceAdapter
-import de.htw.gezumi.adapter.PlayerDeviceListAdapter
 import de.htw.gezumi.databinding.FragmentHostBinding
 import de.htw.gezumi.gatt.GameService
 import de.htw.gezumi.gatt.GattServer
 import de.htw.gezumi.viewmodel.GameViewModel
-import java.util.*
 import kotlin.collections.ArrayList
+import de.htw.gezumi.model.Device
 
 private const val TAG = "HostFragment"
 
@@ -37,7 +38,7 @@ class HostFragment : Fragment() {
 
     private val _connectedDevices: ArrayList<BluetoothDevice> = ArrayList() // devices that are connected, but neither approved nor declined
     private val _approvedDevices: ArrayList<BluetoothDevice> = ArrayList()
-    private val _playerListAdapter: PlayerDeviceListAdapter = PlayerDeviceListAdapter(_approvedDevices)
+    private val _playerListAdapter: ApprovedDevicesAdapter = ApprovedDevicesAdapter(_approvedDevices)
     private val _connectedListAdapter = ConnectedPlayerDeviceAdapter(_connectedDevices) { position, status ->
         if (status == ConnectedPlayerDeviceAdapter.STATUS.APPROVED) {
             _approvedDevices.add(_connectedDevices[position])
@@ -112,6 +113,18 @@ class HostFragment : Fragment() {
 
         _bottomSheetBehavior.isHideable = false
         _bottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
+
+        _binding.startGame.setOnClickListener {
+            _approvedDevices.forEach{
+                // Todo fix NAME and TXPOWER
+                val device = Device(it.address, -70, it)
+                device.setName("BT Device")
+                _gameViewModel.addDevice(device)
+            }
+            _gattServer.notifyGameStart()
+            findNavController().navigate(R.id.action_HostFragment_to_Game)
+            //findNavController().navigate(R.id.action_ClientFragment_to_Game, Bundle().putBoolean("client",false))
+        }
     }
 
     // TODO handle lifecycle actions for gatt server

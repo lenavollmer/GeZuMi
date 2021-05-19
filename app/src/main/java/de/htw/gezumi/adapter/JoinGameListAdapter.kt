@@ -3,23 +3,22 @@ package de.htw.gezumi.adapter
 import android.bluetooth.BluetoothDevice
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.core.os.bundleOf
-import androidx.navigation.findNavController
 import androidx.recyclerview.widget.RecyclerView
-import de.htw.gezumi.R
-import de.htw.gezumi.databinding.ItemBtDeviceBinding
+import de.htw.gezumi.databinding.ItemJoinBinding
 
-class HostDeviceListAdapter(private val _availableHostDevices: List<BluetoothDevice>) : RecyclerView.Adapter<HostDeviceListAdapter.ItemViewHolder>() {
 
-    class ItemViewHolder(private val binding: ItemBtDeviceBinding): RecyclerView.ViewHolder(binding.root) {
+class JoinGameListAdapter(private val _btDevices: List<BluetoothDevice>, private val listener: (position: Int) -> Unit) : RecyclerView.Adapter<JoinGameListAdapter.ItemViewHolder>() {
+
+    inner class ItemViewHolder(private val binding: ItemJoinBinding): RecyclerView.ViewHolder(binding.root) {
+
         fun bind(device: BluetoothDevice) {
-            // todo move to item_bt_device per data binding
-            binding.contactName.text = device.name
-            val button = binding.messageButton
-            button.setText(R.string.connect)
-            button.setOnClickListener {
-                itemView.findNavController().navigate(R.id.action_ClientFragment_to_Game, bundleOf("hostDevice" to device))
+            binding.deviceName.text = device.address
+
+            val approveButton = binding.buttonJoin
+            approveButton.setOnClickListener {
+                listener.invoke(adapterPosition)
             }
+
             // make sure to include this so your view will be updated
             binding.invalidateAll()
             binding.executePendingBindings()
@@ -30,19 +29,19 @@ class HostDeviceListAdapter(private val _availableHostDevices: List<BluetoothDev
     // Usually involves inflating a layout from XML and returning the holder
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemViewHolder {
         val inflater = LayoutInflater.from(parent.context)
-        val binding = ItemBtDeviceBinding.inflate(inflater)
+        val binding = ItemJoinBinding.inflate(inflater)
         return ItemViewHolder(binding)
     }
 
     // Involves populating data into the item through holder
     override fun onBindViewHolder(viewHolder: ItemViewHolder, position: Int) {
         // Get the data model based on position
-        val device: BluetoothDevice = _availableHostDevices[position]
+        val device: BluetoothDevice = _btDevices[position]
         viewHolder.bind(device)
     }
 
     // Returns the total count of items in the list
     override fun getItemCount(): Int {
-        return _availableHostDevices.size
+        return _btDevices.size
     }
 }

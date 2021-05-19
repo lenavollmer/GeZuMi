@@ -4,29 +4,14 @@ import android.bluetooth.BluetoothDevice
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import de.htw.gezumi.databinding.BottomSheetItemBinding
+import de.htw.gezumi.databinding.ItemApprovedDeviceBinding
 
-class ConnectedPlayerDeviceAdapter(private val _btDevices: List<BluetoothDevice>, private val listener: (position: Int, status: STATUS) -> Unit) : RecyclerView.Adapter<ConnectedPlayerDeviceAdapter.ItemViewHolder>() {
+class ApprovedDevicesAdapter(private val _btDevices: List<BluetoothDevice>) : RecyclerView.Adapter<ApprovedDevicesAdapter.ItemViewHolder>() {
 
-    enum class STATUS {
-        APPROVED, DECLINED
-    }
-
-    inner class ItemViewHolder(private val binding: BottomSheetItemBinding): RecyclerView.ViewHolder(binding.root) {
-
+    class ItemViewHolder(private val binding: ItemApprovedDeviceBinding): RecyclerView.ViewHolder(binding.root) {
         fun bind(device: BluetoothDevice) {
+            // todo move to item_bt_device per data binding
             binding.deviceName.text = device.address
-
-
-            val approveButton = binding.approve
-            approveButton.setOnClickListener {
-                listener.invoke(adapterPosition, STATUS.APPROVED)
-            }
-
-            val declineButton = binding.decline
-            declineButton.setOnClickListener {
-                listener.invoke(adapterPosition, STATUS.DECLINED)
-            }
             // make sure to include this so your view will be updated
             binding.invalidateAll()
             binding.executePendingBindings()
@@ -37,7 +22,7 @@ class ConnectedPlayerDeviceAdapter(private val _btDevices: List<BluetoothDevice>
     // Usually involves inflating a layout from XML and returning the holder
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemViewHolder {
         val inflater = LayoutInflater.from(parent.context)
-        val binding = BottomSheetItemBinding.inflate(inflater)
+        val binding = ItemApprovedDeviceBinding.inflate(inflater)
         return ItemViewHolder(binding)
     }
 
