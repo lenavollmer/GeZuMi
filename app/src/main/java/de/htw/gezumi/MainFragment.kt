@@ -30,5 +30,8 @@ class MainFragment : Fragment() {
         view.findViewById<Button>(R.id.button_join).setOnClickListener {
             findNavController().navigate(R.id.action_MainFragment_to_Client)
         }
+        view.findViewById<Button>(R.id.button_game).setOnClickListener {
+            findNavController().navigate(R.id.action_MainFragment_to_Game)
+        }
     }
 }

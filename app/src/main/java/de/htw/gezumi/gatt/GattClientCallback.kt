@@ -2,16 +2,13 @@ package de.htw.gezumi.gatt
 
 import android.bluetooth.*
 import android.util.Log
-import de.htw.gezumi.model.Device
-import de.htw.gezumi.viewmodel.DevicesViewModel
+import de.htw.gezumi.viewmodel.GameViewModel
 import java.nio.ByteBuffer
 import java.util.*
 
 private const val TAG = "ClientGattCallback"
 
-class GattClientCallback(private val _devicesViewModel: DevicesViewModel) : BluetoothGattCallback() {
-
-    private var _rssiTimer = Timer() // TODO timer just for test purposes here, rssi value doesn't have to do with gatt connection
+class GattClientCallback(private val _gameViewModel: GameViewModel) : BluetoothGattCallback() {
 
     override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
         if (newState == BluetoothProfile.STATE_CONNECTED) {
@@ -20,53 +17,71 @@ class GattClientCallback(private val _devicesViewModel: DevicesViewModel) : Blue
             gatt?.discoverServices()
 
         } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-            _rssiTimer.cancel()
         }
-    }
-
-    override fun onReadRemoteRssi(gatt: BluetoothGatt?, rssi: Int, status: Int) {
-        super.onReadRemoteRssi(gatt, rssi, status)
-        _devicesViewModel.devices[0].addRssi(rssi) // TODO set for correct device
-        // TODO the raw rssi value is transferred here, but a processed value should
-        _lastRssi = rssi
-        // write device the rssi was measured for (in this test case it's just the host)
-        val sendRequest = gatt?.getService(GameService.SERVER_UUID)?.getCharacteristic(GameService.RSSI_UUID)?.getDescriptor(GameService.RSSI_SEND_REQUEST_UUID)
-        sendRequest?.value = "Device1".toByteArray(Charsets.UTF_8)
-        gatt?.writeDescriptor(sendRequest)
-    }
-    private var _lastRssi = 0;
-    override fun onDescriptorWrite(gatt: BluetoothGatt?, descriptor: BluetoothGattDescriptor?, status: Int) {
-        super.onDescriptorWrite(gatt, descriptor, status)
-
-        // send characteristic
-        val rssiCharacteristic = gatt?.getService(GameService.SERVER_UUID)?.getCharacteristic(GameService.RSSI_UUID)
-        rssiCharacteristic?.value = ByteBuffer.allocate(4).putInt(_lastRssi).array()
-        gatt?.writeCharacteristic(rssiCharacteristic)
     }
 
     override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
         super.onServicesDiscovered(gatt, status)
         Log.d(TAG, "services discovered")
-        Log.d(TAG, "read game id")
-        val gameIdCharacteristic = gatt?.getService(GameService.SERVER_UUID)?.getCharacteristic(GameService.GAME_ID_UUID)
-        gatt?.readCharacteristic(gameIdCharacteristic)
-
-        Log.d(TAG, "start testing rssi")
-        val task: TimerTask = object : TimerTask() {
-                override fun run() {
-                    gatt?.readRemoteRssi()
-                }
-            }
-            _rssiTimer.schedule(task, 500, 500)
+        gatt?.setCharacteristicNotification(gatt.getService(GameService.HOST_UUID)?.getCharacteristic(GameService.JOIN_APPROVED_UUID), true)
     }
 
     override fun onCharacteristicRead(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic?, status: Int) {
         super.onCharacteristicRead(gatt, characteristic, status)
         when (characteristic?.uuid) {
             GameService.GAME_ID_UUID -> {
-                val gameId = characteristic.value?.toString(Charsets.UTF_8)
-                Log.d(TAG, "callback: characteristic read successfully, gameId: $gameId")
+                val gameIdPostfix = characteristic.value.toString(Charsets.UTF_8)
+                _gameViewModel.gameId = UUID.fromString(GameService.GAME_ID_PREFIX + gameIdPostfix)
+                Log.d(TAG, "callback: characteristic read successfully, gameId: ${_gameViewModel.gameId}")
+                _gameViewModel.onGameJoin()
+                Log.d(TAG, "subscribe for game events")
+                val subscribeDescriptor = gatt?.getService(GameService.HOST_UUID)?.getCharacteristic(GameService.GAME_EVENT_UUID)?.getDescriptor(GameService.CLIENT_CONFIG)
+                subscribeDescriptor?.value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
+                gatt?.writeDescriptor(subscribeDescriptor)
             }
         }
     }
+
+    override fun onDescriptorWrite(gatt: BluetoothGatt?, descriptor: BluetoothGattDescriptor?, status: Int) {
+        super.onDescriptorWrite(gatt, descriptor, status)
+        when (descriptor?.uuid) {
+            GameService.CLIENT_CONFIG -> {
+                if (status == BluetoothGatt.GATT_SUCCESS) {
+                    if (Arrays.equals(descriptor?.value, BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE)) {
+                        Log.d(TAG, "game event subscribe successful")
+                        gatt?.setCharacteristicNotification(gatt.getService(GameService.HOST_UUID)?.getCharacteristic(GameService.GAME_EVENT_UUID), true)
+                    }
+                    else if (Arrays.equals(descriptor?.value, BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE)) {
+                        Log.d(TAG, "game event unsubscribe successful")
+                        gatt?.setCharacteristicNotification(gatt.getService(GameService.HOST_UUID)?.getCharacteristic(GameService.GAME_EVENT_UUID), false)
+                    }
+                }
+            }
+        }
+    }
+
+    override fun onCharacteristicChanged(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic?) {
+        super.onCharacteristicChanged(gatt, characteristic)
+        when (characteristic?.uuid) {
+            GameService.JOIN_APPROVED_UUID -> {
+                Log.d(TAG, "callback")
+                val approved = ByteBuffer.wrap(characteristic.value).int
+                if (approved == 1) {
+                    Log.d(TAG, "approved, read game id")
+                    val gameIdCharacteristic = gatt?.getService(GameService.HOST_UUID)?.getCharacteristic(GameService.GAME_ID_UUID)
+                    gatt?.readCharacteristic(gameIdCharacteristic)
+                }
+                else {
+                    _gameViewModel.onGameDecline()
+                }
+            }
+            GameService.GAME_EVENT_UUID -> {
+                val event = ByteBuffer.wrap(characteristic.value).int
+                if(event == GameService.GAME_START_EVENT){
+                    _gameViewModel.onGameStart()
+                }
+            }
+        }
+    }
+
 }

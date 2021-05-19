@@ -9,61 +9,131 @@ import android.bluetooth.le.ScanSettings
 import android.content.pm.PackageManager
 import android.os.*
 import android.util.Log
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
+import android.widget.PopupWindow
 import androidx.core.app.ActivityCompat
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
-import de.htw.gezumi.adapter.BtDeviceListAdapter
-import de.htw.gezumi.controller.BluetoothController
+import de.htw.gezumi.adapter.JoinGameListAdapter
+import de.htw.gezumi.callbacks.PlayerCallback
 import de.htw.gezumi.databinding.FragmentClientBinding
+import de.htw.gezumi.databinding.PopupJoinBinding
+import de.htw.gezumi.gatt.GameService
+import de.htw.gezumi.gatt.GattClient
+import de.htw.gezumi.gatt.GattClientCallback
+import de.htw.gezumi.model.Device
+import de.htw.gezumi.viewmodel.GameViewModel
+
 
 private const val TAG = "ClientFragment"
 
 class ClientFragment : Fragment() {
 
+    private val _gameViewModel: GameViewModel by activityViewModels()
+
     private lateinit var _binding: FragmentClientBinding
+    private lateinit var _popupBinding: PopupJoinBinding
+    private lateinit var popupWindow: PopupWindow
 
-    private val _bluetoothController: BluetoothController = BluetoothController()
-    private val _btDevices: ArrayList<BluetoothDevice> = ArrayList()
-    private val _deviceListAdapter: BtDeviceListAdapter = BtDeviceListAdapter(_btDevices)
+    private val _availableHostDevices: ArrayList<BluetoothDevice> = ArrayList()
+    private val _hostDeviceListAdapter: JoinGameListAdapter = JoinGameListAdapter(_availableHostDevices) {
+        val hostDevice = Device(_availableHostDevices[it].address, -70, _availableHostDevices[it])
+        hostDevice.setName(_availableHostDevices[it].address)
+        _gameViewModel.host = hostDevice
+        _gameViewModel.addDevice(hostDevice)
 
-    private val leScanCallback: ScanCallback = object : ScanCallback() {
-        override fun onScanResult(callbackType: Int, result: ScanResult) {
-            super.onScanResult(callbackType, result)
-            Log.d(TAG, "BLE action type: $callbackType")
-            when (callbackType) {
-                ScanSettings.CALLBACK_TYPE_ALL_MATCHES -> // first match does not have a name
-                    if (!_btDevices.contains(result.device)) _btDevices.add(result.device)
-                ScanSettings.CALLBACK_TYPE_MATCH_LOST -> {
-                    _btDevices.remove(result.device) // todo doesn't work with adapted scan settings
-                    Log.d(TAG, "lost " + result.device.name)
-                }
+        val gattClientCallback = GattClientCallback(_gameViewModel)
+        val gattClient = GattClient(requireContext())
+        gattClient.connect(_availableHostDevices[it], gattClientCallback)
+
+        _gameViewModel.setCallBack(playerCallback)
+
+        popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0)
+
+    }
+
+    private val playerCallback = object : PlayerCallback {
+        override fun gameJoined() {
+            Handler(Looper.getMainLooper()).post{
+                popupWindow.dismiss()
+                _popupBinding.joinText.text = getString(R.string.join_approved)
+                popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0)
             }
-            updateBtDeviceListAdapter()
+        }
+
+        override fun gameDeclined() {
+            Handler(Looper.getMainLooper()).post{
+                popupWindow.dismiss()
+                _popupBinding.joinText.text = getString(R.string.join_declined)
+                popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0)
+            }
+        }
+
+        override fun gameStarted() {
+            Handler(Looper.getMainLooper()).post{
+                popupWindow.dismiss()
+                findNavController().navigate(R.id.action_ClientFragment_to_Game)
+            }
+        }
+
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        _gameViewModel.hostScanCallback = object : ScanCallback() {
+            override fun onScanResult(callbackType: Int, result: ScanResult) {
+                super.onScanResult(callbackType, result)
+                Log.d(TAG, "host scan callback")
+                when (callbackType) {
+                    ScanSettings.CALLBACK_TYPE_ALL_MATCHES -> {// first match does not have a name
+                        if (!_availableHostDevices.contains(result.device)) _availableHostDevices.add(result.device)
+                        // read host rssi if already joined
+                        //if (_gameViewModel.isJoined()) _gameViewModel.gameScanCallback.onScanResult(callbackType, result)
+                    }
+                    ScanSettings.CALLBACK_TYPE_MATCH_LOST -> {
+                        _availableHostDevices.remove(result.device) // todo doesn't work with adapted scan settings
+                        Log.d(TAG, "lost " + result.device.name)
+                    }
+                }
+                updateBtDeviceListAdapter()
+            }
+
+            override fun onScanFailed(errorCode: Int) {
+                super.onScanFailed(errorCode)
+                Log.d(TAG, "scan failed: $errorCode")
+            }
         }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = DataBindingUtil.inflate(inflater, R.layout.fragment_client, container, false)
+        _popupBinding = DataBindingUtil.inflate(inflater, R.layout.popup_join, null, false)
+
         return _binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding.lifecycleOwner = viewLifecycleOwner
-        _binding.recyclerBtDevices.adapter = _deviceListAdapter
+        _binding.recyclerBtDevices.adapter = _hostDeviceListAdapter
         _binding.recyclerBtDevices.apply {
             setHasFixedSize(true)
             addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
         }
-        _binding.button.setOnClickListener {
-            _bluetoothController.scanForDevices(leScanCallback)
+        _binding.buttonScan.setOnClickListener {
+            _gameViewModel.bluetoothController.startScan(_gameViewModel.hostScanCallback, ParcelUuid(GameService.HOST_UUID), true)// ParcelUuid(GameService.getGameId()), true) <- doesn't work, why???
         }
 
         checkPermission()
+
+        popupWindow = PopupWindow(_popupBinding.root, LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT, true)
     }
 
     override fun onPause() {
@@ -73,7 +143,7 @@ class ClientFragment : Fragment() {
     }
 
     private fun updateBtDeviceListAdapter() {
-        _deviceListAdapter.notifyDataSetChanged()
+        _hostDeviceListAdapter.notifyDataSetChanged()
     }
 
     private fun checkPermission() {

@@ -3,21 +3,22 @@ package de.htw.gezumi.gatt
 import android.bluetooth.*
 import android.util.Log
 import de.htw.gezumi.HostFragment
-import java.nio.ByteBuffer
+import de.htw.gezumi.model.DeviceData
+import java.util.*
 
 private const val TAG = "GattServerCallback"
 
-class GattServerCallback(private val _registeredDevices: MutableSet<BluetoothDevice>, private val _gattServer: GattServer, private val _connectCallback : HostFragment.GattConnectCallback) : BluetoothGattServerCallback() {
+class GattServerCallback(private val _subscribedDevices: MutableSet<BluetoothDevice>, private val _gattServer: GattServer, private val _connectCallback : HostFragment.GattConnectCallback) : BluetoothGattServerCallback() {
 
     override fun onConnectionStateChange(device: BluetoothDevice, status: Int, newState: Int) {
         if (newState == BluetoothProfile.STATE_CONNECTED) {
-            Log.d(TAG, "BluetoothDevice CONNECTED: $device")
+            Log.d(TAG, "bluetoothDevice CONNECTED: $device")
             _connectCallback.onGattConnect(device)
         } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-            Log.d(TAG, "BluetoothDevice DISCONNECTED: $device")
+            Log.d(TAG, "bluetoothDevice DISCONNECTED: $device")
             //Remove device from any active subscriptions
             _connectCallback.onGattDisconnect(device)
-            _registeredDevices.remove(device)
+            _subscribedDevices.remove(device)
         }
     }
 
@@ -27,13 +28,13 @@ class GattServerCallback(private val _registeredDevices: MutableSet<BluetoothDev
     ) {
         when (characteristic.uuid) {
             GameService.GAME_ID_UUID -> {
-                Log.d(TAG, "read game ID")
+                Log.d(TAG, "read game ID ${device.address}")
                 _gattServer.bluetoothGattServer?.sendResponse(
                     device,
                     requestId,
                     BluetoothGatt.GATT_SUCCESS,
                     0,
-                    GameService.getGameId()
+                    GameService.gameIdPostfix.toByteArray(Charsets.UTF_8)
                 )
             }
             else -> {
@@ -63,13 +64,12 @@ class GattServerCallback(private val _registeredDevices: MutableSet<BluetoothDev
             offset, value)
         when (characteristic?.uuid) {
             GameService.RSSI_UUID -> {
-                val rssi = ByteBuffer.wrap(value!!).int;
-                Log.d(TAG, "write received: rssi = $rssi")
+                Log.d(TAG, "read " + value?.size)
+                val deviceData = DeviceData.fromBytes(value!!)
+                Log.d(TAG, "write received: device: ${deviceData.deviceAddress} rssi = ${deviceData.value}")
             }
         }
     }
-
-    // TODO map value and descriptor property in a way that it works for many incoming requests from different devices
 
     override fun onDescriptorWriteRequest(
         device: BluetoothDevice, requestId: Int,
@@ -79,29 +79,24 @@ class GattServerCallback(private val _registeredDevices: MutableSet<BluetoothDev
     ) {
         when (descriptor.uuid) {
             GameService.CLIENT_CONFIG -> {
-                /*if (Arrays.equals(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE, value)) {
-                    Log.d(TAG, "Subscribe device to notifications: $device")
-                    _registeredDevices.add(device)
+                if (Arrays.equals(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE, value)) {
+                    Log.d(TAG, "subscribe device to notifications: $device")
+                    _subscribedDevices.add(device)
                 } else if (Arrays.equals(BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE, value)) {
-                    Log.d(TAG, "Unsubscribe device from notifications: $device")
-                    _registeredDevices.remove(device)
+                    Log.d(TAG, "unsubscribe device from notifications: $device")
+                    _subscribedDevices.remove(device)
                 }
-
                 if (responseNeeded) {
                     _gattServer.bluetoothGattServer?.sendResponse(
                         device,
                         requestId,
                         BluetoothGatt.GATT_SUCCESS,
-                        0, null
+                        0, BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
                     )
-                }*/
-            }
-            GameService.RSSI_SEND_REQUEST_UUID -> {
-                val deviceName = value.toString(Charsets.UTF_8)
-                Log.d(TAG, "rssi device: $deviceName")
+                }
             }
             else -> {
-                Log.w(TAG, "Unknown descriptor write request")
+                Log.d(TAG, "Unknown descriptor write request")
                 if (responseNeeded) {
                     _gattServer.bluetoothGattServer?.sendResponse(
                         device,
@@ -112,44 +107,5 @@ class GattServerCallback(private val _registeredDevices: MutableSet<BluetoothDev
                 }
             }
         }
-        if (responseNeeded) {
-            _gattServer.bluetoothGattServer?.sendResponse(
-                device,
-                requestId,
-                BluetoothGatt.GATT_SUCCESS,
-                0, null
-            )
-        }
     }
-
-    override fun onDescriptorReadRequest(
-        device: BluetoothDevice, requestId: Int, offset: Int,
-        descriptor: BluetoothGattDescriptor
-    ) {
-        if (GameService.CLIENT_CONFIG == descriptor.uuid) {
-            Log.d(TAG, "Config descriptor read")
-            val returnValue = if (_registeredDevices.contains(device)) {
-                BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
-            } else {
-                BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE
-            }
-            _gattServer.bluetoothGattServer?.sendResponse(
-                device,
-                requestId,
-                BluetoothGatt.GATT_SUCCESS,
-                0,
-                returnValue
-            )
-        } else {
-            Log.w(TAG, "Unknown descriptor read request")
-            _gattServer.bluetoothGattServer?.sendResponse(
-                device,
-                requestId,
-                BluetoothGatt.GATT_FAILURE,
-                0, null
-            )
-        }
-    }
-
-
 }

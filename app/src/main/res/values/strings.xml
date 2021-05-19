@@ -20,5 +20,11 @@
     <string name="approve">Approve</string>
     <string name="decline">Decline</string>
     <string name="description_design_element">Design element</string>
+    <string name="direct_to_game">Direct to Game</string>
+    <string name="start_game">Start Game</string>
+
+    <string name="join_wait">Please wait until the host admits you</string>
+    <string name="join_approved">You have been approved. Please wait until the game starts.</string>
+    <string name="join_declined">You have been declined!</string>
 
 </resources>
