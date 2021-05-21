@@ -17,7 +17,16 @@ jobs:
 #        run: ./gradlew assembleDebug
 
       - name: Test
-        run: echo ${{ env.GITHUB_RUN_NUMBER }}
+        run: echo ${{ GITHUB_RUN_NUMBER }}
+
+      - name: Test
+        run: echo $GITHUB_RUN_NUMBER
+
+      - name: Test
+        run: echo "$GITHUB_RUN_NUMBER"
+
+      - name: Test
+        run: echo "${{ GITHUB_RUN_NUMBER }}"
 
       # Release
       - name: Create release
