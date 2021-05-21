@@ -1,4 +1,4 @@
-package de.htw.gezumi
+package de.htw.gezumi.calculation
 
 import android.graphics.Point
 import kotlin.math.acos
@@ -9,7 +9,7 @@ import kotlin.math.abs
 import kotlin.math.sqrt
 
 
-class Calculations {
+class Conversions {
     companion object {
 
         /**
@@ -17,7 +17,7 @@ class Calculations {
          * [txPower] is the RSSI value with which the distance is 1 meter.
          * @return the distance in meters
          */
-        fun calculateDistance(rssi: Double, txPower: Int): Double {
+        fun rssiToDistance(rssi: Double, txPower: Int): Double {
             val envFactor = 3.0
             return 10.0.pow((txPower.toDouble() - rssi) / (10.0 * envFactor))
         }
@@ -26,7 +26,7 @@ class Calculations {
          * Calculates the positions for the given [distances] matrix.
          * @return the calculated positions
          */
-        fun calculatePositions(distances: List<List<Double>>): List<Point> {
+        fun distancesToPoints(distances: List<List<Double>>): List<Point> {
             val points = mutableListOf<Point>()
 
             // assume that the first point is a fix point

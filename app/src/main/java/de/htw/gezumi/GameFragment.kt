@@ -73,7 +73,7 @@ class GameFragment : Fragment() {
 
         _surfaceView = _binding.surfaceView
         _surfaceHolder = _surfaceView.holder
-        _surfaceHolder.addCallback(SurfaceCallback(_players, _testPoints))
+        _surfaceHolder.addCallback(SurfaceCallback(_players, _testPoints, context!!))
 
         Log.i(TAG, "surface is valid: ${_surfaceHolder.surface.isValid}")
     }
