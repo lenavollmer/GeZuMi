@@ -1,6 +1,7 @@
 package de.htw.gezumi.model
 
 import android.annotation.SuppressLint
+import de.htw.gezumi.Utils
 import java.nio.ByteBuffer
 
 class DeviceData(val deviceAddress: String, val value: Float) {
@@ -22,13 +23,6 @@ class DeviceData(val deviceAddress: String, val value: Float) {
 
     fun toByteArray(): ByteArray {
         val hexString = deviceAddress.replace(":", "")
-        return decodeHex(hexString) + ByteBuffer.allocate(4).putFloat(value).array()
-    }
-
-    private fun decodeHex(hexString: String): ByteArray {
-        require(hexString.length % 2 == 0) { "Must have an even length" }
-        return hexString.chunked(2)
-            .map { it.toInt(16).toByte() }
-            .toByteArray()
+        return Utils.decodeHex(hexString) + ByteBuffer.allocate(4).putFloat(value).array()
     }
 }

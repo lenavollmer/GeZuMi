@@ -84,4 +84,13 @@ class GattClientCallback(private val _gameViewModel: GameViewModel) : BluetoothG
         }
     }
 
+    override fun onCharacteristicWrite(
+        gatt: BluetoothGatt?,
+        characteristic: BluetoothGattCharacteristic?,
+        status: Int
+    ) {
+        super.onCharacteristicWrite(gatt, characteristic, status)
+        Log.d(TAG, "finished")
+    }
+
 }

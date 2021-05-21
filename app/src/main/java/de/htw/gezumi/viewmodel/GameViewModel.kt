@@ -10,7 +10,9 @@ import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import de.htw.gezumi.callbacks.GameJoinUICallback
 import de.htw.gezumi.controller.BluetoothController
+import de.htw.gezumi.gatt.GattClient
 import de.htw.gezumi.model.Device
+import de.htw.gezumi.model.DeviceData
 import de.htw.gezumi.util.FileStorage
 import java.util.*
 
@@ -22,6 +24,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     lateinit var gameJoinUICallback: GameJoinUICallback
     lateinit var hostScanCallback: ScanCallback
+    lateinit var gattClient: GattClient
 
     val bluetoothController: BluetoothController = BluetoothController()
     private val _devices = mutableMapOf<Device, Long>()
@@ -33,7 +36,6 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     val gameScanCallback: ScanCallback = object : ScanCallback() {
         override fun onScanResult(callbackType: Int, result: ScanResult) {
             super.onScanResult(callbackType, result)
-            Log.d(TAG, "gameScanCallback, ${result.device.address}")
             when (callbackType) {
                 ScanSettings.CALLBACK_TYPE_ALL_MATCHES -> {
                     onGameScanResult(result.device, result.rssi, result.txPower)
@@ -98,16 +100,22 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     /**
-     * Store rssi of device, if the last read was x millis before.
+     * Store rssi of device, if last read x millis before.
+     * Send a player update to the host.
      */
     fun onGameScanResult(bluetoothDevice: BluetoothDevice, rssi: Int, txPower: Int) {
+        // add device to game if necessary
         if (!contains(bluetoothDevice.address))
             addDevice(Device(bluetoothDevice.address, txPower, bluetoothDevice))
+
         val device = findDevice(bluetoothDevice.address)!!
         val millisPassed = getLastRssiMillis(device)
         if (millisPassed > RSSI_READ_INTERVAL) {
             Log.d(TAG, "game scan: read rssi of ${device.address}, last read: $millisPassed")
             device.addRssi(rssi)
+            if (!isHost())
+                gattClient.sendPlayerUpdate(device.getDeviceData())
+            // TODO: else: call fun that processes data received from clients with own data
             _devices[device] = System.currentTimeMillis()
         }
     }

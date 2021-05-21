@@ -27,9 +27,13 @@ class Device(val address: String, private val _txPower: Int, val bluetoothDevice
     // convenience function
     fun addRssi(rssi: Int) {
         rssiHistory.add(rssi)
-        val curDist = Calculations.calculateDistance(rssi.toDouble(), _txPower)
-        _distance.postValue(_filter.applyFilter(curDist))
+        val unfilteredDistance = Calculations.calculateDistance(rssi.toDouble(), _txPower)
+        _distance.postValue(_filter.applyFilter(unfilteredDistance))
         // TODO we don't know how often the device is discovered by the scan, so it might be good to limit the execution of the distance calculation
+    }
+
+    fun getDeviceData(): DeviceData {
+        return DeviceData(address, _distance.value!!.toFloat())
     }
 
 }

@@ -4,6 +4,8 @@ import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.content.Context
 import android.util.Log
+import de.htw.gezumi.model.DeviceData
+import java.nio.ByteBuffer
 
 private const val TAG = "GattClient"
 
@@ -23,5 +25,12 @@ class GattClient(private val _context: Context) {
 
     fun disconnect() {
         _gatt.disconnect()
+    }
+
+    fun sendPlayerUpdate(deviceData: DeviceData) {
+        val playerUpdateCharacteristic = _gatt.getService(GameService.HOST_UUID)?.getCharacteristic(GameService.PLAYER_UPDATE_UUID)
+        playerUpdateCharacteristic?.value = deviceData.toByteArray()
+        Log.d(TAG, "send player update: ${deviceData.deviceAddress}, ${deviceData.value}")
+        _gatt.writeCharacteristic(playerUpdateCharacteristic)
     }
 }
