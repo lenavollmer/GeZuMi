@@ -16,18 +16,6 @@ jobs:
 #      - name: Build app
 #        run: ./gradlew assembleDebug
 
-      - name: Test
-        run: echo ${{ GITHUB_RUN_NUMBER }}
-
-      - name: Test
-        run: echo $GITHUB_RUN_NUMBER
-
-      - name: Test
-        run: echo "$GITHUB_RUN_NUMBER"
-
-      - name: Test
-        run: echo "${{ GITHUB_RUN_NUMBER }}"
-
       # Release
       - name: Create release
         id: create_release
@@ -35,7 +23,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ env.GITHUB_RUN_NUMBER }}
+          tag_name: ${{ github.run_number }}
           release_name: New Android release
           body: New APK built
           draft: false
