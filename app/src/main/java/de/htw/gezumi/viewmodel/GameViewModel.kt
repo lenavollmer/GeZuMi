@@ -8,7 +8,7 @@ import android.bluetooth.le.ScanSettings
 import android.os.ParcelUuid
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
-import de.htw.gezumi.callbacks.PlayerCallback
+import de.htw.gezumi.callbacks.GameJoinUICallback
 import de.htw.gezumi.controller.BluetoothController
 import de.htw.gezumi.model.Device
 import de.htw.gezumi.util.FileStorage
@@ -20,7 +20,7 @@ const val RSSI_READ_INTERVAL = 500
 class GameViewModel(application: Application) : AndroidViewModel(application) {
 
 
-    private var playerCallback: PlayerCallback? = null
+    var gameJoinUICallback: GameJoinUICallback? = null
 
     val bluetoothController: BluetoothController = BluetoothController()
     private val _devices = mutableMapOf<Device, Long>()
@@ -33,18 +33,13 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     fun onGameJoin() {
         Log.d(TAG, "on game join")
-        playerCallback?.gameJoined()
+        gameJoinUICallback?.gameJoined()
         // waiting for game start is not necessary
         Log.d(TAG, "start advertising on game id: $gameId")
         bluetoothController.startAdvertising(ParcelUuid(gameId))
         Log.d(TAG, "start scanning for players on game id: $gameId")
         bluetoothController.stopScan(hostScanCallback)
         bluetoothController.startScan(gameScanCallback, ParcelUuid(gameId))
-    }
-
-
-    fun setCallBack(playerCallback : PlayerCallback) {
-        this.playerCallback = playerCallback
     }
 
     fun onGameLeave() {
@@ -56,11 +51,11 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun onGameStart() {
-        playerCallback?.gameStarted()
+        gameJoinUICallback?.gameStarted()
     }
 
     fun onGameDecline() {
-        playerCallback?.gameDeclined()
+        gameJoinUICallback?.gameDeclined()
     }
 
     private fun isHost(): Boolean = !::host.isInitialized

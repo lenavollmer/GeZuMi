@@ -22,7 +22,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import de.htw.gezumi.adapter.JoinGameListAdapter
-import de.htw.gezumi.callbacks.PlayerCallback
+import de.htw.gezumi.callbacks.GameJoinUICallback
 import de.htw.gezumi.databinding.FragmentClientBinding
 import de.htw.gezumi.databinding.PopupJoinBinding
 import de.htw.gezumi.gatt.GameService
@@ -40,7 +40,7 @@ class ClientFragment : Fragment() {
 
     private lateinit var _binding: FragmentClientBinding
     private lateinit var _popupBinding: PopupJoinBinding
-    private lateinit var popupWindow: PopupWindow
+    private lateinit var _popupWindow: PopupWindow
 
     private val _availableHostDevices: ArrayList<BluetoothDevice> = ArrayList()
     private val _hostDeviceListAdapter: JoinGameListAdapter = JoinGameListAdapter(_availableHostDevices) {
@@ -52,32 +52,32 @@ class ClientFragment : Fragment() {
         val gattClient = GattClient(requireContext())
         gattClient.connect(_availableHostDevices[it], gattClientCallback)
 
-        _gameViewModel.setCallBack(playerCallback)
+        _gameViewModel.gameJoinUICallback = gameJoinUICallback
 
-        popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0)
+        _popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0)
 
     }
 
-    private val playerCallback = object : PlayerCallback {
+    private val gameJoinUICallback = object : GameJoinUICallback {
         override fun gameJoined() {
             Handler(Looper.getMainLooper()).post{
-                popupWindow.dismiss()
+                _popupWindow.dismiss()
                 _popupBinding.joinText.text = getString(R.string.join_approved)
-                popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0)
+                _popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0)
             }
         }
 
         override fun gameDeclined() {
             Handler(Looper.getMainLooper()).post{
-                popupWindow.dismiss()
+                _popupWindow.dismiss()
                 _popupBinding.joinText.text = getString(R.string.join_declined)
-                popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0)
+                _popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0)
             }
         }
 
         override fun gameStarted() {
             Handler(Looper.getMainLooper()).post{
-                popupWindow.dismiss()
+                _popupWindow.dismiss()
                 findNavController().navigate(R.id.action_ClientFragment_to_Game)
             }
         }
@@ -132,7 +132,7 @@ class ClientFragment : Fragment() {
 
         checkPermission()
 
-        popupWindow = PopupWindow(_popupBinding.root, LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT, true)
+        _popupWindow = PopupWindow(_popupBinding.root, LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT, true)
     }
 
     override fun onPause() {
