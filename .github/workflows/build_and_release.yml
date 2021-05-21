@@ -3,8 +3,8 @@ name: Build and release
 # Controls when the action will run. 
 on:
   # Triggers the workflow on push or pull request events but only for the main branch
-  push:
-    branches: [ main ]
+  #push:
+    #branches: [ main ]
 
 jobs:
   build_and_release:
@@ -16,13 +16,6 @@ jobs:
       - name: Build app
         run: ./gradlew assembleDebug
 
-      # Generate build number
-      - name: Generate build number
-        id: buildnumber
-        uses: einaregilsson/build-number@v3
-        with:
-          token: ${{secrets.github_token}}
-
       # Release
       - name: Create release
         id: create_release
@@ -30,7 +23,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ steps.buildnumber.outputs.build_number }}
+          tag_name: ${{ GITHUB_RUN_NUMBER }}
           release_name: New Android release
           body: New APK built
           draft: false
