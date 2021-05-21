@@ -47,7 +47,6 @@ class ClientFragment : Fragment() {
         val hostDevice = Device(_availableHostDevices[it].address, -70, _availableHostDevices[it])
         hostDevice.setName(_availableHostDevices[it].address)
         _gameViewModel.host = hostDevice
-        _gameViewModel.addDevice(hostDevice)
 
         val gattClientCallback = GattClientCallback(_gameViewModel)
         val gattClient = GattClient(requireContext())

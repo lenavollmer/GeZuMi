@@ -26,7 +26,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     private val _devices = mutableMapOf<Device, Long>()
     val devices: Set<Device> get() = _devices.keys
 
-    lateinit var host: Device // is null for host themselves
+    lateinit var host: Device // is null for host themselves // is currently not the same object as host in _devices (and has default txpower)
     lateinit var gameId: UUID
 
     fun isJoined(): Boolean = ::gameId.isInitialized
@@ -71,7 +71,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             Log.d(TAG, "gameScanCallback, ${result.device.address}")
             when (callbackType) {
                 ScanSettings.CALLBACK_TYPE_ALL_MATCHES -> {
-                    onGameScanResult(result.device, result.rssi)
+                    onGameScanResult(result.device, result.rssi, result.txPower)
                 }
                 ScanSettings.CALLBACK_TYPE_MATCH_LOST -> {
                     Log.d(TAG, "lost " + result.device.name)
@@ -106,8 +106,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     /**
      * Store rssi of device, if the last read was x millis before.
      */
-    fun onGameScanResult(bluetoothDevice: BluetoothDevice, rssi: Int) {
-        if (!contains(bluetoothDevice.address)) _devices[Device(bluetoothDevice.address, -70, bluetoothDevice)] = System.currentTimeMillis()
+    fun onGameScanResult(bluetoothDevice: BluetoothDevice, rssi: Int, txPower: Int) {
+        if (!contains(bluetoothDevice.address)) _devices[Device(bluetoothDevice.address, txPower, bluetoothDevice)] = System.currentTimeMillis()
         val device = findDevice(bluetoothDevice.address)!!
         val millisPassed = getLastRssiMillis(device)
         if (millisPassed > RSSI_READ_INTERVAL) {

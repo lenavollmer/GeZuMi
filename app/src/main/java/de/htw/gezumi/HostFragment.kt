@@ -115,12 +115,6 @@ class HostFragment : Fragment() {
         _bottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
 
         _binding.startGame.setOnClickListener {
-            _approvedDevices.forEach{
-                // Todo fix NAME and TXPOWER
-                val device = Device(it.address, -70, it)
-                device.setName("BT Device")
-                _gameViewModel.addDevice(device)
-            }
             _gattServer.notifyGameStart()
             findNavController().navigate(R.id.action_HostFragment_to_Game)
             //findNavController().navigate(R.id.action_ClientFragment_to_Game, Bundle().putBoolean("client",false))
