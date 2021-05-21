@@ -17,17 +17,11 @@ jobs:
         run: ./gradlew assembleDebug
 
       # Release
-      - name: Create release
-        id: create_release
-        uses: actions/create-release@v1
+      - name: Release
+        uses: softprops/action-gh-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: $GITHUB_RUN_NUMBER
-          release_name: New Android release
-          body: New APK built
-          draft: false
-          prerelease: true
+
       # Upload apk
       - name: Upload apk
         id: upload-release-asset
