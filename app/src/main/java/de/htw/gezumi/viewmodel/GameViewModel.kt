@@ -20,7 +20,8 @@ const val RSSI_READ_INTERVAL = 500
 class GameViewModel(application: Application) : AndroidViewModel(application) {
 
 
-    var gameJoinUICallback: GameJoinUICallback? = null
+    lateinit var gameJoinUICallback: GameJoinUICallback
+    lateinit var hostScanCallback: ScanCallback
 
     val bluetoothController: BluetoothController = BluetoothController()
     private val _devices = mutableMapOf<Device, Long>()
@@ -28,37 +29,6 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     lateinit var host: Device // is null for host themselves // is currently not the same object as host in _devices (and has default txpower)
     lateinit var gameId: UUID
-
-    fun isJoined(): Boolean = ::gameId.isInitialized
-
-    fun onGameJoin() {
-        Log.d(TAG, "on game join")
-        gameJoinUICallback?.gameJoined()
-        // waiting for game start is not necessary
-        Log.d(TAG, "start advertising on game id: $gameId")
-        bluetoothController.startAdvertising(ParcelUuid(gameId))
-        Log.d(TAG, "start scanning for players on game id: $gameId")
-        bluetoothController.stopScan(hostScanCallback)
-        bluetoothController.startScan(gameScanCallback, ParcelUuid(gameId))
-    }
-
-    fun onGameLeave() {
-        Log.d(TAG, "on game leave")
-        // TODO host leaves game
-        bluetoothController.stopAdvertising()
-        bluetoothController.stopScan(gameScanCallback)
-        // Handler(Looper.getMainLooper()).post{}
-    }
-
-    fun onGameStart() {
-        gameJoinUICallback?.gameStarted()
-    }
-
-    fun onGameDecline() {
-        gameJoinUICallback?.gameDeclined()
-    }
-
-    private fun isHost(): Boolean = !::host.isInitialized
 
     val gameScanCallback: ScanCallback = object : ScanCallback() {
         override fun onScanResult(callbackType: Int, result: ScanResult) {
@@ -76,7 +46,36 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    lateinit var hostScanCallback: ScanCallback
+    fun onGameJoin() { // == approve
+        Log.d(TAG, "on game join")
+        gameJoinUICallback.gameJoined()
+        // waiting for game start is not necessary
+        Log.d(TAG, "start advertising on game id: $gameId")
+        bluetoothController.startAdvertising(ParcelUuid(gameId))
+        Log.d(TAG, "start scanning for players on game id: $gameId")
+        bluetoothController.stopScan(hostScanCallback)
+        bluetoothController.startScan(gameScanCallback, ParcelUuid(gameId))
+    }
+
+    fun onGameDecline() {
+        gameJoinUICallback.gameDeclined()
+    }
+
+    fun onGameStart() {
+        gameJoinUICallback.gameStarted()
+    }
+
+    fun onGameLeave() {
+        Log.d(TAG, "on game leave")
+        // TODO host leaves game
+        bluetoothController.stopAdvertising()
+        bluetoothController.stopScan(gameScanCallback)
+        // Handler(Looper.getMainLooper()).post{}
+    }
+
+    fun isJoined(): Boolean = ::gameId.isInitialized
+
+    fun isHost(): Boolean = !::host.isInitialized
 
     init {
         bluetoothController.setContext(application.applicationContext)
@@ -102,7 +101,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
      * Store rssi of device, if the last read was x millis before.
      */
     fun onGameScanResult(bluetoothDevice: BluetoothDevice, rssi: Int, txPower: Int) {
-        if (!contains(bluetoothDevice.address)) _devices[Device(bluetoothDevice.address, txPower, bluetoothDevice)] = System.currentTimeMillis()
+        if (!contains(bluetoothDevice.address))
+            addDevice(Device(bluetoothDevice.address, txPower, bluetoothDevice))
         val device = findDevice(bluetoothDevice.address)!!
         val millisPassed = getLastRssiMillis(device)
         if (millisPassed > RSSI_READ_INTERVAL) {
