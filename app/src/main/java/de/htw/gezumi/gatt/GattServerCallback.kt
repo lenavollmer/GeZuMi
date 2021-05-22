@@ -2,8 +2,10 @@ package de.htw.gezumi.gatt
 
 import android.bluetooth.*
 import android.util.Log
+import androidx.fragment.app.activityViewModels
 import de.htw.gezumi.HostFragment
 import de.htw.gezumi.model.DeviceData
+import de.htw.gezumi.viewmodel.GameViewModel
 import java.util.*
 
 private const val TAG = "GattServerCallback"
@@ -34,7 +36,7 @@ class GattServerCallback(private val _subscribedDevices: MutableSet<BluetoothDev
                     requestId,
                     BluetoothGatt.GATT_SUCCESS,
                     0,
-                    GameService.gameIdPostfix.toByteArray(Charsets.UTF_8)
+                    GameService.randomIdPart + GameService.gameName.toByteArray(Charsets.UTF_8)
                 )
             }
             else -> {

@@ -1,5 +1,6 @@
 package de.htw.gezumi.controller
 
+import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothGattServer
 import android.bluetooth.BluetoothGattServerCallback
@@ -9,6 +10,7 @@ import android.content.Context
 import android.os.ParcelUuid
 import android.util.Log
 import de.htw.gezumi.Utils
+import java.nio.charset.Charset
 
 private const val SCAN_PERIOD = 10000L
 private const val SERVICE_UUID_MASK_STRING = "FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFF0000"
@@ -45,15 +47,18 @@ class BluetoothController {
         checkBluetoothSupport()
     }
 
-    fun startScan(leScanCallback: ScanCallback, serviceUUID: ParcelUuid, masked: Boolean = false) {
-        val uuidBytes = Utils.decodeHex(serviceUUID.toString().replace("-", ""))
-        val mask = byteArrayOf(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0)
+    @kotlin.ExperimentalUnsignedTypes
+    @SuppressLint("DefaultLocale")
+    fun startScan(leScanCallback: ScanCallback, filterBytes: ByteArray, masked: Boolean = false) {
+        val mask = byteArrayOf(1, 1, 1, 1, 0, 0, 0, 0, 0/*, 0, 0, 0, 0, 0, 0, 0*/)
+
+        Log.d(TAG, "" + Utils.toHexString(filterBytes))
 
         val filterBuilder = ScanFilter.Builder()
         if (masked)
-            filterBuilder.setManufacturerData(76, uuidBytes, mask)
+            filterBuilder.setManufacturerData(76, filterBytes, mask)
         else
-            filterBuilder.setManufacturerData(76, uuidBytes)
+            filterBuilder.setManufacturerData(76, filterBytes)
 
         val filter = filterBuilder.build()
         if (!_scanFilters.contains(filter)) _scanFilters.add(filter)
@@ -65,15 +70,19 @@ class BluetoothController {
         _bluetoothLeScanner?.stopScan(leScanCallback)
     }
 
-    fun startAdvertising(uuid: ParcelUuid) {
+    @kotlin.ExperimentalUnsignedTypes
+    @SuppressLint("DefaultLocale")
+    fun startAdvertising(gameId: ByteArray) {
         require(::_bluetoothManager.isInitialized) {"Must have context set"}
         val bluetoothLeAdvertiser: BluetoothLeAdvertiser? = _bluetoothManager.adapter.bluetoothLeAdvertiser
         val advertiseData = AdvertiseData.Builder()
             .setIncludeDeviceName(false)
             .setIncludeTxPowerLevel(true)
-            .addManufacturerData(76, Utils.decodeHex(uuid.toString().replace("-", "")))
+            .addManufacturerData(76, gameId)
             .build()
-
+        val size = gameId.size
+        Log.d(TAG, "$gameId SIZE:        $size")
+        Log.d(TAG, "" + Utils.toHexString(gameId))
         bluetoothLeAdvertiser?.startAdvertising(_advertiseSettings, advertiseData, advertiseCallback)
         ?: Log.d(TAG, "advertise failed")
     }

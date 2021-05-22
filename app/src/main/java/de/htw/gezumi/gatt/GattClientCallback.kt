@@ -28,12 +28,16 @@ class GattClientCallback(private val _gameViewModel: GameViewModel) : BluetoothG
         gatt?.setCharacteristicNotification(gatt.getService(GameService.HOST_UUID)?.getCharacteristic(GameService.JOIN_APPROVED_UUID), true)
     }
 
+    @kotlin.ExperimentalUnsignedTypes
+    @SuppressLint("DefaultLocale")
     override fun onCharacteristicRead(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic?, status: Int) {
         super.onCharacteristicRead(gatt, characteristic, status)
         when (characteristic?.uuid) {
             GameService.GAME_ID_UUID -> {
-                val gameIdPostfix = characteristic.value.toString(Charsets.UTF_8)
-                _gameViewModel.gameId = UUID.fromString(GameService.GAME_ID_PREFIX + gameIdPostfix)
+                val randomIdPart = characteristic.value.sliceArray(0 until 2)
+                val gameName = characteristic.value.sliceArray(2 until characteristic.value.size)//.toString(Charsets.UTF_8)
+                _gameViewModel.gameId = GameService.GAME_ID_PREFIX + randomIdPart + gameName
+                // TODO: also set GameService vars? for sure: decode gameName and display
                 Log.d(TAG, "callback: characteristic read successfully, gameId: ${_gameViewModel.gameId}")
                 _gameViewModel.onGameJoin()
                 Log.d(TAG, "subscribe for game events and host updates")

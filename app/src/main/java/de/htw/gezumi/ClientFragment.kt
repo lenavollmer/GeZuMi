@@ -1,6 +1,7 @@
 package de.htw.gezumi
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.le.ScanCallback
@@ -118,6 +119,8 @@ class ClientFragment : Fragment() {
         return _binding.root
     }
 
+    @kotlin.ExperimentalUnsignedTypes
+    @SuppressLint("DefaultLocale")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding.lifecycleOwner = viewLifecycleOwner
@@ -127,7 +130,7 @@ class ClientFragment : Fragment() {
             addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
         }
         _binding.buttonScan.setOnClickListener {
-            _gameViewModel.bluetoothController.startScan(_gameViewModel.hostScanCallback, ParcelUuid(GameService.HOST_UUID), true)// ParcelUuid(GameService.getGameId()), true) <- doesn't work, why???
+            _gameViewModel.bluetoothController.startScan(_gameViewModel.hostScanCallback, GameService.GAME_ID_PREFIX, true)// ParcelUuid(GameService.getGameId()), true) <- doesn't work, why???
         }
 
         checkPermission()

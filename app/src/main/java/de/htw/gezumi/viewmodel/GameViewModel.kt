@@ -1,18 +1,17 @@
 package de.htw.gezumi.viewmodel
 
+import android.annotation.SuppressLint
 import android.app.Application
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
-import android.os.ParcelUuid
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import de.htw.gezumi.callbacks.GameJoinUICallback
 import de.htw.gezumi.controller.BluetoothController
 import de.htw.gezumi.gatt.GattClient
 import de.htw.gezumi.model.Device
-import de.htw.gezumi.model.DeviceData
 import de.htw.gezumi.util.FileStorage
 import java.util.*
 
@@ -31,7 +30,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     val devices: Set<Device> get() = _devices.keys
 
     lateinit var host: Device // is null for host themselves // is currently not the same object as host in _devices (and has default txpower)
-    lateinit var gameId: UUID
+    lateinit var gameId: ByteArray
 
     val gameScanCallback: ScanCallback = object : ScanCallback() {
         override fun onScanResult(callbackType: Int, result: ScanResult) {
@@ -48,15 +47,17 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    @kotlin.ExperimentalUnsignedTypes
+    @SuppressLint("DefaultLocale")
     fun onGameJoin() { // == approve
         Log.d(TAG, "on game join")
         gameJoinUICallback.gameJoined()
         // waiting for game start is not necessary
         Log.d(TAG, "start advertising on game id: $gameId")
-        bluetoothController.startAdvertising(ParcelUuid(gameId))
+        bluetoothController.startAdvertising(gameId)
         Log.d(TAG, "start scanning for players on game id: $gameId")
         bluetoothController.stopScan(hostScanCallback)
-        bluetoothController.startScan(gameScanCallback, ParcelUuid(gameId))
+        bluetoothController.startScan(gameScanCallback, gameId)
     }
 
     fun onGameDecline() {
