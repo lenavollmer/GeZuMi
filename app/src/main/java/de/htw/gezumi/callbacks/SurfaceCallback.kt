@@ -12,8 +12,11 @@ import android.util.TypedValue
 import android.view.SurfaceHolder
 import androidx.annotation.AttrRes
 import androidx.annotation.ColorInt
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.Observer
 import de.htw.gezumi.R
 import de.htw.gezumi.calculation.Geometry
+import de.htw.gezumi.viewmodel.GameViewModel
 
 
 private const val TAG = "SurfaceCallback"
@@ -31,8 +34,9 @@ fun Context.getColorFromAttr(
 
 class SurfaceCallback(
     private val _players: Int,
-    private val _testPoints: List<Point>,
-    private val _context: Context
+    private val _gameViewModel: GameViewModel,
+    private val _context: Context,
+    private val _viewLifecycleOwner: LifecycleOwner
 ) :
     SurfaceHolder.Callback {
 
@@ -40,34 +44,41 @@ class SurfaceCallback(
         holder: SurfaceHolder, format: Int,
         width: Int, height: Int
     ) {
-        Log.d(TAG, "surfaceChanged::$_testPoints")
-        tryDrawing(holder);
+        Log.d(TAG, "surfaceChanged")
     }
 
 
     override fun surfaceCreated(holder: SurfaceHolder) {
-        Log.d(TAG, "surfaceCreated::$_testPoints")
-        tryDrawing(holder);
+        Log.d(TAG, "surfaceCreated")
+        // Create the observer which updates the UI.
+        val nameObserver = Observer<List<Point>> { newLocations ->
+            Log.d(TAG, "I am an observer and I do observe")
+            tryDrawing(holder, newLocations);
+        }
+
+        // Observe the LiveData, passing in this activity as the LifecycleOwner and the observer.
+        _gameViewModel.playerLocations.observe(_viewLifecycleOwner, nameObserver)
     }
 
     override fun surfaceDestroyed(holder: SurfaceHolder) {
         // and here you need to stop it
     }
 
-    fun tryDrawing(holder: SurfaceHolder) {
-        Log.d(TAG, "tryDrawing::$_testPoints")
+    fun tryDrawing(holder: SurfaceHolder, locations: List<Point>) {
+        Log.d(TAG, "tryDrawing")
         Log.i(TAG, "Trying to draw... ${holder.isCreating}");
+
 
         val canvas = holder.lockCanvas();
         if (canvas == null) {
             Log.e(TAG, "Cannot draw onto the canvas as it's null");
         } else {
-            drawMyStuff(canvas);
+            drawMyStuff(canvas, locations)
             holder.unlockCanvasAndPost(canvas);
         }
     }
 
-    private fun drawMyStuff(canvas: Canvas) {
+    private fun drawMyStuff(canvas: Canvas, locations: List<Point>) {
         Log.i(TAG, "Drawing...");
         val accentColor = _context.getColorFromAttr(R.attr.colorPrimary)
         val backgroundColor = _context.getColorFromAttr(R.attr.backgroundColor)
@@ -99,7 +110,7 @@ class SurfaceCallback(
         drawFigure(
             canvas,
             Geometry.scaleToCanvas(
-                _testPoints,
+                locations,
 //                generateGeometricObject(3),
                 canvas.height,
                 canvas.width,

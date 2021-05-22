@@ -87,19 +87,10 @@ class GameFragment : Fragment() {
 
         _surfaceView = _binding.surfaceView
         _surfaceHolder = _surfaceView.holder
-        _surfaceHolder.addCallback(SurfaceCallback(_players, _gameViewModel.playerLocations.value!!, requireContext()))
+        _surfaceHolder.addCallback(SurfaceCallback(_players, _gameViewModel, requireContext(), viewLifecycleOwner))
 
         Log.i(TAG, "surface is valid: ${_surfaceHolder.surface.isValid}")
 
-
-        // Create the observer which updates the UI.
-        val nameObserver = Observer<List<Point>> { newLocations ->
-            Log.d(TAG, "I am an observer and I do observe")
-            _surfaceHolder.addCallback(SurfaceCallback(_players, newLocations, requireContext()))
-        }
-
-        // Observe the LiveData, passing in this activity as the LifecycleOwner and the observer.
-        _gameViewModel.playerLocations.observe(viewLifecycleOwner, nameObserver)
     }
 
     override fun onPause() {
