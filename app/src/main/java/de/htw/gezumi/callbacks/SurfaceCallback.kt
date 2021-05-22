@@ -35,14 +35,18 @@ class SurfaceCallback(
     private val _context: Context
 ) :
     SurfaceHolder.Callback {
+
     override fun surfaceChanged(
         holder: SurfaceHolder, format: Int,
         width: Int, height: Int
     ) {
+        Log.d(TAG, "surfaceChanged::$_testPoints")
+        tryDrawing(holder);
     }
 
 
     override fun surfaceCreated(holder: SurfaceHolder) {
+        Log.d(TAG, "surfaceCreated::$_testPoints")
         tryDrawing(holder);
     }
 
@@ -50,7 +54,8 @@ class SurfaceCallback(
         // and here you need to stop it
     }
 
-    private fun tryDrawing(holder: SurfaceHolder) {
+    fun tryDrawing(holder: SurfaceHolder) {
+        Log.d(TAG, "tryDrawing::$_testPoints")
         Log.i(TAG, "Trying to draw... ${holder.isCreating}");
 
         val canvas = holder.lockCanvas();
@@ -94,7 +99,8 @@ class SurfaceCallback(
         drawFigure(
             canvas,
             Geometry.scaleToCanvas(
-                generateGeometricObject(3),
+                _testPoints,
+//                generateGeometricObject(3),
                 canvas.height,
                 canvas.width,
                 (POINT_SIZE * 2).toInt(),
@@ -143,12 +149,12 @@ class SurfaceCallback(
         }
     }
 
-    private fun generateGeometricObject(players: Int): List<Point> {
-        val generatedPoints = mutableListOf<Point>()
-        for (i in 1..players) {
-            generatedPoints.add(Point((0..250).random(), (0..400).random()))
-        }
-
-        return generatedPoints
-    }
+//    private fun generateGeometricObject(players: Int): List<Point> {
+//        val generatedPoints = mutableListOf<Point>()
+//        for (i in 1..players) {
+//            generatedPoints.add(Point((0..250).random(), (0..400).random()))
+//        }
+//
+//        return generatedPoints
+//    }
 }

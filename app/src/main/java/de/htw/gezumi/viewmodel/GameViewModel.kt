@@ -5,9 +5,12 @@ import android.bluetooth.BluetoothDevice
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
+import android.graphics.Point
 import android.os.ParcelUuid
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import de.htw.gezumi.callbacks.GameJoinUICallback
 import de.htw.gezumi.controller.BluetoothController
 import de.htw.gezumi.model.Device
@@ -25,11 +28,23 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     val bluetoothController: BluetoothController = BluetoothController()
     private val _devices = mutableMapOf<Device, Long>()
     val devices: Set<Device> get() = _devices.keys
+    private val _playerLocations = MutableLiveData<List<Point>>(
+        listOf(
+            Point(100, 20),
+            Point(45, 250),
+            Point(70, 300)
+        )
+    )
+    val playerLocations: LiveData<List<Point>> get() = _playerLocations
 
     lateinit var host: Device // is null for host themselves // is currently not the same object as host in _devices (and has default txpower)
     lateinit var gameId: UUID
 
     fun isJoined(): Boolean = ::gameId.isInitialized
+
+    fun setPlayerLocations(locations: List<Point>) {
+        _playerLocations.postValue(locations)
+    }
 
     fun onGameJoin() {
         Log.d(TAG, "on game join")
