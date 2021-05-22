@@ -25,7 +25,7 @@ class DeviceData(val deviceAddress: String, val values: FloatArray) {
     @SuppressLint("DefaultLocale")
     companion object {
         fun fromBytes(bytes: ByteArray): DeviceData {
-            val deviceAddress = toHexString(bytes.slice(0 until 6).toByteArray()).capitalize()
+            val deviceAddress = toHexString(bytes.slice(0 until 6).toByteArray())
             val values: MutableList<Float> = mutableListOf()
             val byteBuffer = ByteBuffer.wrap(bytes.slice(6 until bytes.size).toByteArray())
             while(byteBuffer.hasRemaining()) {
@@ -36,6 +36,6 @@ class DeviceData(val deviceAddress: String, val values: FloatArray) {
         private fun toHexString(bytes: ByteArray) = bytes.asUByteArray()
             .joinToString(":") {
                 it.toString(16).padStart(2, '0')
-        }.capitalize()
+            }.toUpperCase()
     }
 }
