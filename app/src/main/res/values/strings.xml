@@ -25,4 +25,12 @@
     <string name="join_approved">You have been approved. Please wait until the game starts.</string>
     <string name="join_declined">You have been declined!</string>
 
+    <string name="permission">Sorry, we need the permission to use Bluetooth</string>
+
+    <string name="bluetooth_not_supported">Your device does not support bluetooth, so you are sadly not able to use this app</string>
+    <string name="re_request_permissions">Re-request permissions</string>
+    <string name="permission_denied">You can not use this app without the necessary permissions. Please click the
+        button below to grant the necessary permissions.
+    </string>
+
 </resources>

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools">
+
+<androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainMenuFragment">
+
+    <TextView
+            android:id="@+id/textview_first"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/main_fragment"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="112dp"/>
+    <Button
+            android:id="@+id/button_host"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/host"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintHorizontal_bias="0.222" app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.346"/>
+    <Button
+            android:id="@+id/button_join"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/join"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintHorizontal_bias="0.533" app:layout_constraintVertical_bias="0.346"
+            app:layout_constraintStart_toEndOf="@+id/button_host" app:layout_constraintTop_toTopOf="parent"/>
+    <Button
+            android:text="@string/direct_to_game"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:id="@+id/button_game"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" app:layout_constraintTop_toBottomOf="@+id/textview_first"
+            android:layout_marginTop="252dp" app:layout_constraintHorizontal_bias="0.498"/>
+</androidx.constraintlayout.widget.ConstraintLayout>
+
+</layout>
