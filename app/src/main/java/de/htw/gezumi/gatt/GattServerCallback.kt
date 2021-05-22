@@ -66,7 +66,7 @@ class GattServerCallback(private val _subscribedDevices: MutableSet<BluetoothDev
         when (characteristic?.uuid) {
             GameService.PLAYER_UPDATE_UUID -> {
                 val deviceData = DeviceData.fromBytes(value!!)
-                Log.d(TAG, "player update: device: ${deviceData.deviceAddress} value=${deviceData.value}, size=${value.size}")
+                Log.d(TAG, "player update: device: ${deviceData.deviceAddress} values=${deviceData.values.contentToString()}, size=${value.size}")
                 // TODO: do something with the received data (use for calculations)
                 _gattServer.notifyHostUpdate(deviceData) // for test
             }

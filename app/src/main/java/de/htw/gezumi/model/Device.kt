@@ -33,7 +33,7 @@ class Device(val address: String, private val _txPower: Int, val bluetoothDevice
     }
 
     fun getDeviceData(): DeviceData {
-        return DeviceData(address, _distance.value!!.toFloat())
+        return DeviceData(address, floatArrayOf(_distance.value!!.toFloat()/* add up to 2 more values here*/))
     }
 
 }

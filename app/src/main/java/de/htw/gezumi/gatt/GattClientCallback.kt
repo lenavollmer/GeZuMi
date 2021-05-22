@@ -89,7 +89,7 @@ class GattClientCallback(private val _gameViewModel: GameViewModel) : BluetoothG
             }
             GameService.HOST_UPDATE_UUID -> {
                 val deviceData = DeviceData.fromBytes(characteristic.value)
-                Log.d(TAG, "host update: device: ${deviceData.deviceAddress} value=${deviceData.value}, size=${characteristic.value.size}")
+                Log.d(TAG, "host update: device: ${deviceData.deviceAddress} values=${deviceData.values.contentToString()}, size=${characteristic.value.size}")
                 // TODO: do something with the received data
             }
         }
