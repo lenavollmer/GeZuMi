@@ -33,5 +33,11 @@ class Geometry {
             maxX = newPoints.map { it.x }.maxOrNull() ?: 0
             return newPoints.map { Point(it.x + (w - maxX) / 2 + margin, it.y + margin) }
         }
+
+        fun translateToOverlay(points: List<Point>, geometricObj: List<Point>): List<Point> {
+            val xDiff =  geometricObj[0].x - points[0].x
+            val yDiff =  geometricObj[0].y - points[0].y
+            return points.map { Point(it.x + xDiff, it.y + yDiff) }
+        }
     }
 }

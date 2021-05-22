@@ -12,9 +12,6 @@ import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Observer
 import de.htw.gezumi.databinding.FragmentGameBinding
 import de.htw.gezumi.callbacks.SurfaceCallback
 import de.htw.gezumi.viewmodel.GameViewModel
@@ -36,15 +33,11 @@ class GameFragment : Fragment() {
     private lateinit var _surfaceHolder: SurfaceHolder
 
 
-
-
-
     // Set numbers of players = currently fixed to three
     private val _players = 3
     // bluetooth stuff also in game fragment or is it possible to manage all that in client and host?
     //private lateinit var _gattClient: GattClient
     //private lateinit var _hostDevice: BluetoothDevice
-
 
 
     private val updateTextTask = object : Runnable {
@@ -87,7 +80,14 @@ class GameFragment : Fragment() {
 
         _surfaceView = _binding.surfaceView
         _surfaceHolder = _surfaceView.holder
-        _surfaceHolder.addCallback(SurfaceCallback(_players, _gameViewModel, requireContext(), viewLifecycleOwner))
+        _surfaceHolder.addCallback(
+            SurfaceCallback(
+                _gameViewModel,
+                requireContext(),
+                viewLifecycleOwner,
+                generateGeometricObject(_players)
+            )
+        )
 
         Log.i(TAG, "surface is valid: ${_surfaceHolder.surface.isValid}")
 

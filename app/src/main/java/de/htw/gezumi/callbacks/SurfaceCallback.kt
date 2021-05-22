@@ -2,11 +2,8 @@ package de.htw.gezumi.callbacks
 
 import android.content.Context
 import android.graphics.Canvas
-import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Point
-import android.graphics.drawable.ColorDrawable
-import android.graphics.drawable.Drawable
 import android.util.Log
 import android.util.TypedValue
 import android.view.SurfaceHolder
@@ -33,10 +30,10 @@ fun Context.getColorFromAttr(
 }
 
 class SurfaceCallback(
-    private val _players: Int,
     private val _gameViewModel: GameViewModel,
     private val _context: Context,
-    private val _viewLifecycleOwner: LifecycleOwner
+    private val _viewLifecycleOwner: LifecycleOwner,
+    private val _geometricObject: List<Point>
 ) :
     SurfaceHolder.Callback {
 
@@ -80,45 +77,73 @@ class SurfaceCallback(
 
     private fun drawMyStuff(canvas: Canvas, locations: List<Point>) {
         Log.i(TAG, "Drawing...");
-        val accentColor = _context.getColorFromAttr(R.attr.colorPrimary)
-        val backgroundColor = _context.getColorFromAttr(R.attr.backgroundColor)
+        val colorAccent = _context.getColorFromAttr(R.attr.colorAccent)
+        val colorPrimary = _context.getColorFromAttr(R.attr.colorPrimary)
 
+        val backgroundColor = _context.getColorFromAttr(android.R.attr.windowBackground)
 
         // Clear screen
         canvas.drawColor(backgroundColor);
 
         val lineStroke = Paint().apply {
             isAntiAlias = true
-            color = accentColor
+            color = colorAccent
             style = Paint.Style.STROKE
+            strokeWidth = POINT_SIZE * 0.7f
         }
-        lineStroke.strokeWidth = POINT_SIZE * 0.7f
-
         val circleStroke = Paint().apply {
             isAntiAlias = true
-            color = accentColor
+            color = colorAccent
             style = Paint.Style.STROKE
+            strokeWidth = POINT_SIZE * 0.4f
         }
-        circleStroke.strokeWidth = POINT_SIZE * 0.4f
-
         val fillPaint = Paint().apply {
             isAntiAlias = true
             color = backgroundColor
             style = Paint.Style.FILL
         }
 
+        val lineStrokeGeometricObj = Paint().apply {
+            isAntiAlias = true
+            color = colorPrimary
+            style = Paint.Style.STROKE
+            strokeWidth = POINT_SIZE * 0.7f
+        }
+        val circleStrokeGeometricObj = Paint().apply {
+            isAntiAlias = true
+            color = colorPrimary
+            style = Paint.Style.STROKE
+            strokeWidth = POINT_SIZE * 0.4f
+        }
+        val fillPaintGeometricObj = Paint().apply {
+            isAntiAlias = true
+            color = backgroundColor
+            style = Paint.Style.FILL
+        }
+
+        val points = Geometry.scaleToCanvas(
+            _geometricObject + Geometry.translateToOverlay(locations, _geometricObject),
+            canvas.height,
+            canvas.width,
+            (POINT_SIZE * 2).toInt()
+        )
+
+
+
         drawFigure(
             canvas,
-            Geometry.scaleToCanvas(
-                locations,
-//                generateGeometricObject(3),
-                canvas.height,
-                canvas.width,
-                (POINT_SIZE * 2).toInt(),
-            ),
+            points.subList(0,3),
             lineStroke,
             circleStroke,
             fillPaint
+        )
+
+        drawFigure(
+            canvas,
+            points.subList(3,6),
+            lineStrokeGeometricObj,
+            circleStrokeGeometricObj,
+            fillPaintGeometricObj
         )
     }
 
