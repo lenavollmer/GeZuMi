@@ -24,7 +24,6 @@ class Device(val address: String, private val _txPower: Int, val bluetoothDevice
         _name.postValue(name)
     }
 
-    // convenience function
     fun addRssi(rssi: Int) {
         rssiHistory.add(rssi)
         val unfilteredDistance = Calculations.calculateDistance(rssi.toDouble(), _txPower)
