@@ -121,13 +121,30 @@ class SurfaceCallback(
             style = Paint.Style.FILL
         }
 
+        val transLocs = Geometry.translateTo(locations, _geometricObject[0])
+
+        Log.i(TAG, "origin loc $transLocs[0]")
+        Log.i(TAG, "origin obj $_geometricObject[0]")
+
+
+        val locationsRightPoint = Geometry.getRightPoint(transLocs)
+        Log.i(TAG, "loc right $locationsRightPoint")
+
+        val objectsRightPoint = Geometry.getRightPoint(_geometricObject)
+        Log.i(TAG, "geo obj right $objectsRightPoint")
+
+        val pointsToRotate = Geometry.translateTo(listOf(locationsRightPoint, objectsRightPoint), Point(-_geometricObject[0].x, -_geometricObject[0].y) )
+        Log.i(TAG, "points to rotate $pointsToRotate")
+
+        val angleToRotate = Geometry.getAngle(pointsToRotate[0], pointsToRotate[1])
+        Log.i(TAG, "angle to rotate $angleToRotate")
+
         val points = Geometry.scaleToCanvas(
-            _geometricObject + Geometry.translateToOverlay(locations, _geometricObject),
+            _geometricObject + Geometry.rotatePoints(transLocs, transLocs[0], angleToRotate),
             canvas.height,
             canvas.width,
             (POINT_SIZE * 2).toInt()
         )
-
 
 
         drawFigure(
@@ -137,7 +154,6 @@ class SurfaceCallback(
             circleStroke,
             fillPaint
         )
-
         drawFigure(
             canvas,
             points.subList(3,6),
