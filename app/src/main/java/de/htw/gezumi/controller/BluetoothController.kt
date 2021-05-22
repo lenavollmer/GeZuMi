@@ -1,13 +1,17 @@
 package de.htw.gezumi.controller
 
+import android.Manifest
+import android.app.Activity
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothGattServer
 import android.bluetooth.BluetoothGattServerCallback
 import android.bluetooth.BluetoothManager
 import android.bluetooth.le.*
 import android.content.Context
+import android.content.pm.PackageManager
 import android.os.ParcelUuid
 import android.util.Log
+import androidx.core.app.ActivityCompat
 
 private const val SCAN_PERIOD = 10000L
 private const val SERVICE_UUID_MASK_STRING = "FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFF0000"
@@ -17,11 +21,14 @@ class BluetoothController {
 
     private lateinit var _context: Context
     private lateinit var _bluetoothManager: BluetoothManager
-    private val _bluetoothAdapter: BluetoothAdapter = BluetoothAdapter.getDefaultAdapter() // TODO clean up nullables and do proper bt support checking
+    private val _bluetoothAdapter: BluetoothAdapter =
+        BluetoothAdapter.getDefaultAdapter() // TODO clean up nullables and do proper bt support checking
     private val _bluetoothLeScanner: BluetoothLeScanner? = _bluetoothAdapter.bluetoothLeScanner
 
     private var _scanFilters = mutableListOf<ScanFilter>()
-    private val _scanSettings = ScanSettings.Builder().setCallbackType(ScanSettings.CALLBACK_TYPE_ALL_MATCHES).build()
+    private val _scanSettings = ScanSettings.Builder()
+        .setCallbackType(ScanSettings.CALLBACK_TYPE_FIRST_MATCH or ScanSettings.CALLBACK_TYPE_MATCH_LOST)
+        .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY).build()
 
     private val _advertiseSettings: AdvertiseSettings = AdvertiseSettings.Builder()
         .setAdvertiseMode(AdvertiseSettings.ADVERTISE_MODE_BALANCED)
@@ -68,7 +75,7 @@ class BluetoothController {
     }
 
     fun startAdvertising(uuid: ParcelUuid) {
-        require(::_bluetoothManager.isInitialized) {"Must have context set"}
+        require(::_bluetoothManager.isInitialized) { "Must have context set" }
         val bluetoothLeAdvertiser: BluetoothLeAdvertiser? = _bluetoothManager.adapter.bluetoothLeAdvertiser
         val advertiseData = AdvertiseData.Builder()
             .setIncludeDeviceName(false)
@@ -77,7 +84,7 @@ class BluetoothController {
             .build()
 
         bluetoothLeAdvertiser?.startAdvertising(_advertiseSettings, advertiseData, advertiseCallback)
-        ?: Log.d(TAG, "advertise failed")
+            ?: Log.d(TAG, "advertise failed")
     }
 
     /**

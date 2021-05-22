@@ -36,15 +36,19 @@ class GattServer(private val _context: Context, private val _bluetoothController
     /**
      * Shut down the GATT server.
      */
+
     fun stopServer() {
-        _bluetoothController.stopAdvertising()
-        Log.d(TAG, "stop gatt server")
-        bluetoothGattServer?.close()
+        if (_bluetoothManager.adapter.isEnabled) {
+            _bluetoothController.stopAdvertising()
+            Log.d(TAG, "stop gatt server")
+            bluetoothGattServer?.close()
+        }
     }
 
-    fun stop() {
+    fun pauseServer() {
         if (_bluetoothManager.adapter.isEnabled) {
-            stopServer()
+            _bluetoothController.stopAdvertising()
+            Log.d(TAG, "pausing gatt server")
         }
     }
 

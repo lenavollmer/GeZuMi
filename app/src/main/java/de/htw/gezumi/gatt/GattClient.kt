@@ -9,7 +9,7 @@ private const val TAG = "GattClient"
 
 class GattClient(private val _context: Context) {
 
-    private lateinit var _gatt: BluetoothGatt
+    private var _gatt: BluetoothGatt? = null
 
     fun connect(hostDevice: BluetoothDevice, gattClientCallback: GattClientCallback) {
         _gatt = hostDevice.connectGatt(_context, false, gattClientCallback)
@@ -17,11 +17,11 @@ class GattClient(private val _context: Context) {
     }
 
     fun reconnect() {
-        var success = _gatt.connect()
+        val success = _gatt?.connect()
         Log.d(TAG, "connected to gatt: $success")
     }
 
     fun disconnect() {
-        _gatt.disconnect()
+        _gatt?.disconnect()
     }
 }

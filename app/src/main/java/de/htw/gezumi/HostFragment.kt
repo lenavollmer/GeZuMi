@@ -1,6 +1,7 @@
 package de.htw.gezumi
 
 import android.bluetooth.BluetoothDevice
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -46,9 +47,9 @@ class HostFragment : Fragment() {
             _connectedDevices.removeAt(position)
         }
         else {
-            // Todo add code to let device know that they are rejected
             _gattServer.notifyJoinApproved(_connectedDevices[position], false)
             _connectedDevices.removeAt(position)
+
         }
         updateAdapters()
     }
@@ -61,12 +62,15 @@ class HostFragment : Fragment() {
     private val connectCallback = object : GattConnectCallback {
         override fun onGattConnect(device: BluetoothDevice) {
             _connectedDevices.add(device)
-            Handler(Looper.getMainLooper()).post{_bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED}
-            Handler(Looper.getMainLooper()).post{updateAdapters()}
+            Handler(Looper.getMainLooper()).post{
+                _bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
+                updateAdapters()
+            }
         }
 
         override fun onGattDisconnect(device: BluetoothDevice) {
             _connectedDevices.remove(device)
+            _approvedDevices.remove(device)
             Handler(Looper.getMainLooper()).post{updateAdapters()}
         }
     }
@@ -82,7 +86,6 @@ class HostFragment : Fragment() {
         _gattServer = GattServer(requireContext(), _gameViewModel.bluetoothController, connectCallback)
         _gattServer.startServer(GameService.createHostService())
         _gameViewModel.bluetoothController.startAdvertising(ParcelUuid(_gameViewModel.gameId))
-        //else bluetoothController.stopAdvertising() // TODO stop host advertise when game starts?
         Log.d(TAG, "start game scan: ${_gameViewModel.gameId}")
         _gameViewModel.bluetoothController.startScan(_gameViewModel.gameScanCallback, ParcelUuid(_gameViewModel.gameId))
     }
@@ -117,22 +120,23 @@ class HostFragment : Fragment() {
         _binding.startGame.setOnClickListener {
             _gattServer.notifyGameStart()
             findNavController().navigate(R.id.action_HostFragment_to_Game)
-            //findNavController().navigate(R.id.action_ClientFragment_to_Game, Bundle().putBoolean("client",false))
         }
     }
 
-    // TODO handle lifecycle actions for gatt server
-
     override fun onDestroy() {
         super.onDestroy()
-        _gattServer.stop()
+        _gattServer.stopServer()
     }
 
     override fun onPause() {
         super.onPause()
-        //deviceListAdapter.clear() should we really clear all bluetooth devices here?
-        // TODO maybe stop bluetooth scanning or smth
         updateAdapters()
+        _gattServer.pauseServer()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        _gameViewModel.bluetoothController.startAdvertising(ParcelUuid(_gameViewModel.gameId))
     }
 
     private fun updateAdapters() {
