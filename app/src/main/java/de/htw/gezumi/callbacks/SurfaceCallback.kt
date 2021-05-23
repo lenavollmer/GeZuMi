@@ -5,29 +5,18 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Point
 import android.util.Log
-import android.util.TypedValue
 import android.view.SurfaceHolder
-import androidx.annotation.AttrRes
-import androidx.annotation.ColorInt
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.Observer
-import de.htw.gezumi.R
 import de.htw.gezumi.calculation.Geometry
+import de.htw.gezumi.calculation.Vec
+import de.htw.gezumi.canvas.Paints
+import de.htw.gezumi.canvas.getColorFromAttr
 import de.htw.gezumi.viewmodel.GameViewModel
 
 
 private const val TAG = "SurfaceCallback"
 private const val POINT_SIZE = 60f
-
-@ColorInt
-fun Context.getColorFromAttr(
-    @AttrRes attrColor: Int,
-    typedValue: TypedValue = TypedValue(),
-    resolveRefs: Boolean = true
-): Int {
-    theme.resolveAttribute(attrColor, typedValue, resolveRefs)
-    return typedValue.data
-}
 
 class SurfaceCallback(
     private val _gameViewModel: GameViewModel,
@@ -36,6 +25,8 @@ class SurfaceCallback(
     private val _geometricObject: List<Point>
 ) :
     SurfaceHolder.Callback {
+
+    private val _paints = Paints(_context)
 
     override fun surfaceChanged(
         holder: SurfaceHolder, format: Int,
@@ -50,7 +41,7 @@ class SurfaceCallback(
         // Create the observer which updates the UI.
         val nameObserver = Observer<List<Point>> { newLocations ->
             Log.d(TAG, "I am an observer and I do observe")
-            tryDrawing(holder, newLocations);
+            tryDrawing(holder, newLocations)
         }
 
         // Observe the LiveData, passing in this activity as the LifecycleOwner and the observer.
@@ -61,105 +52,89 @@ class SurfaceCallback(
         // and here you need to stop it
     }
 
-    fun tryDrawing(holder: SurfaceHolder, locations: List<Point>) {
+    private fun tryDrawing(holder: SurfaceHolder, locations: List<Point>) {
         Log.d(TAG, "tryDrawing")
-        Log.i(TAG, "Trying to draw... ${holder.isCreating}");
+        Log.i(TAG, "Trying to draw... ${holder.isCreating}")
 
 
-        val canvas = holder.lockCanvas();
+        val canvas = holder.lockCanvas()
         if (canvas == null) {
-            Log.e(TAG, "Cannot draw onto the canvas as it's null");
+            Log.e(TAG, "Cannot draw onto the canvas as it's null")
         } else {
             drawMyStuff(canvas, locations)
-            holder.unlockCanvasAndPost(canvas);
+            holder.unlockCanvasAndPost(canvas)
         }
     }
 
-    private fun drawMyStuff(canvas: Canvas, locations: List<Point>) {
-        Log.i(TAG, "Drawing...");
-        val colorAccent = _context.getColorFromAttr(R.attr.colorAccent)
-        val colorPrimary = _context.getColorFromAttr(R.attr.colorPrimary)
+    private fun drawMyStuff(canvas: Canvas, playerLocations: List<Point>) {
+        Log.i(TAG, "Drawing...")
 
+        // clear screen
         val backgroundColor = _context.getColorFromAttr(android.R.attr.windowBackground)
+        canvas.drawColor(backgroundColor)
 
-        // Clear screen
-        canvas.drawColor(backgroundColor);
+        // translate player location to target shape
+        val targetShape = _geometricObject.map { Vec(it) }
+        val players = playerLocations.map { Vec(it) }
+        val translatedPlayers = players.map { it + targetShape[0] - players[0]}
+        val base = targetShape[0]
+        Log.i(TAG, "targetShape $targetShape")
+        Log.i(TAG, "translatedPlayers $translatedPlayers")
 
-        val lineStroke = Paint().apply {
-            isAntiAlias = true
-            color = colorAccent
-            style = Paint.Style.STROKE
-            strokeWidth = POINT_SIZE * 0.7f
-        }
-        val circleStroke = Paint().apply {
-            isAntiAlias = true
-            color = colorAccent
-            style = Paint.Style.STROKE
-            strokeWidth = POINT_SIZE * 0.4f
-        }
-        val fillPaint = Paint().apply {
-            isAntiAlias = true
-            color = backgroundColor
-            style = Paint.Style.FILL
-        }
+        // rotate player locations to fit target shape
+        val (_, indexLoc) = Geometry.getClockwisePoint(
+            Pair(
+                translatedPlayers[1] - base,
+                translatedPlayers[2] - base
+            )
+        )
+        val playersRightPoint = translatedPlayers[1 + indexLoc]
+        Log.i(TAG, "players right $playersRightPoint")
+        val (_, indexObj) = Geometry.getClockwisePoint(
+            Pair(
+                targetShape[1] - base,
+                targetShape[2] - base
+            )
+        )
+        val targetRightPoint = targetShape[1 + indexObj]
+        Log.i(TAG, "target right $targetRightPoint")
 
-        val lineStrokeGeometricObj = Paint().apply {
-            isAntiAlias = true
-            color = colorPrimary
-            style = Paint.Style.STROKE
-            strokeWidth = POINT_SIZE * 0.7f
-        }
-        val circleStrokeGeometricObj = Paint().apply {
-            isAntiAlias = true
-            color = colorPrimary
-            style = Paint.Style.STROKE
-            strokeWidth = POINT_SIZE * 0.4f
-        }
-        val fillPaintGeometricObj = Paint().apply {
-            isAntiAlias = true
-            color = backgroundColor
-            style = Paint.Style.FILL
-        }
-
-        val transLocs = Geometry.translateTo(locations, _geometricObject[0])
-
-        Log.i(TAG, "origin loc $transLocs[0]")
-        Log.i(TAG, "origin obj $_geometricObject[0]")
-
-
-        val locationsRightPoint = Geometry.getRightPoint(transLocs)
-        Log.i(TAG, "loc right $locationsRightPoint")
-
-        val objectsRightPoint = Geometry.getRightPoint(_geometricObject)
-        Log.i(TAG, "geo obj right $objectsRightPoint")
-
-        val pointsToRotate = Geometry.translateTo(listOf(locationsRightPoint, objectsRightPoint), Point(-_geometricObject[0].x, -_geometricObject[0].y) )
-        Log.i(TAG, "points to rotate $pointsToRotate")
-
-        val angleToRotate = Geometry.getAngle(pointsToRotate[0], pointsToRotate[1])
+        val angleToRotate = Geometry.getAngle(
+            playersRightPoint - base,
+            targetRightPoint - base
+        )
         Log.i(TAG, "angle to rotate $angleToRotate")
 
+        val allPoints = targetShape +
+                Geometry.rotatePoints(
+                    translatedPlayers, base, angleToRotate
+                )
+        Log.i(TAG, "final player ${allPoints.subList(3, 6)}")
+        Log.i(TAG, "final target ${allPoints.subList(0, 3)}")
+
+        // scale all points to fit canvas
         val points = Geometry.scaleToCanvas(
-            _geometricObject + Geometry.rotatePoints(transLocs, transLocs[0], angleToRotate),
+            allPoints.map { it.toPoint() },
             canvas.height,
             canvas.width,
             (POINT_SIZE * 2).toInt()
         )
 
-
+        // draw player locations
         drawFigure(
             canvas,
-            points.subList(0,3),
-            lineStroke,
-            circleStroke,
-            fillPaint
+            points.subList(0, 3),
+            _paints.lineStroke,
+            _paints.circleStroke,
+            _paints.fillPaint
         )
+        // draw target shape
         drawFigure(
             canvas,
-            points.subList(3,6),
-            lineStrokeGeometricObj,
-            circleStrokeGeometricObj,
-            fillPaintGeometricObj
+            points.subList(3, 6),
+            _paints.lineStrokeTargetShape,
+            _paints.circleStrokeTargetShape,
+            _paints.fillPaintTargetShape
         )
     }
 
@@ -178,7 +153,7 @@ class SurfaceCallback(
             // Draw line with next point (if it exists)
             if (i + 1 < points.size) {
                 val next = points[i + 1]
-                canvas.drawLine(x, y, next.x.toFloat(), next.y.toFloat(), lineStroke);
+                canvas.drawLine(x, y, next.x.toFloat(), next.y.toFloat(), lineStroke)
             }
         }
 
@@ -196,17 +171,8 @@ class SurfaceCallback(
             val y = current.y.toFloat()
 
             // Draw points
-            canvas.drawCircle(x, y, POINT_SIZE, circleStroke);
-            canvas.drawCircle(x, y, POINT_SIZE, fillPaint);
+            canvas.drawCircle(x, y, POINT_SIZE, circleStroke)
+            canvas.drawCircle(x, y, POINT_SIZE, fillPaint)
         }
     }
-
-//    private fun generateGeometricObject(players: Int): List<Point> {
-//        val generatedPoints = mutableListOf<Point>()
-//        for (i in 1..players) {
-//            generatedPoints.add(Point((0..250).random(), (0..400).random()))
-//        }
-//
-//        return generatedPoints
-//    }
 }

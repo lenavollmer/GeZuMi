@@ -1,6 +1,5 @@
 package de.htw.gezumi.calculation
 
-import android.R.attr
 import android.graphics.Point
 import kotlin.math.*
 
@@ -40,54 +39,57 @@ class Geometry {
         /**
          * Calculate the angle between two vectors ([u],[v]).
          */
-        fun getAngle(u: Point, v: Point): Double {
-            val num: Int = v.x * u.x + v.y * u.y
+        fun getAngle(u: Vec, v: Vec): Double {
+            val num: Double = u.dot(v)
             val den =
-                sqrt(v.x.toDouble().pow(2.0) + v.y.toDouble().pow(2.0)) * sqrt(
-                    u.x.toDouble().pow(2.0) + u.y.toDouble().pow(2.0)
+                sqrt(v.x.pow(2.0) + v.y.pow(2.0)) * sqrt(
+                    u.x.pow(2.0) + u.y.pow(2.0)
                 )
             return acos(num / den)
         }
 
-        fun translateTo(points: List<Point>, origin: Point = Point(0, 0)): List<Point> {
+        // TODO: do we really need this
+        fun translateTo(
+            points: List<Vec>,
+            origin: Vec = Vec(
+                0.0,
+                0.0
+            )
+        ): List<Vec> {
             val xDiff = origin.x - points[0].x
             val yDiff = origin.y - points[0].y
-            return points.map { Point(it.x + xDiff, it.y + yDiff) }
+            return points.map { Vec(it.x + xDiff, it.y + yDiff) }
         }
 
-        fun getRightPoint(points: List<Point>): Point {
-            val centeredPoints = translateTo(points)
-            val angle = getAngle(centeredPoints[1], centeredPoints[2])
-            return if (angle > 180) points[1] else points[2]
+        /**
+         * The [points] are two position vectors that span an angle.
+         * Returns the vector that comes later in clockwise direction and its index.
+         */
+        fun getClockwisePoint(points: Pair<Vec, Vec>): Pair<Vec, Int> {
+            // TODO this is not working yet
+            val angle = getAngle(points.first, points.second)
+            return if (angle > 180) Pair(points.first, 0) else Pair(points.second, 0)
         }
 
 
         /**
-         * [p] point to rotate, [o] point ot rotate around
+         * Rotates the [point] around the point [o] for the given [angle].
          */
-        fun rotatePoint(p: Point, o: Point, angle: Double): Point {
+        fun rotatePoint(point: Vec, o: Vec, angle: Double): Vec {
             val s = sin(angle)
             val c = cos(angle)
-
             // translate point back to origin:
-            p.x -= o.x
-            p.y -= o.y
-
+            val cp = point - o
             // rotate point
-
-            // rotate point
-            val xnew = p.x * c - p.y * s
-            val ynew = p.x * s + p.y * c
-
+            val new = Vec(cp.x * c - cp.y * s, cp.x * s + cp.y * c)
             // translate point back:
-
-            // translate point back:
-            p.x = (xnew + o.x).toInt()
-            p.y = (ynew + o.y).toInt()
-            return p
+            return new + o
         }
 
-        fun rotatePoints(points: List<Point>, o: Point, angle: Double): List<Point> =
+        /**
+         * Rotates the [points] around the point [o] for the given [angle].
+         */
+        fun rotatePoints(points: List<Vec>, o: Vec, angle: Double): List<Vec> =
             points.map { rotatePoint(it, o, angle) }
     }
 }

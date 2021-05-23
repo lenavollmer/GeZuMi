@@ -39,7 +39,7 @@ class GameFragment : Fragment() {
     //private lateinit var _hostDevice: BluetoothDevice
 
 
-    private val updateTextTask = object : Runnable {
+    private val changePlayerLocations = object : Runnable {
         override fun run() {
             _gameViewModel.setPlayerLocations(generateGeometricObject(_players))
             Log.d(TAG, "locations: ${_gameViewModel.playerLocations}")
@@ -96,13 +96,13 @@ class GameFragment : Fragment() {
         super.onPause()
         //    _gameViewModel.writeRSSILog()
         //    _gattClient.disconnect()
-//        mainHandler.removeCallbacks(updateTextTask)
+//        mainHandler.removeCallbacks(changePlayerLocations)
     }
 
     override fun onResume() {
         super.onResume()
         //    _gattClient.reconnect()
-//        mainHandler.post(updateTextTask)
+//        mainHandler.post(changePlayerLocations)
     }
 
     override fun onStop() {
