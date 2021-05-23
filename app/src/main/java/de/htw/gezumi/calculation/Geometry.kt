@@ -48,19 +48,6 @@ class Geometry {
             return acos(num / den)
         }
 
-        // TODO: do we really need this
-        fun translateTo(
-            points: List<Vec>,
-            origin: Vec = Vec(
-                0.0,
-                0.0
-            )
-        ): List<Vec> {
-            val xDiff = origin.x - points[0].x
-            val yDiff = origin.y - points[0].y
-            return points.map { Vec(it.x + xDiff, it.y + yDiff) }
-        }
-
         /**
          * The [points] are two position vectors that span an angle.
          * Returns the vector that comes later in clockwise direction and its index.
@@ -70,7 +57,6 @@ class Geometry {
             val angle = getAngle(points.first, points.second)
             return if (angle > 180) Pair(points.first, 0) else Pair(points.second, 0)
         }
-
 
         /**
          * Rotates the [point] around the point [o] for the given [angle].

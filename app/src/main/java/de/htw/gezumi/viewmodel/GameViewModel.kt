@@ -31,7 +31,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     private val _playerLocations = MutableLiveData<List<Point>>(
         listOf(
             Point(100, 20),
-            Point(45, 250),
+            Point(35, 150),
             Point(70, 300)
         )
     )
