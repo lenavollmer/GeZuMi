@@ -82,7 +82,6 @@ class SurfaceCallback(
         Log.i(TAG, "translatedPlayers $translatedPlayers")
 
         // rotate player locations to fit target shape
-        // TODO would that work for all shapes?
         val (_, indexLoc) = Geometry.getClockwisePoint(
             Pair(
                 translatedPlayers[1] - base,
@@ -91,7 +90,6 @@ class SurfaceCallback(
         )
         val playersRightPoint = translatedPlayers[1 + indexLoc]
         Log.i(TAG, "players right $playersRightPoint")
-        // TODO would that work for all shapes?
         val (_, indexObj) = Geometry.getClockwisePoint(
             Pair(
                 targetShape[1] - base,
@@ -119,28 +117,14 @@ class SurfaceCallback(
         Log.d(TAG, "isMatch: $shapesMatch")
         _gameViewModel.setShapeMatched(shapesMatch)
 
-        val allPoints = allVectors.map { it.toPoint() }
-
-        // TODO center shapes
-        val centeredPlayers = Geometry.centerShapes(
-            allPoints.subList(0, playerCount),
-            canvas.height,
-            canvas.width,
-            (POINT_SIZE * 2).toInt()
-        )
-        val centeredTargetShape = Geometry.centerShapes(
-            allPoints.subList(playerCount, playerCount * 2),
-            canvas.height,
-            canvas.width,
-            (POINT_SIZE * 2).toInt()
-        )
 
         // scale all points to fit canvas
         val points = Geometry.scaleToCanvas(
-            centeredPlayers + centeredTargetShape,
+            allVectors.map { it.toPoint() },
             canvas.height,
             canvas.width,
-            (POINT_SIZE * 2).toInt()
+            (POINT_SIZE * 2).toInt(),
+            playerCount
         )
 
 

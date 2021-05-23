@@ -33,7 +33,6 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     private val _players = 3
     val players: Int get() = _players
 
-    // TODO time
     private val _playerLocations = MutableLiveData<List<Point>>(
         listOf(
             Point(100, 20),
@@ -50,6 +49,9 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     private var _shapeMatched: Boolean = false
     val shapeMatched: Boolean get() = _shapeMatched
 
+    private var _gameTime = 0
+    val gameTime: Int get() = _gameTime
+
     lateinit var host: Device // is null for host themselves // is currently not the same object as host in _devices (and has default txpower)
     lateinit var gameId: UUID
 
@@ -61,6 +63,10 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     fun setShapeMatched(matchedShape: Boolean) {
         _shapeMatched = matchedShape
+    }
+
+    fun setGameTime(time: Int) {
+        _gameTime = time
     }
 
     fun onGameJoin() {

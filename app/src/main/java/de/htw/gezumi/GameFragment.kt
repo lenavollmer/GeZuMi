@@ -30,8 +30,6 @@ class GameFragment : Fragment() {
     private lateinit var _surfaceView: SurfaceView
     private lateinit var _surfaceHolder: SurfaceHolder
 
-    // Number of seconds since game started
-    private var seconds = 0
     // stopwatch running?
     private var running = false
 
@@ -101,22 +99,22 @@ class GameFragment : Fragment() {
         super.onPause()
         //    _gameViewModel.writeRSSILog()
         //    _gattClient.disconnect()
-//        mainHandler.removeCallbacks(changePlayerLocations)
+        mainHandler.removeCallbacks(changePlayerLocations)
         running = false;
     }
 
     override fun onResume() {
         super.onResume()
         //    _gattClient.reconnect()
-//        mainHandler.post(changePlayerLocations)
+        mainHandler.post(changePlayerLocations)
         running = true;
     }
 
     override fun onStop() {
         super.onStop()
+        running = false;
         // stop scan and advertise
         // TODO on resume has to start it again (but not twice!) -> implement pause/disconnect functionality
-        running = false;
         _gameViewModel.onGameLeave()
     }
 
@@ -127,6 +125,7 @@ class GameFragment : Fragment() {
 
         mainHandler.post(object : Runnable {
             override fun run() {
+                val seconds = _gameViewModel.gameTime
                 val hours = seconds / 3600
                 val minutes = seconds % 3600 / 60
                 val secs = seconds % 60
@@ -145,7 +144,7 @@ class GameFragment : Fragment() {
                 // If running is true, increment the
                 // seconds variable.
                 if (running) {
-                    seconds++
+                    _gameViewModel.setGameTime(seconds + 1)
                 }
 
                 // Post the code again

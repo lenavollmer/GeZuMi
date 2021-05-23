@@ -12,7 +12,7 @@ class Geometry {
          * Scales the given [points] to a canvas with the given [height] and [width].
          *  @return the scaled and centered points
          */
-        fun scaleToCanvas(points: List<Point>, height: Int, width: Int, margin: Int): List<Point> {
+        fun scaleToCanvas(points: List<Point>, height: Int, width: Int, margin: Int, playerCount: Int): List<Point> {
             // move points to top left position
             val h = height - margin * 2
             val w = width - margin * 2
@@ -30,31 +30,25 @@ class Geometry {
             newPoints =
                 newPoints.map { Point((it.x * scaleFactor).toInt(), (it.y * scaleFactor).toInt()) }
 
-            // center everything
-            if (xScaleFactor < yScaleFactor) {
-                maxY = newPoints.map { it.y }.maxOrNull() ?: 0
-                return newPoints.map { Point(it.x + margin, it.y + (h - maxY) / 2 + margin) }
-            }
-            maxX = newPoints.map { it.x }.maxOrNull() ?: 0
-            return newPoints.map { Point(it.x + (w - maxX) / 2 + margin, it.y + margin) }
+            // center both shapes
+            val centeredPlayers = centerShapes(newPoints.subList(0, playerCount), h, w, margin)
+            val centeredTarget = centerShapes(newPoints.subList(playerCount, playerCount * 2), h, w, margin)
+
+            return centeredPlayers + centeredTarget
         }
 
         fun centerShapes(points: List<Point>, height: Int, width: Int, margin: Int): List<Point> {
-            val h = height - margin * 2
-            val w = width - margin * 2
-
             var maxX = points.map { it.x }.maxOrNull() ?: 0
             var maxY = points.map { it.y }.maxOrNull() ?: 0
 
-            val yScaleFactor = h / maxY.toDouble()
-            val xScaleFactor = w / maxX.toDouble()
+            val yScaleFactor = height / maxY.toDouble()
+            val xScaleFactor = width / maxX.toDouble()
 
-            // center everything
             if (xScaleFactor < yScaleFactor) {
-                return points.map { Point(it.x + margin, it.y + (h - maxY) / 2 + margin) }
+                return points.map { Point(it.x + margin, it.y + (height - maxY) / 2 + margin) }
             }
 
-            return points.map { Point(it.x + (w - maxX) / 2 + margin, it.y + margin) }
+            return points.map { Point(it.x + (width - maxX) / 2 + margin, it.y + margin) }
         }
 
         /**
