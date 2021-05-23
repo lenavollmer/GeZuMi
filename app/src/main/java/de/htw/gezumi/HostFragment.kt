@@ -2,6 +2,7 @@ package de.htw.gezumi
 
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothDevice
+import android.content.Context
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -9,6 +10,8 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputMethodManager
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
@@ -22,8 +25,6 @@ import de.htw.gezumi.databinding.FragmentHostBinding
 import de.htw.gezumi.gatt.GameService
 import de.htw.gezumi.gatt.GattServer
 import de.htw.gezumi.viewmodel.GameViewModel
-import java.nio.charset.Charset
-import kotlin.collections.ArrayList
 
 private const val TAG = "HostFragment"
 
@@ -80,9 +81,7 @@ class HostFragment : Fragment() {
         }
         val gameService = GameService.createHostService()
 
-        val gameName = "str"
-        GameService.gameName = gameName // must be in game service so gattServerCallback can access it
-        _gameViewModel.gameId = GameService.GAME_ID_PREFIX + GameService.randomIdPart + gameName.toByteArray(Charsets.UTF_8)
+        val gameName = "123456789012345"
 
         Log.d(TAG, "start gatt server and game service")
         _gattServer = GattServer(requireContext(), _gameViewModel.bluetoothController, connectCallback)
@@ -125,6 +124,32 @@ class HostFragment : Fragment() {
             findNavController().navigate(R.id.action_HostFragment_to_Game)
             //findNavController().navigate(R.id.action_ClientFragment_to_Game, Bundle().putBoolean("client",false))
         }
+
+        _binding.editTextGameName.setOnEditorActionListener{ textView, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_GO) {
+                Log.d(TAG, "game name changed")
+                onGameNameChanged(textView.text.toString())
+                val imm: InputMethodManager = context!!.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                imm.hideSoftInputFromWindow(_binding.editTextGameName.windowToken, 0)
+                _binding.editTextGameName.clearFocus()
+                return@setOnEditorActionListener true
+            }
+            return@setOnEditorActionListener false
+        }
+    }
+
+    @kotlin.ExperimentalUnsignedTypes
+    @SuppressLint("DefaultLocale")
+    private fun onGameNameChanged(gameName: String) {
+        GameService.gameName = gameName // must be in game service so gattServerCallback can access it
+        _gameViewModel.gameId = GameService.GAME_ID_PREFIX + GameService.randomIdPart + gameName.toByteArray(Charsets.UTF_8)
+
+        //_gameViewModel.bluetoothController.stopAdvertising()
+        //_gameViewModel.bluetoothController.stopScan()
+
+        _gameViewModel.bluetoothController.startAdvertising(_gameViewModel.gameId)
+        Log.d(TAG, "start game scan")
+        _gameViewModel.bluetoothController.startScan(_gameViewModel.gameScanCallback, _gameViewModel.gameId)
     }
 
     // TODO handle lifecycle actions for gatt server

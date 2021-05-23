@@ -30,7 +30,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     val devices: Set<Device> get() = _devices.keys
 
     lateinit var host: Device // is null for host themselves // is currently not the same object as host in _devices (and has default txpower)
-    lateinit var gameId: ByteArray
+    lateinit var gameId: ByteArray // 21 bytes left for game attributes like game name etc.
 
     val gameScanCallback: ScanCallback = object : ScanCallback() {
         override fun onScanResult(callbackType: Int, result: ScanResult) {

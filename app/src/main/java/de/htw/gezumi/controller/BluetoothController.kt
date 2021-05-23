@@ -53,6 +53,7 @@ class BluetoothController {
         val mask = byteArrayOf(1, 1, 1, 1, 0, 0, 0, 0, 0/*, 0, 0, 0, 0, 0, 0, 0*/)
 
         Log.d(TAG, "" + Utils.toHexString(filterBytes))
+        Log.d(TAG, "SCAN SIZE:        ${filterBytes.size}")
 
         val filterBuilder = ScanFilter.Builder()
         if (masked)
