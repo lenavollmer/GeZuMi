@@ -28,6 +28,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     val bluetoothController: BluetoothController = BluetoothController()
     private val _devices = mutableMapOf<Device, Long>()
     val devices: Set<Device> get() = _devices.keys
+
+    // TODO game won, time, move target shape generation here
     private val _playerLocations = MutableLiveData<List<Point>>(
         listOf(
             Point(100, 20),

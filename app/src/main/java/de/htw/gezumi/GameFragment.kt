@@ -3,6 +3,7 @@ package de.htw.gezumi
 import android.graphics.Point
 import android.os.Bundle
 import android.os.Handler
+import android.os.Looper
 import android.view.*
 import android.util.Log
 import android.view.LayoutInflater
@@ -61,7 +62,7 @@ class GameFragment : Fragment() {
 //
 //        // connect
 //        _gattClient.connect(_hostDevice, gattClientCallback)
-//        mainHandler = Handler(Looper.getMainLooper())
+        mainHandler = Handler(Looper.getMainLooper())
     }
 
     override fun onCreateView(
@@ -96,13 +97,13 @@ class GameFragment : Fragment() {
         super.onPause()
         //    _gameViewModel.writeRSSILog()
         //    _gattClient.disconnect()
-//        mainHandler.removeCallbacks(changePlayerLocations)
+        mainHandler.removeCallbacks(changePlayerLocations)
     }
 
     override fun onResume() {
         super.onResume()
         //    _gattClient.reconnect()
-//        mainHandler.post(changePlayerLocations)
+        mainHandler.post(changePlayerLocations)
     }
 
     override fun onStop() {

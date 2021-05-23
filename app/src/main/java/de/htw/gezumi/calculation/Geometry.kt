@@ -1,8 +1,10 @@
 package de.htw.gezumi.calculation
 
 import android.graphics.Point
+import android.util.Log
 import kotlin.math.*
 
+private const val TAG = "Geometry"
 
 class Geometry {
     companion object {
@@ -40,7 +42,7 @@ class Geometry {
          * Calculate the angle between two vectors ([u],[v]).
          */
         fun getAngle(u: Vec, v: Vec): Double {
-            val num: Double = u.dot(v)
+            val num = u.dot(v)
             val den =
                 sqrt(v.x.pow(2.0) + v.y.pow(2.0)) * sqrt(
                     u.x.pow(2.0) + u.y.pow(2.0)
@@ -48,14 +50,20 @@ class Geometry {
             return acos(num / den)
         }
 
+        fun getAngleClockwise(u: Vec, v: Vec): Double {
+            val dot = u.dot(v)
+            val det = u.x * v.y - u.y * v.x
+            Log.d(TAG, "angle clockwise ${atan2(det, dot)}")
+            return atan2(det, dot)
+        }
+
         /**
          * The [points] are two position vectors that span an angle.
          * Returns the vector that comes later in clockwise direction and its index.
          */
         fun getClockwisePoint(points: Pair<Vec, Vec>): Pair<Vec, Int> {
-            // TODO this is not working yet
-            val angle = getAngle(points.first, points.second)
-            return if (angle > 180) Pair(points.first, 0) else Pair(points.second, 0)
+            val angle = getAngleClockwise(points.first, points.second)
+            return if (angle < 0) Pair(points.first, 0) else Pair(points.second, 1)
         }
 
         /**

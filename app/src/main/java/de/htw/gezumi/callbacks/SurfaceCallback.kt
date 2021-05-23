@@ -99,18 +99,18 @@ class SurfaceCallback(
         val targetRightPoint = targetShape[1 + indexObj]
         Log.i(TAG, "target right $targetRightPoint")
 
-        val angleToRotate = Geometry.getAngle(
+        val angleToRotate = Geometry.getAngleClockwise(
             playersRightPoint - base,
             targetRightPoint - base
         )
-        Log.i(TAG, "angle to rotate $angleToRotate")
 
         val allPoints = targetShape +
                 Geometry.rotatePoints(
                     translatedPlayers, base, angleToRotate
                 )
-        Log.i(TAG, "final player ${allPoints.subList(3, 6)}")
-        Log.i(TAG, "final target ${allPoints.subList(0, 3)}")
+
+        // TODO center shapes
+
 
         // scale all points to fit canvas
         val points = Geometry.scaleToCanvas(
