@@ -22,7 +22,6 @@ class SurfaceCallback(
     private val _gameViewModel: GameViewModel,
     private val _context: Context,
     private val _viewLifecycleOwner: LifecycleOwner,
-    private val _geometricObject: List<Point>
 ) :
     SurfaceHolder.Callback {
 
@@ -68,20 +67,22 @@ class SurfaceCallback(
 
     private fun drawMyStuff(canvas: Canvas, playerLocations: List<Point>) {
         Log.i(TAG, "Drawing...")
+        val playerCount = _gameViewModel.players
 
         // clear screen
         val backgroundColor = _context.getColorFromAttr(android.R.attr.windowBackground)
         canvas.drawColor(backgroundColor)
 
         // translate player location to target shape
-        val targetShape = _geometricObject.map { Vec(it) }
+        val targetShape = _gameViewModel.targetShape.map { Vec(it) }
         val players = playerLocations.map { Vec(it) }
-        val translatedPlayers = players.map { it + targetShape[0] - players[0]}
+        val translatedPlayers = players.map { it + targetShape[0] - players[0] }
         val base = targetShape[0]
         Log.i(TAG, "targetShape $targetShape")
         Log.i(TAG, "translatedPlayers $translatedPlayers")
 
         // rotate player locations to fit target shape
+        // TODO would that work for all shapes?
         val (_, indexLoc) = Geometry.getClockwisePoint(
             Pair(
                 translatedPlayers[1] - base,
@@ -90,6 +91,7 @@ class SurfaceCallback(
         )
         val playersRightPoint = translatedPlayers[1 + indexLoc]
         Log.i(TAG, "players right $playersRightPoint")
+        // TODO would that work for all shapes?
         val (_, indexObj) = Geometry.getClockwisePoint(
             Pair(
                 targetShape[1] - base,
@@ -104,26 +106,48 @@ class SurfaceCallback(
             targetRightPoint - base
         )
 
-        val allPoints = targetShape +
+        val allVectors = targetShape +
                 Geometry.rotatePoints(
                     translatedPlayers, base, angleToRotate
                 )
 
+        val shapesMatch = Geometry.determineMatch(
+            allVectors.subList(0, playerCount),
+            allVectors.subList(playerCount, playerCount * 2),
+            playerCount
+        )
+        Log.d(TAG, "isMatch: $shapesMatch")
+        _gameViewModel.setShapeMatched(shapesMatch)
+
+        val allPoints = allVectors.map { it.toPoint() }
+
         // TODO center shapes
-
-
-        // scale all points to fit canvas
-        val points = Geometry.scaleToCanvas(
-            allPoints.map { it.toPoint() },
+        val centeredPlayers = Geometry.centerShapes(
+            allPoints.subList(0, playerCount),
+            canvas.height,
+            canvas.width,
+            (POINT_SIZE * 2).toInt()
+        )
+        val centeredTargetShape = Geometry.centerShapes(
+            allPoints.subList(playerCount, playerCount * 2),
             canvas.height,
             canvas.width,
             (POINT_SIZE * 2).toInt()
         )
 
+        // scale all points to fit canvas
+        val points = Geometry.scaleToCanvas(
+            centeredPlayers + centeredTargetShape,
+            canvas.height,
+            canvas.width,
+            (POINT_SIZE * 2).toInt()
+        )
+
+
         // draw player locations
         drawFigure(
             canvas,
-            points.subList(0, 3),
+            points.subList(0, playerCount),
             _paints.lineStroke,
             _paints.circleStroke,
             _paints.fillPaint
@@ -131,7 +155,7 @@ class SurfaceCallback(
         // draw target shape
         drawFigure(
             canvas,
-            points.subList(3, 6),
+            points.subList(playerCount, playerCount * 2),
             _paints.lineStrokeTargetShape,
             _paints.circleStrokeTargetShape,
             _paints.fillPaintTargetShape

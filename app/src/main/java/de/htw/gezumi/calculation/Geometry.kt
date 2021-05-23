@@ -27,7 +27,8 @@ class Geometry {
             val xScaleFactor = w / maxX.toDouble()
 
             val scaleFactor = if (xScaleFactor < yScaleFactor) xScaleFactor else yScaleFactor;
-            newPoints = newPoints.map { Point((it.x * scaleFactor).toInt(), (it.y * scaleFactor).toInt()) }
+            newPoints =
+                newPoints.map { Point((it.x * scaleFactor).toInt(), (it.y * scaleFactor).toInt()) }
 
             // center everything
             if (xScaleFactor < yScaleFactor) {
@@ -36,6 +37,24 @@ class Geometry {
             }
             maxX = newPoints.map { it.x }.maxOrNull() ?: 0
             return newPoints.map { Point(it.x + (w - maxX) / 2 + margin, it.y + margin) }
+        }
+
+        fun centerShapes(points: List<Point>, height: Int, width: Int, margin: Int): List<Point> {
+            val h = height - margin * 2
+            val w = width - margin * 2
+
+            var maxX = points.map { it.x }.maxOrNull() ?: 0
+            var maxY = points.map { it.y }.maxOrNull() ?: 0
+
+            val yScaleFactor = h / maxY.toDouble()
+            val xScaleFactor = w / maxX.toDouble()
+
+            // center everything
+            if (xScaleFactor < yScaleFactor) {
+                return points.map { Point(it.x + margin, it.y + (h - maxY) / 2 + margin) }
+            }
+
+            return points.map { Point(it.x + (w - maxX) / 2 + margin, it.y + margin) }
         }
 
         /**
@@ -69,7 +88,7 @@ class Geometry {
         /**
          * Rotates the [point] around the point [o] for the given [angle].
          */
-        fun rotatePoint(point: Vec, o: Vec, angle: Double): Vec {
+        private fun rotatePoint(point: Vec, o: Vec, angle: Double): Vec {
             val s = sin(angle)
             val c = cos(angle)
             // translate point back to origin:
@@ -85,5 +104,20 @@ class Geometry {
          */
         fun rotatePoints(points: List<Vec>, o: Vec, angle: Double): List<Vec> =
             points.map { rotatePoint(it, o, angle) }
+
+
+        fun determineMatch(points: List<Vec>, targetShape: List<Vec>, playerCount: Int): Boolean {
+            val buffer = 0
+
+            val foundPoints = points.map {
+                targetShape.find { vec ->
+                    vec.minus(it).length() >= -buffer.toDouble() && vec.minus(
+                        it
+                    ).length() <= buffer.toDouble()
+                }
+            }
+
+            return foundPoints.filterNotNull().size == playerCount
+        }
     }
 }

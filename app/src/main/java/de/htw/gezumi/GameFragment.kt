@@ -1,20 +1,18 @@
 package de.htw.gezumi
 
-import android.graphics.Point
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.view.*
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import de.htw.gezumi.databinding.FragmentGameBinding
 import de.htw.gezumi.callbacks.SurfaceCallback
+import de.htw.gezumi.databinding.FragmentGameBinding
 import de.htw.gezumi.viewmodel.GameViewModel
+import java.util.*
+
 
 private const val TAG = "GameFragment"
 
@@ -32,9 +30,12 @@ class GameFragment : Fragment() {
     private lateinit var _surfaceView: SurfaceView
     private lateinit var _surfaceHolder: SurfaceHolder
 
+    // Number of seconds since game started
+    private var seconds = 0
+    // stopwatch running?
+    private var running = false
 
-    // Set numbers of players = currently fixed to three
-    private val _players = 3
+
     // bluetooth stuff also in game fragment or is it possible to manage all that in client and host?
     //private lateinit var _gattClient: GattClient
     //private lateinit var _hostDevice: BluetoothDevice
@@ -42,9 +43,9 @@ class GameFragment : Fragment() {
 
     private val changePlayerLocations = object : Runnable {
         override fun run() {
-            _gameViewModel.setPlayerLocations(generateGeometricObject(_players))
+            _gameViewModel.setPlayerLocations(_gameViewModel.generateGeometricObject(_gameViewModel.players))
             Log.d(TAG, "locations: ${_gameViewModel.playerLocations}")
-            mainHandler.postDelayed(this, 1000)
+            mainHandler.postDelayed(this, 2000)
         }
     }
 
@@ -62,7 +63,9 @@ class GameFragment : Fragment() {
 //
 //        // connect
 //        _gattClient.connect(_hostDevice, gattClientCallback)
+
         mainHandler = Handler(Looper.getMainLooper())
+
     }
 
     override fun onCreateView(
@@ -70,6 +73,7 @@ class GameFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = DataBindingUtil.inflate(inflater, R.layout.fragment_game, container, false)
+        runTimer();
         return _binding.root
     }
 
@@ -84,12 +88,12 @@ class GameFragment : Fragment() {
             SurfaceCallback(
                 _gameViewModel,
                 requireContext(),
-                viewLifecycleOwner,
-                generateGeometricObject(_players)
+                viewLifecycleOwner
             )
         )
 
         Log.i(TAG, "surface is valid: ${_surfaceHolder.surface.isValid}")
+        running = true;
 
     }
 
@@ -97,28 +101,57 @@ class GameFragment : Fragment() {
         super.onPause()
         //    _gameViewModel.writeRSSILog()
         //    _gattClient.disconnect()
-        mainHandler.removeCallbacks(changePlayerLocations)
+//        mainHandler.removeCallbacks(changePlayerLocations)
+        running = false;
     }
 
     override fun onResume() {
         super.onResume()
         //    _gattClient.reconnect()
-        mainHandler.post(changePlayerLocations)
+//        mainHandler.post(changePlayerLocations)
+        running = true;
     }
 
     override fun onStop() {
         super.onStop()
         // stop scan and advertise
         // TODO on resume has to start it again (but not twice!) -> implement pause/disconnect functionality
+        running = false;
         _gameViewModel.onGameLeave()
     }
 
-    private fun generateGeometricObject(players: Int): List<Point> {
-        val generatedPoints = mutableListOf<Point>()
-        for (i in 1..players) {
-            generatedPoints.add(Point((0..250).random(), (0..400).random()))
-        }
+    private fun runTimer() {
 
-        return generatedPoints
+        // Get the text view.
+        val timeView = _binding.timeView
+
+        mainHandler.post(object : Runnable {
+            override fun run() {
+                val hours = seconds / 3600
+                val minutes = seconds % 3600 / 60
+                val secs = seconds % 60
+
+                // Format the seconds into hours, minutes,
+                // and seconds.
+                val time: String = java.lang.String
+                    .format(
+                        Locale.getDefault(),
+                        "%d:%02d:%02d", hours,
+                        minutes, secs
+                    )
+
+                timeView.text = time
+
+                // If running is true, increment the
+                // seconds variable.
+                if (running) {
+                    seconds++
+                }
+
+                // Post the code again
+                // with a delay of 1 second.
+                mainHandler.postDelayed(this, 1000)
+            }
+        })
     }
 }

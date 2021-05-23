@@ -29,7 +29,11 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     private val _devices = mutableMapOf<Device, Long>()
     val devices: Set<Device> get() = _devices.keys
 
-    // TODO game won, time, move target shape generation here
+    // Set numbers of players = currently fixed to three
+    private val _players = 3
+    val players: Int get() = _players
+
+    // TODO time
     private val _playerLocations = MutableLiveData<List<Point>>(
         listOf(
             Point(100, 20),
@@ -39,6 +43,13 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     )
     val playerLocations: LiveData<List<Point>> get() = _playerLocations
 
+    private val _targetShape = generateGeometricObject(_players)
+    val targetShape: List<Point> get() = _targetShape
+
+    // Determines whether the target shape has been matched by the players
+    private var _shapeMatched: Boolean = false
+    val shapeMatched: Boolean get() = _shapeMatched
+
     lateinit var host: Device // is null for host themselves // is currently not the same object as host in _devices (and has default txpower)
     lateinit var gameId: UUID
 
@@ -46,6 +57,10 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     fun setPlayerLocations(locations: List<Point>) {
         _playerLocations.postValue(locations)
+    }
+
+    fun setShapeMatched(matchedShape: Boolean) {
+        _shapeMatched = matchedShape
     }
 
     fun onGameJoin() {
@@ -136,6 +151,15 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             "${Calendar.getInstance().time}_distance_log.txt",
             devices.iterator().next().rssiHistory.toString()
         )
+    }
+
+    fun generateGeometricObject(players: Int): List<Point> {
+        val generatedPoints = mutableListOf<Point>()
+        for (i in 1..players) {
+            generatedPoints.add(Point((0..250).random(), (0..400).random()))
+        }
+
+        return generatedPoints
     }
 
 

@@ -1,6 +1,7 @@
 package de.htw.gezumi.calculation
 
 import android.graphics.Point
+import kotlin.math.sqrt
 
 data class Vec(val x: Double = 0.0, val y: Double = 0.0) {
 
@@ -9,6 +10,8 @@ data class Vec(val x: Double = 0.0, val y: Double = 0.0) {
     fun toPoint(): Point = Point(x.toInt(), y.toInt())
 
     fun dot(b: Vec) = x * b.x + y * b.y
+
+    fun length() = sqrt((x * x) + (y* y))
 
     operator fun unaryMinus() = Vec(-x, -y)
 
