@@ -17,6 +17,7 @@ import java.util.*
 
 private const val TAG = "GameViewModel"
 const val RSSI_READ_INTERVAL = 500
+const val GAME_ID_LENGTH: Int = 16
 
 class GameViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -30,7 +31,11 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     val devices: Set<Device> get() = _devices.keys
 
     lateinit var host: Device // is null for host themselves // is currently not the same object as host in _devices (and has default txpower)
-    lateinit var gameId: ByteArray // 21 bytes left for game attributes like game name etc.
+    var gameId: ByteArray = ByteArray(0) // 21 bytes left for game attributes like game name etc.
+        get() {
+            require(field.size <= GAME_ID_LENGTH) {"Wrong game id"}
+            return field + ByteArray(GAME_ID_LENGTH - field.size)
+        }
 
     val gameScanCallback: ScanCallback = object : ScanCallback() {
         override fun onScanResult(callbackType: Int, result: ScanResult) {
@@ -76,7 +81,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         // Handler(Looper.getMainLooper()).post{}
     }
 
-    fun isJoined(): Boolean = ::gameId.isInitialized
+    fun isJoined(): Boolean = gameId.isNotEmpty()
 
     fun isHost(): Boolean = !::host.isInitialized
 

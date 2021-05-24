@@ -10,6 +10,7 @@ import android.content.Context
 import android.os.ParcelUuid
 import android.util.Log
 import de.htw.gezumi.Utils
+import de.htw.gezumi.viewmodel.GAME_ID_LENGTH
 import java.nio.charset.Charset
 
 private const val SCAN_PERIOD = 10000L
@@ -50,7 +51,7 @@ class BluetoothController {
     @kotlin.ExperimentalUnsignedTypes
     @SuppressLint("DefaultLocale")
     fun startScan(leScanCallback: ScanCallback, filterBytes: ByteArray, masked: Boolean = false) {
-        val mask = byteArrayOf(1, 1, 1, 1, 0, 0, 0, 0, 0/*, 0, 0, 0, 0, 0, 0, 0*/)
+        val mask = byteArrayOf(1, 1, 1, 1) + ByteArray(GAME_ID_LENGTH - 4)
 
         Log.d(TAG, "" + Utils.toHexString(filterBytes))
         Log.d(TAG, "SCAN SIZE:        ${filterBytes.size}")

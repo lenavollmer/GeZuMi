@@ -2,6 +2,7 @@ package de.htw.gezumi
 
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothDevice
+import android.bluetooth.le.ScanCallback
 import android.content.Context
 import android.os.Bundle
 import android.os.Handler
@@ -24,6 +25,7 @@ import de.htw.gezumi.adapter.ConnectedPlayerDeviceAdapter
 import de.htw.gezumi.databinding.FragmentHostBinding
 import de.htw.gezumi.gatt.GameService
 import de.htw.gezumi.gatt.GattServer
+import de.htw.gezumi.viewmodel.GAME_ID_LENGTH
 import de.htw.gezumi.viewmodel.GameViewModel
 
 private const val TAG = "HostFragment"
@@ -81,15 +83,15 @@ class HostFragment : Fragment() {
         }
         val gameService = GameService.createHostService()
 
-        val gameName = "123456789012345"
+        _gameViewModel.gameId = GameService.GAME_ID_PREFIX + GameService.randomIdPart
 
         Log.d(TAG, "start gatt server and game service")
         _gattServer = GattServer(requireContext(), _gameViewModel.bluetoothController, connectCallback)
         _gattServer.startServer(gameService)
-        _gameViewModel.bluetoothController.startAdvertising(_gameViewModel.gameId)
+        //_gameViewModel.bluetoothController.startAdvertising(_gameViewModel.gameId)
         //else bluetoothController.stopAdvertising() // TODO stop host advertise when game starts?
-        Log.d(TAG, "start game scan")
-        _gameViewModel.bluetoothController.startScan(_gameViewModel.gameScanCallback, _gameViewModel.gameId)
+        //Log.d(TAG, "start game scan")
+        //_gameViewModel.bluetoothController.startScan(_gameViewModel.gameScanCallback, _gameViewModel.gameId)
     }
 
     override fun onCreateView(
@@ -100,6 +102,8 @@ class HostFragment : Fragment() {
         return _binding.root
     }
 
+    @kotlin.ExperimentalUnsignedTypes
+    @SuppressLint("DefaultLocale")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding.lifecycleOwner = viewLifecycleOwner
@@ -122,7 +126,6 @@ class HostFragment : Fragment() {
         _binding.startGame.setOnClickListener {
             _gattServer.notifyGameStart()
             findNavController().navigate(R.id.action_HostFragment_to_Game)
-            //findNavController().navigate(R.id.action_ClientFragment_to_Game, Bundle().putBoolean("client",false))
         }
 
         _binding.editTextGameName.setOnEditorActionListener{ textView, actionId, _ ->
@@ -144,8 +147,8 @@ class HostFragment : Fragment() {
         GameService.gameName = gameName // must be in game service so gattServerCallback can access it
         _gameViewModel.gameId = GameService.GAME_ID_PREFIX + GameService.randomIdPart + gameName.toByteArray(Charsets.UTF_8)
 
-        //_gameViewModel.bluetoothController.stopAdvertising()
-        //_gameViewModel.bluetoothController.stopScan()
+        _gameViewModel.bluetoothController.stopAdvertising()
+        _gameViewModel.bluetoothController.stopScan(object: ScanCallback() {})
 
         _gameViewModel.bluetoothController.startAdvertising(_gameViewModel.gameId)
         Log.d(TAG, "start game scan")
