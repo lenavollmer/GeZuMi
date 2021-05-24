@@ -7,10 +7,12 @@ import de.htw.gezumi.Calculations
 import de.htw.gezumi.filter.Filter
 import de.htw.gezumi.filter.MedianFilter
 
-class Device(val address: String, private val _txPower: Int, val bluetoothDevice: BluetoothDevice) {
+class Device(val address: ByteArray, private val _txPower: Int, val bluetoothDevice: BluetoothDevice) {
 
     private val _name = MutableLiveData("")
     val name: LiveData<String> get() = _name
+
+    val gameName = MutableLiveData("")
 
     private val _distance = MutableLiveData(0.0)
     val distance: LiveData<Double> get() = _distance
@@ -33,6 +35,10 @@ class Device(val address: String, private val _txPower: Int, val bluetoothDevice
 
     fun getDeviceData(): DeviceData {
         return DeviceData(address, floatArrayOf(_distance.value!!.toFloat()/* add up to 2 more values here*/))
+    }
+
+    override fun equals(other: Any?): Boolean {
+        return address contentEquals (other as Device).address
     }
 
 }

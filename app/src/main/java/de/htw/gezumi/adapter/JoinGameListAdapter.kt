@@ -1,27 +1,39 @@
 package de.htw.gezumi.adapter
 
-import android.bluetooth.BluetoothDevice
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.RecyclerView
 import de.htw.gezumi.databinding.ItemJoinBinding
+import de.htw.gezumi.model.Device
 
 
-class JoinGameListAdapter(private val _btDevices: List<BluetoothDevice>, private val listener: (position: Int) -> Unit) : RecyclerView.Adapter<JoinGameListAdapter.ItemViewHolder>() {
+class JoinGameListAdapter(private val _hostDevices: List<Device>, private val listener: (position: Int) -> Unit) : RecyclerView.Adapter<JoinGameListAdapter.ItemViewHolder>() {
+    lateinit var lifecycleOwner: LifecycleOwner
 
-    inner class ItemViewHolder(private val binding: ItemJoinBinding): RecyclerView.ViewHolder(binding.root) {
+    inner class ItemViewHolder(private val _binding: ItemJoinBinding): RecyclerView.ViewHolder(_binding.root) {
 
-        fun bind(device: BluetoothDevice) {
-            binding.textGameName.text = device.address // TODO XXXXX
+        fun bind(device: Device) {
+            // Create the observer which updates the UI.
+            val nameObserver = Observer<String> { newName ->
+                // Update the UI, in this case, a TextView.
+                _binding.textGameName.text = newName
+            }
 
-            val approveButton = binding.buttonJoin
+            // Observe the LiveData, passing in this activity as the LifecycleOwner and the observer.
+            device.gameName.observe(lifecycleOwner, nameObserver)
+
+            _binding.textGameName.text = device.gameName.value // TODO XXXXX
+
+            val approveButton = _binding.buttonJoin
             approveButton.setOnClickListener {
                 listener.invoke(adapterPosition)
             }
 
             // make sure to include this so your view will be updated
-            binding.invalidateAll()
-            binding.executePendingBindings()
+            _binding.invalidateAll()
+            _binding.executePendingBindings()
         }
     }
 
@@ -36,12 +48,12 @@ class JoinGameListAdapter(private val _btDevices: List<BluetoothDevice>, private
     // Involves populating data into the item through holder
     override fun onBindViewHolder(viewHolder: ItemViewHolder, position: Int) {
         // Get the data model based on position
-        val device: BluetoothDevice = _btDevices[position]
+        val device: Device = _hostDevices[position]
         viewHolder.bind(device)
     }
 
     // Returns the total count of items in the list
     override fun getItemCount(): Int {
-        return _btDevices.size
+        return _hostDevices.size
     }
 }

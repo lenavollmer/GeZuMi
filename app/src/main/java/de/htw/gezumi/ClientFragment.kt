@@ -20,6 +20,7 @@ import androidx.core.app.ActivityCompat
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.MutableLiveData
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import de.htw.gezumi.adapter.JoinGameListAdapter
@@ -44,15 +45,13 @@ class ClientFragment : Fragment() {
     private lateinit var _popupBinding: PopupJoinBinding
     private lateinit var _popupWindow: PopupWindow
 
-    private val _availableHostDevices: ArrayList<BluetoothDevice> = ArrayList()
+    private val _availableHostDevices: ArrayList<Device> = ArrayList()
     private val _hostDeviceListAdapter: JoinGameListAdapter = JoinGameListAdapter(_availableHostDevices) {
-        val hostDevice = Device(_availableHostDevices[it].address, -70, _availableHostDevices[it])
-        hostDevice.setName(_availableHostDevices[it].address)
-        _gameViewModel.host = hostDevice
+        _gameViewModel.host = _availableHostDevices[it]
 
         val gattClientCallback = GattClientCallback(_gameViewModel)
         val gattClient = GattClient(requireContext())
-        gattClient.connect(_availableHostDevices[it], gattClientCallback)
+        gattClient.connect(_availableHostDevices[it].bluetoothDevice, gattClientCallback)
 
         _gameViewModel.gameJoinUICallback = gameJoinUICallback
         _gameViewModel.gattClient = gattClient
@@ -93,16 +92,17 @@ class ClientFragment : Fragment() {
         _gameViewModel.hostScanCallback = object : ScanCallback() {
             override fun onScanResult(callbackType: Int, result: ScanResult) {
                 super.onScanResult(callbackType, result)
-                Log.d(TAG, "host scan callback")
+                val deviceAddress = result.scanRecord!!.getManufacturerSpecificData(76)!!.sliceArray(GAME_ID_LENGTH until GAME_ID_LENGTH + 5)
                 when (callbackType) {
                     ScanSettings.CALLBACK_TYPE_ALL_MATCHES -> {// first match does not have a name
-                        if (!_availableHostDevices.contains(result.device))
-                            _availableHostDevices.add(result.device)
+                        if (!Utils.contains(_availableHostDevices, deviceAddress))
+                            _availableHostDevices.add(Device(deviceAddress, result.txPower, result.device))
+                        Utils.findDevice(_availableHostDevices, deviceAddress)!!.gameName.postValue(result.scanRecord!!.getManufacturerSpecificData(76)!!.sliceArray(6 until GAME_ID_LENGTH).toString(Charsets.UTF_8))
                         // read host rssi if already joined
                         //if (_gameViewModel.isJoined()) _gameViewModel.gameScanCallback.onScanResult(callbackType, result)
                     }
                     ScanSettings.CALLBACK_TYPE_MATCH_LOST -> {
-                        _availableHostDevices.remove(result.device) // todo doesn't work with adapted scan settings
+                        _availableHostDevices.remove(Utils.findDevice(_availableHostDevices, deviceAddress)) // todo doesn't work with adapted scan settings
                         Log.d(TAG, "lost " + result.device.name)
                     }
                 }
@@ -119,6 +119,8 @@ class ClientFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = DataBindingUtil.inflate(inflater, R.layout.fragment_client, container, false)
         _popupBinding = DataBindingUtil.inflate(inflater, R.layout.popup_join, null, false)
+
+        _hostDeviceListAdapter.lifecycleOwner = viewLifecycleOwner
 
         return _binding.root
     }
