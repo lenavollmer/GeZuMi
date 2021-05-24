@@ -7,11 +7,10 @@ import android.bluetooth.BluetoothGattServerCallback
 import android.bluetooth.BluetoothManager
 import android.bluetooth.le.*
 import android.content.Context
-import android.os.ParcelUuid
 import android.util.Log
 import de.htw.gezumi.Utils
+import de.htw.gezumi.viewmodel.DEVICE_ID_LENGTH
 import de.htw.gezumi.viewmodel.GAME_ID_LENGTH
-import java.nio.charset.Charset
 
 private const val SCAN_PERIOD = 10000L
 private const val SERVICE_UUID_MASK_STRING = "FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFF0000"
@@ -50,17 +49,20 @@ class BluetoothController {
 
     @kotlin.ExperimentalUnsignedTypes
     @SuppressLint("DefaultLocale")
-    fun startScan(leScanCallback: ScanCallback, filterBytes: ByteArray, masked: Boolean = false) {
-        val mask = byteArrayOf(1, 1, 1, 1) + ByteArray(GAME_ID_LENGTH - 4)
+    fun startScan(leScanCallback: ScanCallback, gameId: ByteArray, masked: Boolean = false) {
+        // always mask device address
+        val filterBytes = gameId + ByteArray(DEVICE_ID_LENGTH)
+        var mask = byteArrayOf(1, 1, 1, 1)
+        if (masked)
+            mask += ByteArray(GAME_ID_LENGTH + DEVICE_ID_LENGTH - 4)
+        else
+            mask += ByteArray(GAME_ID_LENGTH) { 1 } + ByteArray(DEVICE_ID_LENGTH)
 
         Log.d(TAG, "" + Utils.toHexString(filterBytes))
         Log.d(TAG, "SCAN SIZE:        ${filterBytes.size}")
 
         val filterBuilder = ScanFilter.Builder()
-        if (masked)
-            filterBuilder.setManufacturerData(76, filterBytes, mask)
-        else
-            filterBuilder.setManufacturerData(76, filterBytes)
+        filterBuilder.setManufacturerData(76, filterBytes, mask)
 
         val filter = filterBuilder.build()
         if (!_scanFilters.contains(filter)) _scanFilters.add(filter)
@@ -74,13 +76,13 @@ class BluetoothController {
 
     @kotlin.ExperimentalUnsignedTypes
     @SuppressLint("DefaultLocale")
-    fun startAdvertising(gameId: ByteArray) {
+    fun startAdvertising(gameId: ByteArray, myDeviceId: ByteArray) {
         require(::_bluetoothManager.isInitialized) {"Must have context set"}
         val bluetoothLeAdvertiser: BluetoothLeAdvertiser? = _bluetoothManager.adapter.bluetoothLeAdvertiser
         val advertiseData = AdvertiseData.Builder()
             .setIncludeDeviceName(false)
             .setIncludeTxPowerLevel(true)
-            .addManufacturerData(76, gameId)
+            .addManufacturerData(76, gameId + myDeviceId)
             .build()
         val size = gameId.size
         Log.d(TAG, "$gameId SIZE:        $size")

@@ -8,10 +8,10 @@
             android:paddingBottom="10dp"
     >
         <TextView
-                android:id="@+id/device_name"
+                android:id="@+id/text_game_name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                tools:text="Device Name"
+                tools:text="Game Name"
                 android:layout_alignParentStart="true"
                 android:textSize="14sp"
                 android:layout_marginStart="60dp"

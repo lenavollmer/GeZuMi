@@ -12,7 +12,7 @@ class JoinGameListAdapter(private val _btDevices: List<BluetoothDevice>, private
     inner class ItemViewHolder(private val binding: ItemJoinBinding): RecyclerView.ViewHolder(binding.root) {
 
         fun bind(device: BluetoothDevice) {
-            binding.deviceName.text = device.address
+            binding.textGameName.text = device.address // TODO XXXXX
 
             val approveButton = binding.buttonJoin
             approveButton.setOnClickListener {

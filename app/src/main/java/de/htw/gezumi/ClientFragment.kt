@@ -96,7 +96,8 @@ class ClientFragment : Fragment() {
                 Log.d(TAG, "host scan callback")
                 when (callbackType) {
                     ScanSettings.CALLBACK_TYPE_ALL_MATCHES -> {// first match does not have a name
-                        if (!_availableHostDevices.contains(result.device)) _availableHostDevices.add(result.device)
+                        if (!_availableHostDevices.contains(result.device))
+                            _availableHostDevices.add(result.device)
                         // read host rssi if already joined
                         //if (_gameViewModel.isJoined()) _gameViewModel.gameScanCallback.onScanResult(callbackType, result)
                     }

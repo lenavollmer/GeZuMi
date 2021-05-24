@@ -17,10 +17,12 @@ import java.util.*
 
 private const val TAG = "GameViewModel"
 const val RSSI_READ_INTERVAL = 500
-const val GAME_ID_LENGTH: Int = 16
+const val GAME_ID_LENGTH: Int = 16 // 16 bytes for game id, then remaining 5 bytes for device id
+const val DEVICE_ID_LENGTH: Int = 5
 
 class GameViewModel(application: Application) : AndroidViewModel(application) {
 
+    val myDeviceId = ByteArray(5)
 
     lateinit var gameJoinUICallback: GameJoinUICallback
     lateinit var hostScanCallback: ScanCallback
@@ -52,6 +54,11 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    init {
+        // generate random id
+        Random().nextBytes(myDeviceId)
+    }
+
     @kotlin.ExperimentalUnsignedTypes
     @SuppressLint("DefaultLocale")
     fun onGameJoin() { // == approve
@@ -59,7 +66,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         gameJoinUICallback.gameJoined()
         // waiting for game start is not necessary
         Log.d(TAG, "start advertising on game id: $gameId")
-        bluetoothController.startAdvertising(gameId)
+        bluetoothController.startAdvertising(gameId, myDeviceId)
         Log.d(TAG, "start scanning for players on game id: $gameId")
         bluetoothController.stopScan(hostScanCallback)
         bluetoothController.startScan(gameScanCallback, gameId)
