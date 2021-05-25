@@ -11,6 +11,7 @@ import androidx.lifecycle.AndroidViewModel
 import de.htw.gezumi.Utils
 import de.htw.gezumi.callbacks.GameJoinUICallback
 import de.htw.gezumi.controller.BluetoothController
+import de.htw.gezumi.gatt.GameService
 import de.htw.gezumi.gatt.GattClient
 import de.htw.gezumi.model.Device
 import de.htw.gezumi.util.FileStorage
@@ -46,13 +47,15 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             return field + ByteArray(GAME_ID_LENGTH - field.size) // fill with zeros if
         }
 
+    @kotlin.ExperimentalUnsignedTypes
+    @SuppressLint("DefaultLocale")
     val gameScanCallback: ScanCallback = object : ScanCallback() {
         override fun onScanResult(callbackType: Int, result: ScanResult) {
             super.onScanResult(callbackType, result)
             when (callbackType) {
                 ScanSettings.CALLBACK_TYPE_ALL_MATCHES -> {
-                    val deviceAddress = result.scanRecord!!.getManufacturerSpecificData(76)!!.sliceArray(GAME_ID_LENGTH until GAME_ID_LENGTH + 5)
-                    onGameScanResult(deviceAddress, result.rssi, result.txPower, result.device)
+                    val deviceId = GameService.extractDeviceId(result)
+                    onGameScanResult(deviceId, result.rssi, result.txPower, result.device)
                 }
                 ScanSettings.CALLBACK_TYPE_MATCH_LOST -> {
                     Log.d(TAG, "lost " + result.device.name)
@@ -91,6 +94,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         gameJoinUICallback.gameStarted()
     }
 
+    @kotlin.ExperimentalUnsignedTypes
+    @SuppressLint("DefaultLocale")
     fun onGameLeave() {
         Log.d(TAG, "on game leave")
         // TODO host leaves game
@@ -119,6 +124,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
      * Store rssi of device, if last read x millis before.
      * Send a player update to the host.
      */
+    @kotlin.ExperimentalUnsignedTypes
+    @SuppressLint("DefaultLocale")
     fun onGameScanResult(deviceAddress: ByteArray, rssi: Int, txPower: Int, bluetoothDevice: BluetoothDevice) {
         // add device to game if necessary
         if (!Utils.contains(devices, deviceAddress))
@@ -127,11 +134,11 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         val device = Utils.findDevice(devices, deviceAddress)!!
         val millisPassed = getLastRssiMillis(device)
         if (millisPassed > RSSI_READ_INTERVAL) {
-            Log.d(TAG, "game scan: read rssi of ${deviceAddress}, last read: $millisPassed")
+            Log.d(TAG, "game scan: read rssi of ${Utils.toHexString(deviceAddress)}, last read: $millisPassed")
             device.addRssi(rssi)
             if (!isHost())
                 gattClient.sendPlayerUpdate(device.getDeviceData())
-            // TODO: else: call fun that processes data received from clients with own data
+            // TODO: else isHost: call fun that processes data received from clients with own data
             _devices[device] = System.currentTimeMillis()
         }
     }

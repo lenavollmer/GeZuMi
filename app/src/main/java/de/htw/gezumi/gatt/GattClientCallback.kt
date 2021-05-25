@@ -3,6 +3,7 @@ package de.htw.gezumi.gatt
 import android.annotation.SuppressLint
 import android.bluetooth.*
 import android.util.Log
+import de.htw.gezumi.Utils
 import de.htw.gezumi.model.DeviceData
 import de.htw.gezumi.viewmodel.GameViewModel
 import de.htw.gezumi.viewmodel.RANDOM_GAME_ID_PART_LENGTH
@@ -93,7 +94,7 @@ class GattClientCallback(private val _gameViewModel: GameViewModel) : BluetoothG
             }
             GameService.HOST_UPDATE_UUID -> {
                 val deviceData = DeviceData.fromBytes(characteristic.value)
-                Log.d(TAG, "host update: device: ${deviceData.deviceAddress} values=${deviceData.values.contentToString()}, size=${characteristic.value.size}")
+                Log.d(TAG, "received host update: device: ${Utils.toHexString(deviceData.deviceAddress)} values=${deviceData.values.contentToString()}, size=${characteristic.value.size}")
                 // TODO: do something with the received data
             }
         }

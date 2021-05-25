@@ -13,7 +13,6 @@ class Utils {
                 .toByteArray()
         }
 
-        // TODO: does : separation
         @kotlin.ExperimentalUnsignedTypes
         @SuppressLint("DefaultLocale")
         fun toHexString(bytes: ByteArray) = bytes.asUByteArray()
