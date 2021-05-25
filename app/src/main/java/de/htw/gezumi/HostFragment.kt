@@ -140,13 +140,14 @@ class HostFragment : Fragment() {
     @kotlin.ExperimentalUnsignedTypes
     @SuppressLint("DefaultLocale")
     private fun onGameNameChanged(gameName: String) {
+        require(gameName.length <= 8) {"Game name too long"}
         GameService.gameName = gameName // must be in game service so gattServerCallback can access it
-        _gameViewModel.gameId = GameService.GAME_ID_PREFIX + GameService.randomIdPart + gameName.toByteArray(Charsets.UTF_8)
+        _gameViewModel.gameId = GameService.GAME_ID_PREFIX + GameService.randomIdPart
 
         _gameViewModel.bluetoothController.stopAdvertising()
         _gameViewModel.bluetoothController.stopScan(object: ScanCallback() {})
 
-        _gameViewModel.bluetoothController.startAdvertising(_gameViewModel.gameId, _gameViewModel.myDeviceId)
+        _gameViewModel.bluetoothController.startAdvertising(_gameViewModel.gameId, gameName.toByteArray(Charsets.UTF_8))
         Log.d(TAG, "start game scan")
         _gameViewModel.bluetoothController.startScan(_gameViewModel.gameScanCallback, _gameViewModel.gameId)
     }

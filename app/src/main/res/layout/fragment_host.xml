@@ -18,9 +18,9 @@
                 android:layout_gravity="top|center"
                 android:textAlignment="center"
                 android:layout_marginTop="20dp"
-                android:hint="@string/game_name" android:maxLength="10"
+                android:hint="@string/game_name" android:maxLength="8"
                 android:imeOptions="actionGo"
-                android:singleLine="true" />
+                android:singleLine="true"/>
 
         <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recycler_players"

@@ -143,7 +143,7 @@ class ClientFragment : Fragment() {
             addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
         }
         _binding.buttonScan.setOnClickListener {
-            _gameViewModel.bluetoothController.startScan(_gameViewModel.hostScanCallback, _gameViewModel.gameId, true)// ParcelUuid(GameService.getGameId()), true) <- doesn't work, why???
+            _gameViewModel.bluetoothController.startHostScan(_gameViewModel.hostScanCallback)// ParcelUuid(GameService.getGameId()), true) <- doesn't work, why???
         }
 
         checkPermission()

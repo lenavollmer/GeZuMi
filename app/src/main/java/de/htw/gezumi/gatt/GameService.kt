@@ -6,7 +6,7 @@ import android.bluetooth.BluetoothGattService
 import android.bluetooth.le.ScanResult
 import android.util.Log
 import de.htw.gezumi.Utils
-import de.htw.gezumi.viewmodel.GAME_ID_LENGTH
+import de.htw.gezumi.viewmodel.*
 import java.util.*
 
 
@@ -26,7 +26,7 @@ object GameService {
 
     val GAME_ID_PREFIX = Utils.decodeHex("4a92d33c")
     // the random part of the game id
-    val randomIdPart = ByteArray(2)
+    val randomIdPart = ByteArray(RANDOM_GAME_ID_PART_LENGTH)
     lateinit var gameName: String
 
     fun createHostService(): BluetoothGattService {
@@ -57,21 +57,10 @@ object GameService {
 
     fun extractGameName(result: ScanResult): String = result.scanRecord!!
         .getManufacturerSpecificData(76)!!
-        .sliceArray(6 until GAME_ID_LENGTH)
+        .sliceArray(GAME_ID_LENGTH until GAME_ID_LENGTH + GAME_NAME_LENGTH)
         .toString(Charsets.UTF_8)
 
     fun extractDeviceId(result: ScanResult): ByteArray = result.scanRecord!!
         .getManufacturerSpecificData(76)!!
-        .sliceArray(GAME_ID_LENGTH until GAME_ID_LENGTH + 5)
-
-    //fun getGameId(): String = GAME_ID_PREFIX + gameIdPostfix
-
-    private fun getRandomUuidString(length: Int): String {
-        val allowedChars = ('a'..'f') + ('0'..'9')
-        return (1..length)
-            .map { allowedChars.random() }
-            .joinToString("")
-    }
-
-
+        .sliceArray(DEVICE_ID_OFFSET until DEVICE_ID_OFFSET + DEVICE_ID_LENGTH)
 }

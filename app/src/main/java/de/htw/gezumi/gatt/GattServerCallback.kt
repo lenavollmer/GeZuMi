@@ -36,7 +36,7 @@ class GattServerCallback(private val _subscribedDevices: MutableSet<BluetoothDev
                     requestId,
                     BluetoothGatt.GATT_SUCCESS,
                     0,
-                    GameService.randomIdPart + GameService.gameName.toByteArray(Charsets.UTF_8)
+                    GameService.randomIdPart
                 )
             }
             else -> {

@@ -5,6 +5,7 @@ import android.bluetooth.*
 import android.util.Log
 import de.htw.gezumi.model.DeviceData
 import de.htw.gezumi.viewmodel.GameViewModel
+import de.htw.gezumi.viewmodel.RANDOM_GAME_ID_PART_LENGTH
 import java.nio.ByteBuffer
 import java.util.*
 
@@ -34,9 +35,8 @@ class GattClientCallback(private val _gameViewModel: GameViewModel) : BluetoothG
         super.onCharacteristicRead(gatt, characteristic, status)
         when (characteristic?.uuid) {
             GameService.GAME_ID_UUID -> {
-                val randomIdPart = characteristic.value.sliceArray(0 until 2)
-                val gameName = characteristic.value.sliceArray(2 until characteristic.value.size)//.toString(Charsets.UTF_8)
-                _gameViewModel.gameId = GameService.GAME_ID_PREFIX + randomIdPart + gameName
+                val randomIdPart = characteristic.value.sliceArray(0 until RANDOM_GAME_ID_PART_LENGTH)
+                _gameViewModel.gameId = GameService.GAME_ID_PREFIX + randomIdPart
                 // TODO: also set GameService vars? for sure: decode gameName and display
                 Log.d(TAG, "callback: characteristic read successfully, gameId: ${_gameViewModel.gameId}")
                 _gameViewModel.onGameJoin()
