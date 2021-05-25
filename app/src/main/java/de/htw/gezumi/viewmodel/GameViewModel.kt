@@ -7,11 +7,13 @@ import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
 import android.util.Log
+import android.view.Gravity
 import androidx.lifecycle.AndroidViewModel
 import de.htw.gezumi.Utils
 import de.htw.gezumi.callbacks.GameJoinUICallback
 import de.htw.gezumi.controller.BluetoothController
 import de.htw.gezumi.gatt.GattClient
+import de.htw.gezumi.gatt.GattClientCallback
 import de.htw.gezumi.model.Device
 import de.htw.gezumi.util.FileStorage
 import java.util.*
@@ -33,7 +35,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     private val _devices = mutableMapOf<Device, Long>()
     val devices: List<Device> get() = _devices.keys.toList()
 
-    lateinit var host: Device // is null for host themselves // is currently not the same object as host in _devices (and has default txpower)
+    var host: Device? = null // is null for host themselves // is currently not the same object as host in _devices (and has default txpower)
     var gameId: ByteArray = ByteArray(0) // 21 bytes left for game attributes like game name etc.
         get() {
             require(field.size <= GAME_ID_LENGTH) {"Wrong game id"}
@@ -75,6 +77,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun onGameDecline() {
+        host = null
+        gattClient.disconnect()
         gameJoinUICallback.gameDeclined()
     }
 
@@ -92,7 +96,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     fun isJoined(): Boolean = gameId.isNotEmpty()
 
-    private fun isHost(): Boolean = !::host.isInitialized
+    private fun isHost(): Boolean = host == null
 
     init {
         bluetoothController.setContext(application.applicationContext)

@@ -56,6 +56,7 @@ class ClientFragment : Fragment() {
         _gameViewModel.gameJoinUICallback = gameJoinUICallback
         _gameViewModel.gattClient = gattClient
 
+        _popupBinding.joinText.text = getString(R.string.join_wait)
         _popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0)
     }
 

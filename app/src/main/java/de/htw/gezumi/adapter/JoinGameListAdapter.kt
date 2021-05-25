@@ -26,8 +26,8 @@ class JoinGameListAdapter(private val _hostDevices: List<Device>, private val li
 
             _binding.textGameName.text = device.gameName.value // TODO XXXXX
 
-            val approveButton = _binding.buttonJoin
-            approveButton.setOnClickListener {
+            val joinButton = _binding.buttonJoin
+            joinButton.setOnClickListener {
                 listener.invoke(adapterPosition)
             }
 
