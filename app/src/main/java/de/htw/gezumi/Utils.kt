@@ -22,14 +22,14 @@ class Utils {
             }.toUpperCase()
 
         fun contains(list: List<Device>, device: Device): Boolean {
-            return contains(list, device.address)
+            return contains(list, device.deviceId)
         }
         fun contains(list: List<Device>, address: ByteArray): Boolean {
-            return list.any { d -> d.address.contentEquals(address) }
+            return list.any { d -> d.deviceId.contentEquals(address) }
         }
 
         fun findDevice(list: List<Device>, address: ByteArray): Device? {
-            return list.find { d -> d.address.contentEquals(address) }
+            return list.find { d -> d.deviceId.contentEquals(address) }
         }
     }
 }

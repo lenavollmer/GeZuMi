@@ -7,13 +7,11 @@ import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
 import android.util.Log
-import android.view.Gravity
 import androidx.lifecycle.AndroidViewModel
 import de.htw.gezumi.Utils
 import de.htw.gezumi.callbacks.GameJoinUICallback
 import de.htw.gezumi.controller.BluetoothController
 import de.htw.gezumi.gatt.GattClient
-import de.htw.gezumi.gatt.GattClientCallback
 import de.htw.gezumi.model.Device
 import de.htw.gezumi.util.FileStorage
 import java.util.*
@@ -122,7 +120,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         val device = Utils.findDevice(devices, deviceAddress)!!
         val millisPassed = getLastRssiMillis(device)
         if (millisPassed > RSSI_READ_INTERVAL) {
-            Log.d(TAG, "game scan: read rssi of ${device.address}, last read: $millisPassed")
+            Log.d(TAG, "game scan: read rssi of ${device.deviceId}, last read: $millisPassed")
             device.addRssi(rssi)
             if (!isHost())
                 gattClient.sendPlayerUpdate(device.getDeviceData())

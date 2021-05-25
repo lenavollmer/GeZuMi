@@ -50,7 +50,7 @@ class HostFragment : Fragment() {
         }
         else {
             _gattServer.notifyJoinApproved(_connectedDevices[position], false)
-            //_connectedDevices.removeAt(position)
+            _connectedDevices.removeAt(position)
         }
         updateAdapters()
     }

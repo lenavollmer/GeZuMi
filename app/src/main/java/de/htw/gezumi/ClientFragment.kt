@@ -3,7 +3,6 @@ package de.htw.gezumi
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.bluetooth.BluetoothDevice
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
@@ -20,7 +19,6 @@ import androidx.core.app.ActivityCompat
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.MutableLiveData
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import de.htw.gezumi.adapter.JoinGameListAdapter
@@ -93,17 +91,25 @@ class ClientFragment : Fragment() {
         _gameViewModel.hostScanCallback = object : ScanCallback() {
             override fun onScanResult(callbackType: Int, result: ScanResult) {
                 super.onScanResult(callbackType, result)
-                val deviceAddress = result.scanRecord!!.getManufacturerSpecificData(76)!!.sliceArray(GAME_ID_LENGTH until GAME_ID_LENGTH + 5)
+                val deviceId = GameService.extractDeviceId(result)
                 when (callbackType) {
-                    ScanSettings.CALLBACK_TYPE_ALL_MATCHES -> {// first match does not have a name
-                        if (!Utils.contains(_availableHostDevices, deviceAddress))
-                            _availableHostDevices.add(Device(deviceAddress, result.txPower, result.device))
-                        Utils.findDevice(_availableHostDevices, deviceAddress)!!.gameName.postValue(result.scanRecord!!.getManufacturerSpecificData(76)!!.sliceArray(6 until GAME_ID_LENGTH).toString(Charsets.UTF_8))
-                        // read host rssi if already joined
-                        //if (_gameViewModel.isJoined()) _gameViewModel.gameScanCallback.onScanResult(callbackType, result)
+                    ScanSettings.CALLBACK_TYPE_ALL_MATCHES -> {
+                        if (!Utils.contains(_availableHostDevices, deviceId)) {
+                            _availableHostDevices.add(Device(deviceId, result.txPower, result.device))
+                            return
+                        }
+
+                        val device = Utils.findDevice(_availableHostDevices, deviceId)!!
+                        // check for new game name
+                        val newGameName = GameService.extractGameName(result)
+                        if (!device.gameName.equals(newGameName))
+                            device.gameName.postValue(newGameName)
+                        // refresh bt device: if game name changed, host uses a new bt device
+                        if (device.bluetoothDevice != result.device)
+                            device.bluetoothDevice = result.device
                     }
                     ScanSettings.CALLBACK_TYPE_MATCH_LOST -> {
-                        _availableHostDevices.remove(Utils.findDevice(_availableHostDevices, deviceAddress)) // todo doesn't work with adapted scan settings
+                        _availableHostDevices.remove(Utils.findDevice(_availableHostDevices, deviceId)) // todo doesn't work with adapted scan settings
                         Log.d(TAG, "lost " + result.device.name)
                     }
                 }

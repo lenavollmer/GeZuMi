@@ -3,8 +3,10 @@ package de.htw.gezumi.gatt
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
 import android.bluetooth.BluetoothGattService
+import android.bluetooth.le.ScanResult
 import android.util.Log
 import de.htw.gezumi.Utils
+import de.htw.gezumi.viewmodel.GAME_ID_LENGTH
 import java.util.*
 
 
@@ -53,6 +55,15 @@ object GameService {
         return service
     }
 
+    fun extractGameName(result: ScanResult): String = result.scanRecord!!
+        .getManufacturerSpecificData(76)!!
+        .sliceArray(6 until GAME_ID_LENGTH)
+        .toString(Charsets.UTF_8)
+
+    fun extractDeviceId(result: ScanResult): ByteArray = result.scanRecord!!
+        .getManufacturerSpecificData(76)!!
+        .sliceArray(GAME_ID_LENGTH until GAME_ID_LENGTH + 5)
+
     //fun getGameId(): String = GAME_ID_PREFIX + gameIdPostfix
 
     private fun getRandomUuidString(length: Int): String {
@@ -61,4 +72,6 @@ object GameService {
             .map { allowedChars.random() }
             .joinToString("")
     }
+
+
 }
