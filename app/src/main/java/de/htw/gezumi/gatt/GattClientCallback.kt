@@ -3,8 +3,10 @@ package de.htw.gezumi.gatt
 import android.annotation.SuppressLint
 import android.bluetooth.*
 import android.util.Log
+import de.htw.gezumi.Utils
 import de.htw.gezumi.model.DeviceData
 import de.htw.gezumi.viewmodel.GameViewModel
+import de.htw.gezumi.viewmodel.RANDOM_GAME_ID_PART_LENGTH
 import java.nio.ByteBuffer
 import java.util.*
 
@@ -28,12 +30,15 @@ class GattClientCallback(private val _gameViewModel: GameViewModel) : BluetoothG
         gatt?.setCharacteristicNotification(gatt.getService(GameService.HOST_UUID)?.getCharacteristic(GameService.JOIN_APPROVED_UUID), true)
     }
 
+    @kotlin.ExperimentalUnsignedTypes
+    @SuppressLint("DefaultLocale")
     override fun onCharacteristicRead(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic?, status: Int) {
         super.onCharacteristicRead(gatt, characteristic, status)
         when (characteristic?.uuid) {
             GameService.GAME_ID_UUID -> {
-                val gameIdPostfix = characteristic.value.toString(Charsets.UTF_8)
-                _gameViewModel.gameId = UUID.fromString(GameService.GAME_ID_PREFIX + gameIdPostfix)
+                val randomIdPart = characteristic.value.sliceArray(0 until RANDOM_GAME_ID_PART_LENGTH)
+                _gameViewModel.gameId = GameService.GAME_ID_PREFIX + randomIdPart
+                // TODO: also set GameService vars? for sure: decode gameName and display
                 Log.d(TAG, "callback: characteristic read successfully, gameId: ${_gameViewModel.gameId}")
                 _gameViewModel.onGameJoin()
                 Log.d(TAG, "subscribe for game events and host updates")
@@ -89,7 +94,7 @@ class GattClientCallback(private val _gameViewModel: GameViewModel) : BluetoothG
             }
             GameService.HOST_UPDATE_UUID -> {
                 val deviceData = DeviceData.fromBytes(characteristic.value)
-                Log.d(TAG, "host update: device: ${deviceData.deviceAddress} values=${deviceData.values.contentToString()}, size=${characteristic.value.size}")
+                Log.d(TAG, "received host update: device: ${Utils.toHexString(deviceData.deviceAddress)} values=${deviceData.values.contentToString()}, size=${characteristic.value.size}")
                 // TODO: do something with the received data
             }
         }

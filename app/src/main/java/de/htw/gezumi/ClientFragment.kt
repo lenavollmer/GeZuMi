@@ -1,6 +1,9 @@
 package de.htw.gezumi
 
 import android.bluetooth.BluetoothDevice
+import android.Manifest
+import android.annotation.SuppressLint
+import android.app.Activity
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
@@ -25,6 +28,7 @@ import de.htw.gezumi.gatt.GameService
 import de.htw.gezumi.gatt.GattClient
 import de.htw.gezumi.gatt.GattClientCallback
 import de.htw.gezumi.model.Device
+import de.htw.gezumi.viewmodel.GAME_ID_LENGTH
 import de.htw.gezumi.viewmodel.GameViewModel
 
 
@@ -39,18 +43,17 @@ class ClientFragment : Fragment() {
     private lateinit var _popupWindow: PopupWindow
     private lateinit var _gattClient: GattClient
 
-    private val _availableHostDevices: ArrayList<BluetoothDevice> = ArrayList()
+    private val _availableHostDevices: ArrayList<Device> = ArrayList()
     private val _hostDeviceListAdapter: JoinGameListAdapter = JoinGameListAdapter(_availableHostDevices) {
-        val hostDevice = Device(_availableHostDevices[it].address, -70, _availableHostDevices[it])
-        hostDevice.setName(_availableHostDevices[it].address)
-        _gameViewModel.host = hostDevice
+        _gameViewModel.host = _availableHostDevices[it]
 
         val gattClientCallback = GattClientCallback(_gameViewModel)
-        _gattClient.connect(_availableHostDevices[it], gattClientCallback)
+        _gattClient.connect(_availableHostDevices[it].bluetoothDevice, gattClientCallback)
 
         _gameViewModel.gameJoinUICallback = gameJoinUICallback
         _gameViewModel.gattClient = _gattClient
 
+        _popupBinding.joinText.text = getString(R.string.join_wait)
         _popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0)
     }
 
@@ -89,17 +92,31 @@ class ClientFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        _gameViewModel.gameId = GameService.GAME_ID_PREFIX
+
         _gameViewModel.hostScanCallback = object : ScanCallback() {
             override fun onScanResult(callbackType: Int, result: ScanResult) {
                 super.onScanResult(callbackType, result)
-                Log.d(TAG, "host scan callback")
+                val deviceId = GameService.extractDeviceId(result)
                 when (callbackType) {
-                    // first match does not have a name -> https://stackoverflow.com/questions/43606975/scan-ble-android-getname-or-device-not-complete-or-null
-                    ScanSettings.CALLBACK_TYPE_FIRST_MATCH -> {
-                        if (!_availableHostDevices.contains(result.device)) _availableHostDevices.add(result.device)
+                    ScanSettings.CALLBACK_TYPE_ALL_MATCHES -> {
+                        if (!Utils.contains(_availableHostDevices, deviceId)) {
+                            _availableHostDevices.add(Device(deviceId, result.txPower, result.device))
+                            return
+                        }
+
+                        val device = Utils.findDevice(_availableHostDevices, deviceId)!!
+                        // check for new game name
+                        val newGameName = GameService.extractGameName(result)
+                        if (!device.gameName.equals(newGameName))
+                            device.gameName.postValue(newGameName)
+                        // refresh bt device: if game name changed, host uses a new bt device
+                        if (device.bluetoothDevice != result.device)
+                            device.bluetoothDevice = result.device
                     }
                     ScanSettings.CALLBACK_TYPE_MATCH_LOST -> {
-                        _availableHostDevices.remove(result.device)
+                        _availableHostDevices.remove(Utils.findDevice(_availableHostDevices, deviceId)) // todo doesn't work with adapted scan settings
+                        Log.d(TAG, "lost " + result.device.name)
                     }
                 }
                 updateBtDeviceListAdapter()
@@ -116,9 +133,13 @@ class ClientFragment : Fragment() {
         _binding = DataBindingUtil.inflate(inflater, R.layout.fragment_client, container, false)
         _popupBinding = DataBindingUtil.inflate(inflater, R.layout.popup_join, null, false)
 
+        _hostDeviceListAdapter.lifecycleOwner = viewLifecycleOwner
+
         return _binding.root
     }
 
+    @kotlin.ExperimentalUnsignedTypes
+    @SuppressLint("DefaultLocale")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding.lifecycleOwner = viewLifecycleOwner
@@ -128,11 +149,7 @@ class ClientFragment : Fragment() {
             addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
         }
         _binding.buttonScan.setOnClickListener {
-            _gameViewModel.bluetoothController.startScan(
-                _gameViewModel.hostScanCallback,
-                ParcelUuid(GameService.HOST_UUID),
-                true
-            )// ParcelUuid(GameService.getGameId()), true) <- doesn't work, why???
+            _gameViewModel.bluetoothController.startHostScan(_gameViewModel.hostScanCallback)// ParcelUuid(GameService.getGameId()), true) <- doesn't work, why???
         }
 
         _popupWindow = PopupWindow(

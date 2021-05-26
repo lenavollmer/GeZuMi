@@ -1,15 +1,19 @@
 package de.htw.gezumi
 
+import android.annotation.SuppressLint
 import android.bluetooth.BluetoothDevice
 import android.content.pm.PackageManager
+import android.bluetooth.le.ScanCallback
+import android.content.Context
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.os.ParcelUuid
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputMethodManager
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
@@ -22,9 +26,8 @@ import de.htw.gezumi.adapter.ConnectedPlayerDeviceAdapter
 import de.htw.gezumi.databinding.FragmentHostBinding
 import de.htw.gezumi.gatt.GameService
 import de.htw.gezumi.gatt.GattServer
+import de.htw.gezumi.viewmodel.GAME_ID_LENGTH
 import de.htw.gezumi.viewmodel.GameViewModel
-import kotlin.collections.ArrayList
-import de.htw.gezumi.model.Device
 
 private const val TAG = "HostFragment"
 
@@ -49,7 +52,6 @@ class HostFragment : Fragment() {
         else {
             _gattServer.notifyJoinApproved(_connectedDevices[position], false)
             _connectedDevices.removeAt(position)
-
         }
         updateAdapters()
     }
@@ -75,19 +77,20 @@ class HostFragment : Fragment() {
         }
     }
 
+    @kotlin.ExperimentalUnsignedTypes
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
 
         }
-        _gameViewModel.gameId = GameService.getGameId()
+        val gameService = GameService.createHostService()
+
+        _gameViewModel.gameId = GameService.GAME_ID_PREFIX + GameService.randomIdPart
 
         Log.d(TAG, "start gatt server and game service")
         _gattServer = GattServer(requireContext(), _gameViewModel.bluetoothController, connectCallback)
-        _gattServer.startServer(GameService.createHostService())
-        _gameViewModel.bluetoothController.startAdvertising(ParcelUuid(_gameViewModel.gameId))
-        Log.d(TAG, "start game scan: ${_gameViewModel.gameId}")
-        _gameViewModel.bluetoothController.startScan(_gameViewModel.gameScanCallback, ParcelUuid(_gameViewModel.gameId))
+        _gattServer.startServer(gameService)
+        //else bluetoothController.stopAdvertising() // TODO stop host advertise when game starts?
     }
 
     override fun onCreateView(
@@ -98,6 +101,7 @@ class HostFragment : Fragment() {
         return _binding.root
     }
 
+    @kotlin.ExperimentalUnsignedTypes
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding.lifecycleOwner = viewLifecycleOwner
@@ -121,7 +125,35 @@ class HostFragment : Fragment() {
             _gattServer.notifyGameStart()
             findNavController().navigate(R.id.action_HostFragment_to_Game)
         }
+
+        _binding.editTextGameName.setOnEditorActionListener{ textView, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_GO) {
+                Log.d(TAG, "game name changed")
+                onGameNameChanged(textView.text.toString())
+                val imm: InputMethodManager = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                imm.hideSoftInputFromWindow(_binding.editTextGameName.windowToken, 0)
+                _binding.editTextGameName.clearFocus()
+                return@setOnEditorActionListener true
+            }
+            return@setOnEditorActionListener false
+        }
     }
+
+    @kotlin.ExperimentalUnsignedTypes
+    private fun onGameNameChanged(gameName: String) {
+        require(gameName.length <= 8) {"Game name too long"}
+        GameService.gameName = gameName // must be in game service so gattServerCallback can access it
+        _gameViewModel.gameId = GameService.GAME_ID_PREFIX + GameService.randomIdPart
+
+        _gameViewModel.bluetoothController.stopAdvertising()
+        _gameViewModel.bluetoothController.stopScan(object: ScanCallback() {})
+
+        _gameViewModel.bluetoothController.startAdvertising(_gameViewModel.gameId, gameName.toByteArray(Charsets.UTF_8))
+        Log.d(TAG, "start game scan")
+        _gameViewModel.bluetoothController.startScan(_gameViewModel.gameScanCallback, _gameViewModel.gameId)
+    }
+
+    // TODO handle lifecycle actions for gatt server
 
     override fun onDestroy() {
         super.onDestroy()

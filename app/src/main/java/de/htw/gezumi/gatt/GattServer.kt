@@ -1,8 +1,10 @@
 package de.htw.gezumi.gatt
 
-import android.bluetooth.*
+import android.bluetooth.BluetoothDevice
+import android.bluetooth.BluetoothGattServer
+import android.bluetooth.BluetoothGattService
+import android.bluetooth.BluetoothManager
 import android.content.Context
-import android.os.ParcelUuid
 import android.util.Log
 import de.htw.gezumi.HostFragment
 import de.htw.gezumi.controller.BluetoothController
