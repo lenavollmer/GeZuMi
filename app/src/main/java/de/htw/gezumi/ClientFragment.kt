@@ -85,6 +85,7 @@ class ClientFragment : Fragment() {
         override fun gameStarted() {
             Handler(Looper.getMainLooper()).post {
                 _popupWindow.dismiss()
+                Log.d(TAG, "game started")
                 findNavController().navigate(R.id.action_ClientFragment_to_Game)
             }
         }
