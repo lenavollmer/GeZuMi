@@ -1,5 +1,8 @@
 package de.htw.gezumi.callbacks
 
+import android.animation.PropertyValuesHolder
+import android.animation.ValueAnimator
+import android.animation.ValueAnimator.AnimatorUpdateListener
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
@@ -13,6 +16,7 @@ import de.htw.gezumi.calculation.Vec
 import de.htw.gezumi.canvas.Paints
 import de.htw.gezumi.canvas.getColorFromAttr
 import de.htw.gezumi.viewmodel.GameViewModel
+import java.util.Collections.rotate
 
 
 private const val TAG = "SurfaceCallback"
@@ -26,6 +30,9 @@ class SurfaceCallback(
     SurfaceHolder.Callback {
 
     private val _paints = Paints(_context)
+    private val _oldPlayerPos: Point? = null;
+    private val _playerPos: Point? = null;
+
 
     override fun surfaceChanged(
         holder: SurfaceHolder, format: Int,
@@ -38,13 +45,13 @@ class SurfaceCallback(
     override fun surfaceCreated(holder: SurfaceHolder) {
         Log.d(TAG, "surfaceCreated")
         // Create the observer which updates the UI.
-        val nameObserver = Observer<List<Point>> { newLocations ->
+        val positionObserver = Observer<List<Point>> { newLocations ->
             Log.d(TAG, "I am an observer and I do observe")
             tryDrawing(holder, newLocations)
         }
 
         // Observe the LiveData, passing in this activity as the LifecycleOwner and the observer.
-        _gameViewModel.playerLocations.observe(_viewLifecycleOwner, nameObserver)
+        _gameViewModel.playerLocations.observe(_viewLifecycleOwner, positionObserver)
     }
 
     override fun surfaceDestroyed(holder: SurfaceHolder) {
@@ -64,6 +71,7 @@ class SurfaceCallback(
             holder.unlockCanvasAndPost(canvas)
         }
     }
+
 
     private fun drawMyStuff(canvas: Canvas, playerLocations: List<Point>) {
         Log.i(TAG, "Drawing...")
@@ -119,7 +127,7 @@ class SurfaceCallback(
 
 
         // scale all points to fit canvas
-        val points = Geometry.scaleToCanvas(
+        val allPoints = Geometry.scaleToCanvas(
             allVectors.map { it.toPoint() },
             canvas.height,
             canvas.width,
@@ -127,11 +135,34 @@ class SurfaceCallback(
             playerCount
         )
 
+        val newPlayerPos = allPoints.subList(0, playerCount)
+
+        // TODO add animation here
+        val playerPosToAnimate = newPlayerPos[0]
+        // TODO what todo when there is no old position
+        // TODO move xPos into constant var
+        // TODO do animation for y
+        val propertyRadius: PropertyValuesHolder = PropertyValuesHolder.ofInt(
+            "xPos", _oldPlayerPos!!.x,
+            playerPosToAnimate.x
+        )
+//        val propertyRotate: PropertyValuesHolder = PropertyValuesHolder.ofInt("yPos", 0, 360)
+
+        val animator = ValueAnimator()
+        animator.setValues(propertyRadius)
+        animator.setDuration(2000)
+        animator.addUpdateListener(AnimatorUpdateListener { animation ->
+            _playerPos!!.x = animation.getAnimatedValue("xPos") as Int
+//            _playerPos.x = animation.getAnimatedValue(PROPERTY_RADIUS) as Int
+            drawCircle(canvas, _playerPos!!)
+        })
+        animator.start()
+
 
         // draw player locations
         drawFigure(
             canvas,
-            points.subList(0, playerCount),
+            allPoints.subList(0, playerCount),
             _paints.lineStroke,
             _paints.circleStroke,
             _paints.fillPaint
@@ -139,11 +170,18 @@ class SurfaceCallback(
         // draw target shape
         drawFigure(
             canvas,
-            points.subList(playerCount, playerCount * 2),
+            allPoints.subList(playerCount, playerCount * 2),
             _paints.lineStrokeTargetShape,
             _paints.circleStrokeTargetShape,
             _paints.fillPaintTargetShape
         )
+    }
+
+    private fun drawCircle(
+        canvas: Canvas,
+        points: Point
+    ) {
+        // TODO implement
     }
 
     private fun drawFigure(
