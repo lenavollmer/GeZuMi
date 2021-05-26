@@ -140,6 +140,7 @@ class ClientFragment : Fragment() {
         }
         _binding.buttonScan.setOnClickListener {
             _availableHostDevices.clear()
+            updateBtDeviceListAdapter()
             _gameViewModel.bluetoothController.startHostScan(_gameViewModel.hostScanCallback)// ParcelUuid(GameService.getGameId()), true) <- doesn't work, why???
         }
 
