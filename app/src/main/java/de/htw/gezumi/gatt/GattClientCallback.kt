@@ -1,8 +1,12 @@
 package de.htw.gezumi.gatt
 
+import android.annotation.SuppressLint
 import android.bluetooth.*
 import android.util.Log
+import de.htw.gezumi.Utils
+import de.htw.gezumi.model.DeviceData
 import de.htw.gezumi.viewmodel.GameViewModel
+import de.htw.gezumi.viewmodel.RANDOM_GAME_ID_PART_LENGTH
 import java.nio.ByteBuffer
 import java.util.*
 
@@ -26,15 +30,18 @@ class GattClientCallback(private val _gameViewModel: GameViewModel) : BluetoothG
         gatt?.setCharacteristicNotification(gatt.getService(GameService.HOST_UUID)?.getCharacteristic(GameService.JOIN_APPROVED_UUID), true)
     }
 
+    @kotlin.ExperimentalUnsignedTypes
+    @SuppressLint("DefaultLocale")
     override fun onCharacteristicRead(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic?, status: Int) {
         super.onCharacteristicRead(gatt, characteristic, status)
         when (characteristic?.uuid) {
             GameService.GAME_ID_UUID -> {
-                val gameIdPostfix = characteristic.value.toString(Charsets.UTF_8)
-                _gameViewModel.gameId = UUID.fromString(GameService.GAME_ID_PREFIX + gameIdPostfix)
+                val randomIdPart = characteristic.value.sliceArray(0 until RANDOM_GAME_ID_PART_LENGTH)
+                _gameViewModel.gameId = GameService.GAME_ID_PREFIX + randomIdPart
+                // TODO: also set GameService vars? for sure: decode gameName and display
                 Log.d(TAG, "callback: characteristic read successfully, gameId: ${_gameViewModel.gameId}")
                 _gameViewModel.onGameJoin()
-                Log.d(TAG, "subscribe for game events")
+                Log.d(TAG, "subscribe for game events and host updates")
                 val subscribeDescriptor = gatt?.getService(GameService.HOST_UUID)?.getCharacteristic(GameService.GAME_EVENT_UUID)?.getDescriptor(GameService.CLIENT_CONFIG)
                 subscribeDescriptor?.value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
                 gatt?.writeDescriptor(subscribeDescriptor)
@@ -48,18 +55,22 @@ class GattClientCallback(private val _gameViewModel: GameViewModel) : BluetoothG
             GameService.CLIENT_CONFIG -> {
                 if (status == BluetoothGatt.GATT_SUCCESS) {
                     if (Arrays.equals(descriptor.value, BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE)) {
-                        Log.d(TAG, "game event subscribe successful")
+                        Log.d(TAG, "game event and host update subscribe successful")
                         gatt?.setCharacteristicNotification(gatt.getService(GameService.HOST_UUID)?.getCharacteristic(GameService.GAME_EVENT_UUID), true)
+                        gatt?.setCharacteristicNotification(gatt.getService(GameService.HOST_UUID)?.getCharacteristic(GameService.HOST_UPDATE_UUID), true)
                     }
                     else if (Arrays.equals(descriptor.value, BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE)) {
                         Log.d(TAG, "game event unsubscribe successful")
                         gatt?.setCharacteristicNotification(gatt.getService(GameService.HOST_UUID)?.getCharacteristic(GameService.GAME_EVENT_UUID), false)
+                        gatt?.setCharacteristicNotification(gatt.getService(GameService.HOST_UUID)?.getCharacteristic(GameService.HOST_UPDATE_UUID), false)
                     }
                 }
             }
         }
     }
 
+    @kotlin.ExperimentalUnsignedTypes
+    @SuppressLint("DefaultLocale")
     override fun onCharacteristicChanged(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic?) {
         super.onCharacteristicChanged(gatt, characteristic)
         when (characteristic?.uuid) {
@@ -77,11 +88,15 @@ class GattClientCallback(private val _gameViewModel: GameViewModel) : BluetoothG
             }
             GameService.GAME_EVENT_UUID -> {
                 val event = ByteBuffer.wrap(characteristic.value).int
-                if(event == GameService.GAME_START_EVENT){
+                if (event == GameService.GAME_START_EVENT){
                     _gameViewModel.onGameStart()
                 }
             }
+            GameService.HOST_UPDATE_UUID -> {
+                val deviceData = DeviceData.fromBytes(characteristic.value)
+                Log.d(TAG, "received host update: device: ${Utils.toHexString(deviceData.deviceAddress)} values=${deviceData.values.contentToString()}, size=${characteristic.value.size}")
+                // TODO: do something with the received data
+            }
         }
     }
-
 }

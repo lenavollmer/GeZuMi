@@ -1,11 +1,14 @@
 package de.htw.gezumi.gatt
 
-import android.bluetooth.*
+import android.bluetooth.BluetoothDevice
+import android.bluetooth.BluetoothGattServer
+import android.bluetooth.BluetoothGattService
+import android.bluetooth.BluetoothManager
 import android.content.Context
-import android.os.ParcelUuid
 import android.util.Log
 import de.htw.gezumi.HostFragment
 import de.htw.gezumi.controller.BluetoothController
+import de.htw.gezumi.model.DeviceData
 import java.nio.ByteBuffer
 
 private const val TAG = "GattServer"
@@ -51,7 +54,7 @@ class GattServer(private val _context: Context, private val _bluetoothController
     fun notifyJoinApproved(device: BluetoothDevice, approved: Boolean) {
         val joinApprovedCharacteristic = bluetoothGattServer?.getService(GameService.HOST_UUID)?.getCharacteristic(GameService.JOIN_APPROVED_UUID)
         joinApprovedCharacteristic?.value = ByteBuffer.allocate(4).putInt(if (approved) 1 else 0).array()
-        Log.d(TAG, "write join approve: $approved")
+        Log.d(TAG, "notify join approve: $approved")
         bluetoothGattServer?.notifyCharacteristicChanged(device, joinApprovedCharacteristic, false)
     }
 
@@ -66,6 +69,15 @@ class GattServer(private val _context: Context, private val _bluetoothController
         gameStartCharacteristic?.value = ByteBuffer.allocate(4).putInt(GameService.GAME_START_EVENT).array()
         for (device in _subscribedDevices) {
             bluetoothGattServer?.notifyCharacteristicChanged(device, gameStartCharacteristic, false)
+        }
+    }
+
+    fun notifyHostUpdate(deviceData: DeviceData) {
+        Log.d(TAG, "notify host update")
+        val hostUpdateCharacteristic = bluetoothGattServer?.getService(GameService.HOST_UUID)?.getCharacteristic(GameService.HOST_UPDATE_UUID)
+        hostUpdateCharacteristic?.value = deviceData.toByteArray()
+        for (device in _subscribedDevices) {
+            bluetoothGattServer?.notifyCharacteristicChanged(device, hostUpdateCharacteristic, false)
         }
     }
 }

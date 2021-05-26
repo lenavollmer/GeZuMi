@@ -1,5 +1,7 @@
 package de.htw.gezumi
 
+import android.annotation.SuppressLint
+import android.graphics.Point
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -111,6 +113,8 @@ class GameFragment : Fragment() {
         running = true;
     }
 
+    @kotlin.ExperimentalUnsignedTypes
+    @SuppressLint("DefaultLocale")
     override fun onStop() {
         super.onStop()
         running = false;
