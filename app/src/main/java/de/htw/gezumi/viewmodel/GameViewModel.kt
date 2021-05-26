@@ -14,6 +14,7 @@ import de.htw.gezumi.controller.BluetoothController
 import de.htw.gezumi.gatt.GameService
 import de.htw.gezumi.gatt.GattClient
 import de.htw.gezumi.model.Device
+import de.htw.gezumi.model.Game
 import de.htw.gezumi.util.FileStorage
 import java.util.*
 
@@ -39,6 +40,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     val devices: List<Device> get() = _devices.keys.toList()
 
     var host: Device? = null // is null for host themselves // is currently not the same object as host in _devices (and has default txpower)
+
+    val game = Game()
 
     // the game id consists of a fixed host prefix (4 bytes) and a random id part (4 bytes)
     var gameId: ByteArray = ByteArray(0) // 21 bytes left for game attributes like game name etc.
@@ -151,6 +154,4 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             devices.iterator().next().rssiHistory.toString()
         )
     }
-
-
 }
