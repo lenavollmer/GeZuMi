@@ -48,11 +48,9 @@ class BluetoothController {
         }
     }
 
-    init {
-        enableBluetooth()
-    }
 
     fun startHostScan(leScanCallback: ScanCallback) {
+        enableBluetooth()
         // just scan for host prefix
         val ignore = ByteArray(RANDOM_GAME_ID_PART_LENGTH + GAME_NAME_LENGTH + DEVICE_ID_LENGTH)
         val mask = byteArrayOf(1, 1, 1, 1) + ignore
@@ -70,6 +68,7 @@ class BluetoothController {
     @kotlin.ExperimentalUnsignedTypes
     @SuppressLint("DefaultLocale")
     fun startScan(leScanCallback: ScanCallback, gameId: ByteArray) {
+        enableBluetooth()
         // scan for specific game with prefix and random part
         val ignore = ByteArray(GAME_NAME_LENGTH + DEVICE_ID_LENGTH) // mask device address and game name
         val filterBytes = gameId + ignore
@@ -93,6 +92,7 @@ class BluetoothController {
 
     @kotlin.ExperimentalUnsignedTypes
     fun startAdvertising(gameId: ByteArray, gameName: ByteArray = ByteArray(0)) { // leave empty if client because name is not important then
+        enableBluetooth()
         require(::_bluetoothManager.isInitialized) {"Must have context set"}
         val bluetoothLeAdvertiser: BluetoothLeAdvertiser? = _bluetoothManager.adapter.bluetoothLeAdvertiser
 
