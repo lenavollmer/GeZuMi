@@ -122,6 +122,9 @@ class HostFragment : Fragment() {
             findNavController().navigate(R.id.action_HostFragment_to_Game)
         }
 
+        _binding.editTextGameName.setText(R.string.default_game_name)
+        onGameNameChanged(_binding.editTextGameName.text.toString())
+
         _binding.editTextGameName.setOnEditorActionListener{ textView, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_GO) {
                 Log.d(TAG, "game name changed")
@@ -133,6 +136,7 @@ class HostFragment : Fragment() {
             }
             return@setOnEditorActionListener false
         }
+
     }
 
     @kotlin.ExperimentalUnsignedTypes
@@ -157,16 +161,14 @@ class HostFragment : Fragment() {
     override fun onPause() {
         super.onPause()
         updateAdapters()
+        _gameViewModel.bluetoothController.stopScan(object: ScanCallback() {})
         _gattServer.pauseServer()
     }
 
     @kotlin.ExperimentalUnsignedTypes
     override fun onResume() {
         super.onResume()
-//        if(this@GameService::gameName.isInitialized) {
-//            _gameViewModel.bluetoothController.startAdvertising(_gameViewModel.gameId, GameService.gameName.toByteArray(Charsets.UTF_8))
-//        }
-
+        _gameViewModel.bluetoothController.startAdvertising(_gameViewModel.gameId, GameService.gameName.toByteArray(Charsets.UTF_8))
     }
 
     private fun updateAdapters() {

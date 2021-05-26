@@ -21,12 +21,12 @@
     <string name="direct_to_game">Direct to Game</string>
     <string name="start_game">Start Game</string>
 
+    <string name="default_game_name">Game</string>
+
     <string name="join_wait">Please wait until the host admits you</string>
     <string name="join_approved">You have been approved. Please wait until the game starts.</string>
     <string name="join_declined">You have been declined!</string>
     <string name="game_name">Game Name</string>
-
-    <string name="permission">Sorry, we need the permission to use Bluetooth</string>
 
     <string name="bluetooth_not_supported">Your device does not support bluetooth, so you are sadly not able to use this app</string>
     <string name="re_request_permissions">Re-request permissions</string>

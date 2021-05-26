@@ -110,10 +110,6 @@ class ClientFragment : Fragment() {
                         if (device.bluetoothDevice != result.device)
                             device.bluetoothDevice = result.device
                     }
-                    ScanSettings.CALLBACK_TYPE_MATCH_LOST -> {
-                        _availableHostDevices.remove(Utils.findDevice(_availableHostDevices, deviceId)) // todo doesn't work with adapted scan settings
-                        Log.d(TAG, "lost " + result.device.name)
-                    }
                 }
                 updateBtDeviceListAdapter()
             }
@@ -144,6 +140,7 @@ class ClientFragment : Fragment() {
             addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
         }
         _binding.buttonScan.setOnClickListener {
+            _availableHostDevices.clear()
             _gameViewModel.bluetoothController.startHostScan(_gameViewModel.hostScanCallback)// ParcelUuid(GameService.getGameId()), true) <- doesn't work, why???
         }
 
