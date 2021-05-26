@@ -95,7 +95,7 @@ class ClientFragment : Fragment() {
                 super.onScanResult(callbackType, result)
                 val deviceId = GameService.extractDeviceId(result)
                 when (callbackType) {
-                    ScanSettings.CALLBACK_TYPE_FIRST_MATCH -> {
+                    ScanSettings.CALLBACK_TYPE_ALL_MATCHES -> {
                         if (!Utils.contains(_availableHostDevices, deviceId)) {
                             _availableHostDevices.add(Device(deviceId, result.txPower, result.device))
                             return

@@ -27,9 +27,8 @@ class BluetoothController {
     private val _bluetoothLeScanner: BluetoothLeScanner? = _bluetoothAdapter.bluetoothLeScanner
 
     private var _scanFilters = mutableListOf<ScanFilter>()
-    private val _scanSettings = ScanSettings.Builder()
-        .setCallbackType(ScanSettings.CALLBACK_TYPE_FIRST_MATCH or ScanSettings.CALLBACK_TYPE_MATCH_LOST)
-        .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY).build()
+    private val _scanSettings = ScanSettings.Builder().setCallbackType(ScanSettings.CALLBACK_TYPE_ALL_MATCHES).build()
+
 
     private val _advertiseSettings: AdvertiseSettings = AdvertiseSettings.Builder()
         .setAdvertiseMode(AdvertiseSettings.ADVERTISE_MODE_LOW_LATENCY)
