@@ -34,12 +34,10 @@ class SurfaceCallback(
         Log.d(TAG, "surfaceChanged")
     }
 
-
     override fun surfaceCreated(holder: SurfaceHolder) {
         Log.d(TAG, "surfaceCreated")
         // Create the observer which updates the UI.
         val positionObserver = Observer<List<Point>> { newLocations ->
-            Log.d(TAG, "I am an observer and I do observe")
             tryDrawing(holder, newLocations)
         }
 
@@ -52,7 +50,6 @@ class SurfaceCallback(
     }
 
     private fun tryDrawing(holder: SurfaceHolder, locations: List<Point>) {
-        Log.d(TAG, "tryDrawing")
         Log.i(TAG, "Trying to draw... ${holder.isCreating}")
 
         val canvas = holder.lockCanvas()
@@ -66,7 +63,6 @@ class SurfaceCallback(
 
 
     private fun drawMyStuff(canvas: Canvas, playerLocations: List<Point>) {
-        Log.i(TAG, "Drawing...")
         val playerCount = _gameViewModel.game.players
 
         // clear screen
