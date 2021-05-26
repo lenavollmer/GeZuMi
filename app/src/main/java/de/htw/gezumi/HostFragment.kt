@@ -138,7 +138,6 @@ class HostFragment : Fragment() {
     }
 
     @kotlin.ExperimentalUnsignedTypes
-    @SuppressLint("DefaultLocale")
     private fun onGameNameChanged(gameName: String) {
         require(gameName.length <= 8) {"Game name too long"}
         GameService.gameName = gameName // must be in game service so gattServerCallback can access it
