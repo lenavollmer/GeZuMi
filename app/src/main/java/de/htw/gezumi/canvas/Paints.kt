@@ -23,10 +23,8 @@ class Paints(
 
     ) {
     private val _colorAccent = _context.getColorFromAttr(R.attr.colorAccent)
-    private val _colorPrimary = _context.getColorFromAttr(R.attr.colorPrimary)
     private val _backgroundColor = _context.getColorFromAttr(android.R.attr.windowBackground)
-    private val _targetColor = _context.getColorFromAttr(R.attr.colorBackgroundFloating)
-
+    private val _targetColor = _context.getColorFromAttr(R.attr.targetShapeColor)
 
     val lineStroke = Paint().apply {
         isAntiAlias = true
