@@ -1,8 +1,6 @@
 package de.htw.gezumi
 
-import android.annotation.SuppressLint
 import android.bluetooth.BluetoothDevice
-import android.content.pm.PackageManager
 import android.bluetooth.le.ScanCallback
 import android.content.Context
 import android.os.Bundle
@@ -26,7 +24,6 @@ import de.htw.gezumi.adapter.ConnectedPlayerDeviceAdapter
 import de.htw.gezumi.databinding.FragmentHostBinding
 import de.htw.gezumi.gatt.GameService
 import de.htw.gezumi.gatt.GattServer
-import de.htw.gezumi.viewmodel.GAME_ID_LENGTH
 import de.htw.gezumi.viewmodel.GameViewModel
 
 private const val TAG = "HostFragment"
@@ -90,7 +87,6 @@ class HostFragment : Fragment() {
         Log.d(TAG, "start gatt server and game service")
         _gattServer = GattServer(requireContext(), _gameViewModel.bluetoothController, connectCallback)
         _gattServer.startServer(gameService)
-        //else bluetoothController.stopAdvertising() // TODO stop host advertise when game starts?
     }
 
     override fun onCreateView(
@@ -153,8 +149,6 @@ class HostFragment : Fragment() {
         _gameViewModel.bluetoothController.startScan(_gameViewModel.gameScanCallback, _gameViewModel.gameId)
     }
 
-    // TODO handle lifecycle actions for gatt server
-
     override fun onDestroy() {
         super.onDestroy()
         _gattServer.stopServer()
@@ -166,9 +160,13 @@ class HostFragment : Fragment() {
         _gattServer.pauseServer()
     }
 
+    @kotlin.ExperimentalUnsignedTypes
     override fun onResume() {
         super.onResume()
-        _gameViewModel.bluetoothController.startAdvertising(ParcelUuid(_gameViewModel.gameId))
+//        if(this@GameService::gameName.isInitialized) {
+//            _gameViewModel.bluetoothController.startAdvertising(_gameViewModel.gameId, GameService.gameName.toByteArray(Charsets.UTF_8))
+//        }
+
     }
 
     private fun updateAdapters() {

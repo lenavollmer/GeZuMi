@@ -1,9 +1,6 @@
 package de.htw.gezumi
 
-import android.bluetooth.BluetoothDevice
-import android.Manifest
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
@@ -28,7 +25,6 @@ import de.htw.gezumi.gatt.GameService
 import de.htw.gezumi.gatt.GattClient
 import de.htw.gezumi.gatt.GattClientCallback
 import de.htw.gezumi.model.Device
-import de.htw.gezumi.viewmodel.GAME_ID_LENGTH
 import de.htw.gezumi.viewmodel.GameViewModel
 
 
@@ -99,7 +95,7 @@ class ClientFragment : Fragment() {
                 super.onScanResult(callbackType, result)
                 val deviceId = GameService.extractDeviceId(result)
                 when (callbackType) {
-                    ScanSettings.CALLBACK_TYPE_ALL_MATCHES -> {
+                    ScanSettings.CALLBACK_TYPE_FIRST_MATCH -> {
                         if (!Utils.contains(_availableHostDevices, deviceId)) {
                             _availableHostDevices.add(Device(deviceId, result.txPower, result.device))
                             return
@@ -139,7 +135,6 @@ class ClientFragment : Fragment() {
     }
 
     @kotlin.ExperimentalUnsignedTypes
-    @SuppressLint("DefaultLocale")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding.lifecycleOwner = viewLifecycleOwner

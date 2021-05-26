@@ -36,6 +36,6 @@ class GattClient(private val _context: Context) {
         val playerUpdateCharacteristic = _gatt?.getService(GameService.HOST_UUID)?.getCharacteristic(GameService.PLAYER_UPDATE_UUID)
         playerUpdateCharacteristic?.value = deviceData.toByteArray()
         Log.d(TAG, "send player update: ${Utils.toHexString(deviceData.deviceAddress)}, values=${deviceData.values.contentToString()}")
-        _gatt.writeCharacteristic(playerUpdateCharacteristic)
+        _gatt?.writeCharacteristic(playerUpdateCharacteristic)
     }
 }
