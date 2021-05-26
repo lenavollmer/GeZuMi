@@ -64,10 +64,11 @@ class GattServerCallback(private val _subscribedDevices: MutableSet<BluetoothDev
         super.onCharacteristicWriteRequest(device, requestId, characteristic, preparedWrite, responseNeeded,
             offset, value)
         when (characteristic?.uuid) {
-            GameService.RSSI_UUID -> {
-                Log.d(TAG, "read " + value?.size)
+            GameService.PLAYER_UPDATE_UUID -> {
                 val deviceData = DeviceData.fromBytes(value!!)
-                Log.d(TAG, "write received: device: ${deviceData.deviceAddress} rssi = ${deviceData.value}")
+                Log.d(TAG, "player update: device: ${deviceData.deviceAddress} values=${deviceData.values.contentToString()}, size=${value.size}")
+                // TODO: do something with the received data (use for calculations)
+                _gattServer.notifyHostUpdate(deviceData) // for test
             }
         }
     }

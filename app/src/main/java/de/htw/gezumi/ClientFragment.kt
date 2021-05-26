@@ -49,9 +49,9 @@ class ClientFragment : Fragment() {
         _gattClient.connect(_availableHostDevices[it], gattClientCallback)
 
         _gameViewModel.gameJoinUICallback = gameJoinUICallback
+        _gameViewModel.gattClient = gattClient
 
         _popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0)
-
     }
 
     private val gameJoinUICallback = object : GameJoinUICallback {

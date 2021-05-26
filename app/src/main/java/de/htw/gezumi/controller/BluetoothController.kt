@@ -12,6 +12,7 @@ import android.content.pm.PackageManager
 import android.os.ParcelUuid
 import android.util.Log
 import androidx.core.app.ActivityCompat
+import de.htw.gezumi.Utils
 
 private const val SCAN_PERIOD = 10000L
 private const val SERVICE_UUID_MASK_STRING = "FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFF0000"
@@ -21,8 +22,7 @@ class BluetoothController {
 
     private lateinit var _context: Context
     private lateinit var _bluetoothManager: BluetoothManager
-    private val _bluetoothAdapter: BluetoothAdapter =
-        BluetoothAdapter.getDefaultAdapter() // TODO clean up nullables and do proper bt support checking
+    private val _bluetoothAdapter: BluetoothAdapter = BluetoothAdapter.getDefaultAdapter() // TODO clean up nullables and do proper bt support checking
     private val _bluetoothLeScanner: BluetoothLeScanner? = _bluetoothAdapter.bluetoothLeScanner
 
     private var _scanFilters = mutableListOf<ScanFilter>()
@@ -31,7 +31,7 @@ class BluetoothController {
         .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY).build()
 
     private val _advertiseSettings: AdvertiseSettings = AdvertiseSettings.Builder()
-        .setAdvertiseMode(AdvertiseSettings.ADVERTISE_MODE_BALANCED)
+        .setAdvertiseMode(AdvertiseSettings.ADVERTISE_MODE_LOW_LATENCY)
         .setConnectable(true)
         .setTimeout(0)
         .setTxPowerLevel(AdvertiseSettings.ADVERTISE_TX_POWER_MEDIUM)
@@ -52,7 +52,7 @@ class BluetoothController {
     }
 
     fun startScan(leScanCallback: ScanCallback, serviceUUID: ParcelUuid, masked: Boolean = false) {
-        val uuidBytes = decodeHex(serviceUUID.toString().replace("-", ""))
+        val uuidBytes = Utils.decodeHex(serviceUUID.toString().replace("-", ""))
         val mask = byteArrayOf(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0)
 
         val filterBuilder = ScanFilter.Builder()
@@ -67,29 +67,23 @@ class BluetoothController {
         _bluetoothLeScanner?.startScan(_scanFilters, _scanSettings, leScanCallback)
     }
 
-    /**
-     * Stop scanning.
-     */
     fun stopScan(leScanCallback: ScanCallback) {
         _bluetoothLeScanner?.stopScan(leScanCallback)
     }
 
     fun startAdvertising(uuid: ParcelUuid) {
-        require(::_bluetoothManager.isInitialized) { "Must have context set" }
+        require(::_bluetoothManager.isInitialized) {"Must have context set"}
         val bluetoothLeAdvertiser: BluetoothLeAdvertiser? = _bluetoothManager.adapter.bluetoothLeAdvertiser
         val advertiseData = AdvertiseData.Builder()
             .setIncludeDeviceName(false)
             .setIncludeTxPowerLevel(true)
-            .addManufacturerData(76, decodeHex(uuid.toString().replace("-", "")))
+            .addManufacturerData(76, Utils.decodeHex(uuid.toString().replace("-", "")))
             .build()
 
         bluetoothLeAdvertiser?.startAdvertising(_advertiseSettings, advertiseData, advertiseCallback)
-            ?: Log.d(TAG, "advertise failed")
+        ?: Log.d(TAG, "advertise failed")
     }
 
-    /**
-     * Stop Bluetooth advertisements.
-     */
     fun stopAdvertising() {
         Log.d(TAG, "stop advertising")
         val bluetoothLeAdvertiser: BluetoothLeAdvertiser? = _bluetoothManager.adapter.bluetoothLeAdvertiser
@@ -131,12 +125,4 @@ class BluetoothController {
         _context = context
         _bluetoothManager = _context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
     }
-
-    private fun decodeHex(hexString: String): ByteArray {
-        require(hexString.length % 2 == 0) { "Must have an even length" }
-        return hexString.chunked(2)
-            .map { it.toInt(16).toByte() }
-            .toByteArray()
-    }
-
 }
