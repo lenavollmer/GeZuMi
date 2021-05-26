@@ -35,14 +35,18 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _playerLocations = MutableLiveData<List<Point>>(
         listOf(
-            Point(100, 20),
-            Point(35, 150),
-            Point(70, 300)
+            Point(0, 0),
+            Point(200, 0),
+            Point(100, 200)
         )
     )
     val playerLocations: LiveData<List<Point>> get() = _playerLocations
 
-    private val _targetShape = generateGeometricObject(_players)
+    private val _targetShape = listOf(
+        Point(0, 0),
+        Point(200, 0),
+        Point(100, 200)
+    )
     val targetShape: List<Point> get() = _targetShape
 
     // Determines whether the target shape has been matched by the players
@@ -125,7 +129,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun contains(address: String): Boolean {
-        return _devices.keys.any {d -> d.address == address}
+        return _devices.keys.any { d -> d.address == address }
     }
 
     fun findDevice(address: String): Device? {
@@ -140,7 +144,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
      * Store rssi of device, if the last read was x millis before.
      */
     fun onGameScanResult(bluetoothDevice: BluetoothDevice, rssi: Int, txPower: Int) {
-        if (!contains(bluetoothDevice.address)) _devices[Device(bluetoothDevice.address, txPower, bluetoothDevice)] = System.currentTimeMillis()
+        if (!contains(bluetoothDevice.address)) _devices[Device(bluetoothDevice.address, txPower, bluetoothDevice)] =
+            System.currentTimeMillis()
         val device = findDevice(bluetoothDevice.address)!!
         val millisPassed = getLastRssiMillis(device)
         if (millisPassed > RSSI_READ_INTERVAL) {

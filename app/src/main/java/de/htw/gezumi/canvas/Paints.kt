@@ -17,26 +17,28 @@ fun Context.getColorFromAttr(
     return typedValue.data
 }
 
-private const val POINT_SIZE = 10f
-
 class Paints(
-    private val _context: Context
-) {
+    private val _context: Context,
+    private val _pointSize: Float,
+
+    ) {
     private val _colorAccent = _context.getColorFromAttr(R.attr.colorAccent)
     private val _colorPrimary = _context.getColorFromAttr(R.attr.colorPrimary)
     private val _backgroundColor = _context.getColorFromAttr(android.R.attr.windowBackground)
+    private val _targetColor = _context.getColorFromAttr(R.attr.colorBackgroundFloating)
+
 
     val lineStroke = Paint().apply {
         isAntiAlias = true
         color = _colorAccent
         style = Paint.Style.STROKE
-        strokeWidth = POINT_SIZE * 0.7f
+        strokeWidth = _pointSize * 0.2f
     }
     val circleStroke = Paint().apply {
         isAntiAlias = true
         color = _colorAccent
         style = Paint.Style.STROKE
-        strokeWidth = POINT_SIZE * 0.4f
+        strokeWidth = _pointSize * 0.1f
     }
     val fillPaint = Paint().apply {
         isAntiAlias = true
@@ -46,19 +48,19 @@ class Paints(
 
     val lineStrokeTargetShape = Paint().apply {
         isAntiAlias = true
-        color = _colorPrimary
+        color = _targetColor
         style = Paint.Style.STROKE
-        strokeWidth = POINT_SIZE * 0.7f
+        strokeWidth = _pointSize * 0.5f
     }
     val circleStrokeTargetShape= Paint().apply {
         isAntiAlias = true
-        color = _colorPrimary
+        color = _targetColor
         style = Paint.Style.STROKE
-        strokeWidth = POINT_SIZE * 0.4f
+        strokeWidth = _pointSize * 0.1f
     }
     val fillPaintTargetShape = Paint().apply {
         isAntiAlias = true
-        color = _backgroundColor
+        color = _targetColor
         style = Paint.Style.FILL
     }
 }

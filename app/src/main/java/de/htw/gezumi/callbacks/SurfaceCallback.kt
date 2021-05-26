@@ -1,8 +1,5 @@
 package de.htw.gezumi.callbacks
 
-import android.animation.PropertyValuesHolder
-import android.animation.ValueAnimator
-import android.animation.ValueAnimator.AnimatorUpdateListener
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
@@ -16,7 +13,6 @@ import de.htw.gezumi.calculation.Vec
 import de.htw.gezumi.canvas.Paints
 import de.htw.gezumi.canvas.getColorFromAttr
 import de.htw.gezumi.viewmodel.GameViewModel
-import java.util.Collections.rotate
 
 
 private const val TAG = "SurfaceCallback"
@@ -29,9 +25,9 @@ class SurfaceCallback(
 ) :
     SurfaceHolder.Callback {
 
-    private val _paints = Paints(_context)
-    private val _oldPlayerPos: Point? = null;
-    private val _playerPos: Point? = null;
+    private val _paints = Paints(_context, POINT_SIZE)
+//    private val _oldPlayerPos: Point? = null;
+//    private val _playerPos: Point? = null;
 
 
     override fun surfaceChanged(
@@ -62,7 +58,6 @@ class SurfaceCallback(
         Log.d(TAG, "tryDrawing")
         Log.i(TAG, "Trying to draw... ${holder.isCreating}")
 
-
         val canvas = holder.lockCanvas()
         if (canvas == null) {
             Log.e(TAG, "Cannot draw onto the canvas as it's null")
@@ -82,22 +77,19 @@ class SurfaceCallback(
         canvas.drawColor(backgroundColor)
 
         // translate player location to target shape
-        val targetShape = _gameViewModel.targetShape.map { Vec(it) }
-        val players = playerLocations.map { Vec(it) }
-        val translatedPlayers = players.map { it + targetShape[0] - players[0] }
+        var targetShape = _gameViewModel.targetShape.map { Vec(it) }
+        var players = playerLocations.map { Vec(it) }
+        players = players.map { it + targetShape[0] - players[0] }
         val base = targetShape[0]
-        Log.i(TAG, "targetShape $targetShape")
-        Log.i(TAG, "translatedPlayers $translatedPlayers")
 
         // rotate player locations to fit target shape
         val (_, indexLoc) = Geometry.getClockwisePoint(
             Pair(
-                translatedPlayers[1] - base,
-                translatedPlayers[2] - base
+                players[1] - base,
+                players[2] - base
             )
         )
-        val playersRightPoint = translatedPlayers[1 + indexLoc]
-        Log.i(TAG, "players right $playersRightPoint")
+        val playersRightPoint = players[1 + indexLoc]
         val (_, indexObj) = Geometry.getClockwisePoint(
             Pair(
                 targetShape[1] - base,
@@ -105,22 +97,23 @@ class SurfaceCallback(
             )
         )
         val targetRightPoint = targetShape[1 + indexObj]
-        Log.i(TAG, "target right $targetRightPoint")
 
-        val angleToRotate = Geometry.getAngleClockwise(
+        val angleToRotate = Geometry.getAngleSigned(
             playersRightPoint - base,
             targetRightPoint - base
         )
 
-        val allVectors = targetShape +
-                Geometry.rotatePoints(
-                    translatedPlayers, base, angleToRotate
-                )
+        players = Geometry.rotatePoints(
+            players, base, angleToRotate
+        )
+
+        // center players and target shape independently
+        players = Geometry.center(players)
+        targetShape = Geometry.center(targetShape)
 
         val shapesMatch = Geometry.determineMatch(
-            allVectors.subList(0, playerCount),
-            allVectors.subList(playerCount, playerCount * 2),
-            playerCount
+            players,
+            targetShape
         )
         Log.d(TAG, "isMatch: $shapesMatch")
         _gameViewModel.setShapeMatched(shapesMatch)
@@ -128,68 +121,71 @@ class SurfaceCallback(
 
         // scale all points to fit canvas
         val allPoints = Geometry.scaleToCanvas(
-            allVectors.map { it.toPoint() },
+            players + targetShape,
             canvas.height,
             canvas.width,
-            (POINT_SIZE * 2).toInt(),
-            playerCount
+            (POINT_SIZE * 2).toInt()
         )
 
-        val newPlayerPos = allPoints.subList(0, playerCount)
-
-        // TODO add animation here
-        val playerPosToAnimate = newPlayerPos[0]
-        // TODO what todo when there is no old position
-        // TODO move xPos into constant var
-        // TODO do animation for y
-        val propertyRadius: PropertyValuesHolder = PropertyValuesHolder.ofInt(
-            "xPos", _oldPlayerPos!!.x,
-            playerPosToAnimate.x
-        )
+//        val newPlayerPos = allPoints.subList(0, playerCount)
+//
+//        // TODO add animation here
+//        val playerPosToAnimate = newPlayerPos[0]
+//        // TODO what todo when there is no old position
+//        // TODO move xPos into constant var
+//        // TODO do animation for y
+//        val propertyRadius: PropertyValuesHolder = PropertyValuesHolder.ofInt(
+//            "xPos", _oldPlayerPos!!.x,
+//            playerPosToAnimate.x
+//        )
 //        val propertyRotate: PropertyValuesHolder = PropertyValuesHolder.ofInt("yPos", 0, 360)
 
-        val animator = ValueAnimator()
-        animator.setValues(propertyRadius)
-        animator.setDuration(2000)
-        animator.addUpdateListener(AnimatorUpdateListener { animation ->
-            _playerPos!!.x = animation.getAnimatedValue("xPos") as Int
+//        val animator = ValueAnimator()
+//        animator.setValues(propertyRadius)
+//        animator.setDuration(2000)
+//        animator.addUpdateListener(AnimatorUpdateListener { animation ->
+//            _playerPos!!.x = animation.getAnimatedValue("xPos") as Int
 //            _playerPos.x = animation.getAnimatedValue(PROPERTY_RADIUS) as Int
-            drawCircle(canvas, _playerPos!!)
-        })
-        animator.start()
+//            drawCircle(canvas, _playerPos!!)
+//        })
+//        animator.start()
+
+        // draw target shape
+        drawFigure(
+            canvas,
+            allPoints.subList(playerCount, playerCount * 2).map { it.toPoint() },
+            _paints.lineStrokeTargetShape,
+            _paints.circleStrokeTargetShape,
+            _paints.fillPaintTargetShape,
+            POINT_SIZE * 1.2f
+        )
 
 
         // draw player locations
         drawFigure(
             canvas,
-            allPoints.subList(0, playerCount),
+            allPoints.subList(0, playerCount).map { it.toPoint() },
             _paints.lineStroke,
             _paints.circleStroke,
-            _paints.fillPaint
-        )
-        // draw target shape
-        drawFigure(
-            canvas,
-            allPoints.subList(playerCount, playerCount * 2),
-            _paints.lineStrokeTargetShape,
-            _paints.circleStrokeTargetShape,
-            _paints.fillPaintTargetShape
+            _paints.fillPaint,
+            POINT_SIZE
         )
     }
 
-    private fun drawCircle(
-        canvas: Canvas,
-        points: Point
-    ) {
-        // TODO implement
-    }
+//    private fun drawCircle(
+//        canvas: Canvas,
+//        points: Point
+//    ) {
+//        // TODO implement
+//    }
 
     private fun drawFigure(
         canvas: Canvas,
         points: List<Point>,
         lineStroke: Paint,
         circleStroke: Paint,
-        fillPaint: Paint
+        fillPaint: Paint,
+        pointSize: Float
     ) {
         for (i in points.indices) {
             val current = points[i]
@@ -217,8 +213,8 @@ class SurfaceCallback(
             val y = current.y.toFloat()
 
             // Draw points
-            canvas.drawCircle(x, y, POINT_SIZE, circleStroke)
-            canvas.drawCircle(x, y, POINT_SIZE, fillPaint)
+            canvas.drawCircle(x, y, pointSize, circleStroke)
+            canvas.drawCircle(x, y, pointSize, fillPaint)
         }
     }
 }
