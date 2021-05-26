@@ -18,15 +18,15 @@ import androidx.core.app.ActivityCompat
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
-import de.htw.gezumi.databinding.FragmentMainBinding
+import de.htw.gezumi.databinding.FragmentPermissionBinding
 
 
 /**
  * A simple [Fragment] subclass as the default destination in the navigation.
  */
-class MainFragment : Fragment() {
+class PermissionFragment : Fragment() {
 
-    private lateinit var _binding: FragmentMainBinding
+    private lateinit var _binding: FragmentPermissionBinding
 
 
     private val requestMultiplePermissions =
@@ -47,7 +47,7 @@ class MainFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         // Inflate the layout for this fragment
-        _binding = DataBindingUtil.inflate(inflater, R.layout.fragment_main, container, false)
+        _binding = DataBindingUtil.inflate(inflater, R.layout.fragment_permission, container, false)
         return _binding.root
     }
 

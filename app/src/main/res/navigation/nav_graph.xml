@@ -8,9 +8,9 @@
 
     <fragment
             android:id="@+id/MainFragment"
-            android:name="de.htw.gezumi.MainFragment"
+            android:name="de.htw.gezumi.PermissionFragment"
             android:label="@string/main_label"
-            tools:layout="@layout/fragment_main">
+            tools:layout="@layout/fragment_permission">
         <action android:id="@+id/action_MainFragment_to_MainMenuFragment" app:destination="@id/MainMenuFragment"
                 app:popUpTo="@id/MainFragment" app:popUpToInclusive="true"/>
 
@@ -20,7 +20,7 @@
             android:id="@+id/MainMenuFragment"
             android:name="de.htw.gezumi.MainMenuFragment"
             android:label="@string/main_label"
-            tools:layout="@layout/fragment_main">
+            tools:layout="@layout/fragment_permission">
         <action android:id="@+id/action_MainMenuFragment_to_Host" app:destination="@id/Host">
             <argument android:name="isHost" android:defaultValue="true"/>
         </action>
