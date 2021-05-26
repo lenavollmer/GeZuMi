@@ -44,7 +44,7 @@ class SurfaceCallback(
         }
 
         // Observe the LiveData, passing in this activity as the LifecycleOwner and the observer.
-        _gameViewModel.playerLocations.observe(_viewLifecycleOwner, positionObserver)
+        _gameViewModel.game.playerLocations.observe(_viewLifecycleOwner, positionObserver)
     }
 
     override fun surfaceDestroyed(holder: SurfaceHolder) {
@@ -67,14 +67,14 @@ class SurfaceCallback(
 
     private fun drawMyStuff(canvas: Canvas, playerLocations: List<Point>) {
         Log.i(TAG, "Drawing...")
-        val playerCount = _gameViewModel.players
+        val playerCount = _gameViewModel.game.players
 
         // clear screen
         val backgroundColor = _context.getColorFromAttr(android.R.attr.windowBackground)
         canvas.drawColor(backgroundColor)
 
         // translate player location to target shape
-        var targetShape = _gameViewModel.targetShape.map { Vec(it) }
+        var targetShape = _gameViewModel.game.targetShape.map { Vec(it) }
         var players = playerLocations.map { Vec(it) }
         players = players.map { it + targetShape[0] - players[0] }
         val base = targetShape[0]
@@ -113,7 +113,7 @@ class SurfaceCallback(
             targetShape
         )
         Log.d(TAG, "isMatch: $shapesMatch")
-        _gameViewModel.setShapeMatched(shapesMatch)
+        _gameViewModel.game.setShapeMatched(shapesMatch)
 
 
         // scale all points to fit canvas

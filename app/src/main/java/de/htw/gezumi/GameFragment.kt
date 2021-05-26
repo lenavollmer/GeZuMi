@@ -8,6 +8,7 @@ import android.view.*
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import de.htw.gezumi.calculation.Geometry
 import de.htw.gezumi.callbacks.SurfaceCallback
 import de.htw.gezumi.databinding.FragmentGameBinding
 import de.htw.gezumi.viewmodel.GameViewModel
@@ -41,8 +42,8 @@ class GameFragment : Fragment() {
 
     private val changePlayerLocations = object : Runnable {
         override fun run() {
-            _gameViewModel.setPlayerLocations(_gameViewModel.generateGeometricObject(_gameViewModel.players))
-            Log.d(TAG, "locations: ${_gameViewModel.playerLocations}")
+            _gameViewModel.game.setPlayerLocations(Geometry.generateGeometricObject(_gameViewModel.game.players))
+            Log.d(TAG, "locations: ${_gameViewModel.game.playerLocations}")
             mainHandler.postDelayed(this, 2000)
         }
     }
@@ -125,7 +126,7 @@ class GameFragment : Fragment() {
 
         mainHandler.post(object : Runnable {
             override fun run() {
-                val seconds = _gameViewModel.gameTime
+                val seconds = _gameViewModel.game.time
                 val hours = seconds / 3600
                 val minutes = seconds % 3600 / 60
                 val secs = seconds % 60
@@ -144,7 +145,7 @@ class GameFragment : Fragment() {
                 // If running is true, increment the
                 // seconds variable.
                 if (running) {
-                    _gameViewModel.setGameTime(seconds + 1)
+                    _gameViewModel.game.setTime(seconds + 1)
                 }
 
                 // Post the code again

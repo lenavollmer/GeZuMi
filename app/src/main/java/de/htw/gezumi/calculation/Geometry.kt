@@ -1,5 +1,6 @@
 package de.htw.gezumi.calculation
 
+import android.graphics.Point
 import kotlin.math.*
 
 
@@ -101,6 +102,17 @@ class Geometry {
                 }
             }
             return foundPoints.filterNotNull().size == points.size
+        }
+
+        /**
+         * Generates a geometric object (e.g. triangle) with the given number of [edges].
+         */
+        fun generateGeometricObject(edges: Int): List<Point> {
+            val generatedPoints = mutableListOf<Point>()
+            for (i in 1..edges) {
+                generatedPoints.add(Point((0..250).random(), (0..400).random()))
+            }
+            return generatedPoints
         }
     }
 }
