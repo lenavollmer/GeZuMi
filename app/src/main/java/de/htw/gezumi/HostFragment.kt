@@ -74,7 +74,6 @@ class HostFragment : Fragment() {
     }
 
     @kotlin.ExperimentalUnsignedTypes
-    @SuppressLint("DefaultLocale")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
@@ -99,7 +98,6 @@ class HostFragment : Fragment() {
     }
 
     @kotlin.ExperimentalUnsignedTypes
-    @SuppressLint("DefaultLocale")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding.lifecycleOwner = viewLifecycleOwner
