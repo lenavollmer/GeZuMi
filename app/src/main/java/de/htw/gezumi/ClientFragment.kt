@@ -1,12 +1,8 @@
 package de.htw.gezumi
 
-import android.Manifest
-import android.annotation.SuppressLint
-import android.app.Activity
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
-import android.content.pm.PackageManager
 import android.os.*
 import android.util.Log
 import android.view.Gravity
@@ -15,7 +11,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.PopupWindow
-import androidx.core.app.ActivityCompat
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -29,7 +24,6 @@ import de.htw.gezumi.gatt.GameService
 import de.htw.gezumi.gatt.GattClient
 import de.htw.gezumi.gatt.GattClientCallback
 import de.htw.gezumi.model.Device
-import de.htw.gezumi.viewmodel.GAME_ID_LENGTH
 import de.htw.gezumi.viewmodel.GameViewModel
 
 
@@ -42,42 +36,57 @@ class ClientFragment : Fragment() {
     private lateinit var _binding: FragmentClientBinding
     private lateinit var _popupBinding: PopupJoinBinding
     private lateinit var _popupWindow: PopupWindow
+    private lateinit var _gattClient: GattClient
 
     private val _availableHostDevices: ArrayList<Device> = ArrayList()
     private val _hostDeviceListAdapter: JoinGameListAdapter = JoinGameListAdapter(_availableHostDevices) {
+
         _gameViewModel.host = _availableHostDevices[it]
 
         val gattClientCallback = GattClientCallback(_gameViewModel)
-        val gattClient = GattClient(requireContext())
-        gattClient.connect(_availableHostDevices[it].bluetoothDevice, gattClientCallback)
+        _gattClient.connect(_availableHostDevices[it].bluetoothDevice, gattClientCallback)
 
         _gameViewModel.gameJoinUICallback = gameJoinUICallback
-        _gameViewModel.gattClient = gattClient
+        _gameViewModel.gattClient = _gattClient
 
         _popupBinding.joinText.text = getString(R.string.join_wait)
         _popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0)
+
+
+        _availableHostDevices.clear()
+        updateBtDeviceListAdapter()
     }
 
     private val gameJoinUICallback = object : GameJoinUICallback {
         override fun gameJoined() {
-            Handler(Looper.getMainLooper()).post{
+            Handler(Looper.getMainLooper()).post {
                 _popupWindow.dismiss()
                 _popupBinding.joinText.text = getString(R.string.join_approved)
                 _popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0)
+
+                _availableHostDevices.clear()
+                updateBtDeviceListAdapter()
             }
         }
 
         override fun gameDeclined() {
-            Handler(Looper.getMainLooper()).post{
+            Handler(Looper.getMainLooper()).post {
                 _popupWindow.dismiss()
                 _popupBinding.joinText.text = getString(R.string.join_declined)
                 _popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0)
+
+                _gameViewModel.bluetoothController.stopScan(_gameViewModel.hostScanCallback)
+                _gattClient.disconnect()
+
+                _availableHostDevices.clear()
+                updateBtDeviceListAdapter()
             }
         }
 
         override fun gameStarted() {
-            Handler(Looper.getMainLooper()).post{
+            Handler(Looper.getMainLooper()).post {
                 _popupWindow.dismiss()
+                Log.d(TAG, "game started")
                 findNavController().navigate(R.id.action_ClientFragment_to_Game)
             }
         }
@@ -108,10 +117,6 @@ class ClientFragment : Fragment() {
                         if (device.bluetoothDevice != result.device)
                             device.bluetoothDevice = result.device
                     }
-                    ScanSettings.CALLBACK_TYPE_MATCH_LOST -> {
-                        _availableHostDevices.remove(Utils.findDevice(_availableHostDevices, deviceId)) // todo doesn't work with adapted scan settings
-                        Log.d(TAG, "lost " + result.device.name)
-                    }
                 }
                 updateBtDeviceListAdapter()
             }
@@ -133,7 +138,6 @@ class ClientFragment : Fragment() {
     }
 
     @kotlin.ExperimentalUnsignedTypes
-    @SuppressLint("DefaultLocale")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding.lifecycleOwner = viewLifecycleOwner
@@ -143,42 +147,36 @@ class ClientFragment : Fragment() {
             addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
         }
         _binding.buttonScan.setOnClickListener {
+            _availableHostDevices.clear()
+            updateBtDeviceListAdapter()
             _gameViewModel.bluetoothController.startHostScan(_gameViewModel.hostScanCallback)// ParcelUuid(GameService.getGameId()), true) <- doesn't work, why???
         }
 
-        checkPermission()
+        _popupWindow = PopupWindow(
+            _popupBinding.root,
+            LinearLayout.LayoutParams.WRAP_CONTENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT,
+            true
+        )
 
-        _popupWindow = PopupWindow(_popupBinding.root, LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT, true)
+        _gattClient = GattClient(requireContext())
     }
 
     override fun onPause() {
         super.onPause()
-        // TODO maybe stop bluetooth scanning or smth
+        _popupWindow.dismiss()
+        _gattClient.disconnect()
+        _availableHostDevices.clear()
         updateBtDeviceListAdapter()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        _gameViewModel.bluetoothController.stopScan(_gameViewModel.hostScanCallback)
     }
 
     private fun updateBtDeviceListAdapter() {
         _hostDeviceListAdapter.notifyDataSetChanged()
-    }
-
-    private fun checkPermission() {
-        if (!(context?.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && context?.checkSelfPermission(
-                Manifest.permission.ACCESS_COARSE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED)
-        ) {
-            ActivityCompat.requestPermissions(
-                context as Activity, arrayOf(
-                    Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.ACCESS_COARSE_LOCATION
-                ), 1
-            )
-        }
-    }
-
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String?>, grantResults: IntArray) {
-        if (!(requestCode == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED)) {
-            checkPermission()
-        }
     }
 
 }

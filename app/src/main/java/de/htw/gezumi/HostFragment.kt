@@ -1,6 +1,5 @@
 package de.htw.gezumi
 
-import android.annotation.SuppressLint
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.le.ScanCallback
 import android.content.Context
@@ -25,7 +24,6 @@ import de.htw.gezumi.adapter.ConnectedPlayerDeviceAdapter
 import de.htw.gezumi.databinding.FragmentHostBinding
 import de.htw.gezumi.gatt.GameService
 import de.htw.gezumi.gatt.GattServer
-import de.htw.gezumi.viewmodel.GAME_ID_LENGTH
 import de.htw.gezumi.viewmodel.GameViewModel
 
 private const val TAG = "HostFragment"
@@ -63,12 +61,15 @@ class HostFragment : Fragment() {
     private val connectCallback = object : GattConnectCallback {
         override fun onGattConnect(device: BluetoothDevice) {
             _connectedDevices.add(device)
-            Handler(Looper.getMainLooper()).post{_bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED}
-            Handler(Looper.getMainLooper()).post{updateAdapters()}
+            Handler(Looper.getMainLooper()).post{
+                _bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
+                updateAdapters()
+            }
         }
 
         override fun onGattDisconnect(device: BluetoothDevice) {
             _connectedDevices.remove(device)
+            _approvedDevices.remove(device)
             Handler(Looper.getMainLooper()).post{updateAdapters()}
         }
     }
@@ -86,7 +87,6 @@ class HostFragment : Fragment() {
         Log.d(TAG, "start gatt server and game service")
         _gattServer = GattServer(requireContext(), _gameViewModel.bluetoothController, connectCallback)
         _gattServer.startServer(gameService)
-        //else bluetoothController.stopAdvertising() // TODO stop host advertise when game starts?
     }
 
     override fun onCreateView(
@@ -122,6 +122,9 @@ class HostFragment : Fragment() {
             findNavController().navigate(R.id.action_HostFragment_to_Game)
         }
 
+        _binding.editTextGameName.setText(R.string.default_game_name)
+        onGameNameChanged(_binding.editTextGameName.text.toString())
+
         _binding.editTextGameName.setOnEditorActionListener{ textView, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_GO) {
                 Log.d(TAG, "game name changed")
@@ -133,6 +136,7 @@ class HostFragment : Fragment() {
             }
             return@setOnEditorActionListener false
         }
+
     }
 
     @kotlin.ExperimentalUnsignedTypes
@@ -149,18 +153,21 @@ class HostFragment : Fragment() {
         _gameViewModel.bluetoothController.startScan(_gameViewModel.gameScanCallback, _gameViewModel.gameId)
     }
 
-    // TODO handle lifecycle actions for gatt server
-
     override fun onDestroy() {
         super.onDestroy()
-        _gattServer.stop()
+        _gattServer.stopServer()
     }
 
     override fun onPause() {
         super.onPause()
-        //deviceListAdapter.clear() should we really clear all bluetooth devices here?
-        // TODO maybe stop bluetooth scanning or smth
         updateAdapters()
+        _gameViewModel.bluetoothController.stopScan(object: ScanCallback() {})
+    }
+
+    @kotlin.ExperimentalUnsignedTypes
+    override fun onResume() {
+        super.onResume()
+        _gameViewModel.bluetoothController.startAdvertising(_gameViewModel.gameId, GameService.gameName.toByteArray(Charsets.UTF_8))
     }
 
     private fun updateAdapters() {
