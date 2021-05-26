@@ -1,5 +1,6 @@
 package de.htw.gezumi
 
+import android.annotation.SuppressLint
 import android.graphics.Point
 import android.os.Bundle
 import android.view.*
@@ -89,6 +90,8 @@ class GameFragment : Fragment() {
     //    _gattClient.reconnect()
     }
 
+    @kotlin.ExperimentalUnsignedTypes
+    @SuppressLint("DefaultLocale")
     override fun onStop() {
         super.onStop()
         // stop scan and advertise

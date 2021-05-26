@@ -1,41 +1,31 @@
 package de.htw.gezumi.model
 
-import android.annotation.SuppressLint
-import de.htw.gezumi.Utils
 import java.nio.ByteBuffer
-import java.nio.file.Files.size
 
 /**
  * Data container for sending via ble. Holds up to three float values associated with a device.
  */
-class DeviceData(val deviceAddress: String, val values: FloatArray) {
+class DeviceData(val deviceAddress: ByteArray, val values: FloatArray) {
 
     init {
         require(values.size <= 3) { "Too much data for one packet" }
     }
 
     fun toByteArray(): ByteArray {
-        val hexString = deviceAddress.replace(":", "")
         val byteBuffer = ByteBuffer.allocate(4 * values.size)
         values.forEach { byteBuffer.putFloat(it) }
-        return Utils.decodeHex(hexString) + byteBuffer.array()
+        return deviceAddress + byteBuffer.array()
     }
 
-    @kotlin.ExperimentalUnsignedTypes
-    @SuppressLint("DefaultLocale")
     companion object {
         fun fromBytes(bytes: ByteArray): DeviceData {
-            val deviceAddress = toHexString(bytes.slice(0 until 6).toByteArray())
+            val deviceAddress = bytes.sliceArray(0 until 5)
             val values: MutableList<Float> = mutableListOf()
-            val byteBuffer = ByteBuffer.wrap(bytes.slice(6 until bytes.size).toByteArray())
+            val byteBuffer = ByteBuffer.wrap(bytes.sliceArray(5 until bytes.size))
             while(byteBuffer.hasRemaining()) {
                 values.add(byteBuffer.float)
             }
             return DeviceData(deviceAddress, values.toFloatArray())
         }
-        private fun toHexString(bytes: ByteArray) = bytes.asUByteArray()
-            .joinToString(":") {
-                it.toString(16).padStart(2, '0')
-            }.toUpperCase()
     }
 }
