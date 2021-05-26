@@ -3,6 +3,7 @@ package de.htw.gezumi.gatt
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
+import android.bluetooth.BluetoothGattDescriptor
 import android.content.Context
 import android.util.Log
 import de.htw.gezumi.Utils
@@ -27,6 +28,9 @@ class GattClient(private val _context: Context) {
     }
 
     fun disconnect() {
+        val subscribeDescriptor = _gatt?.getService(GameService.HOST_UUID)?.getCharacteristic(GameService.GAME_EVENT_UUID)?.getDescriptor(GameService.CLIENT_CONFIG)
+        subscribeDescriptor?.value = BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE
+        _gatt?.writeDescriptor(subscribeDescriptor)
         _gatt?.disconnect()
     }
 

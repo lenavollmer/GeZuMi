@@ -40,8 +40,9 @@ class ClientFragment : Fragment() {
 
     private val _availableHostDevices: ArrayList<Device> = ArrayList()
     private val _hostDeviceListAdapter: JoinGameListAdapter = JoinGameListAdapter(_availableHostDevices) {
-        _gameViewModel.host = _availableHostDevices[it]
+        _gattClient.disconnect()
 
+        _gameViewModel.host = _availableHostDevices[it]
         val gattClientCallback = GattClientCallback(_gameViewModel)
         _gattClient.connect(_availableHostDevices[it].bluetoothDevice, gattClientCallback)
 
@@ -50,6 +51,10 @@ class ClientFragment : Fragment() {
 
         _popupBinding.joinText.text = getString(R.string.join_wait)
         _popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0)
+
+
+        _availableHostDevices.clear()
+        updateBtDeviceListAdapter()
     }
 
     private val gameJoinUICallback = object : GameJoinUICallback {
@@ -58,16 +63,17 @@ class ClientFragment : Fragment() {
                 _popupWindow.dismiss()
                 _popupBinding.joinText.text = getString(R.string.join_approved)
                 _popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0)
+
+                _availableHostDevices.clear()
+                updateBtDeviceListAdapter()
             }
         }
 
         override fun gameDeclined() {
             Handler(Looper.getMainLooper()).post {
                 _popupWindow.dismiss()
-                // Todo Bug: This shows up when trying to reconnect
                 _popupBinding.joinText.text = getString(R.string.join_declined)
                 _popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0)
-                //findNavController().navigate(R.id.action_Client_self)
 
                 _gameViewModel.bluetoothController.stopScan(_gameViewModel.hostScanCallback)
                 _gattClient.disconnect()
@@ -157,10 +163,14 @@ class ClientFragment : Fragment() {
     override fun onPause() {
         super.onPause()
         _popupWindow.dismiss()
-        _gameViewModel.bluetoothController.stopScan(_gameViewModel.hostScanCallback)
         _gattClient.disconnect()
         _availableHostDevices.clear()
         updateBtDeviceListAdapter()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        _gameViewModel.bluetoothController.stopScan(_gameViewModel.hostScanCallback)
     }
 
     private fun updateBtDeviceListAdapter() {
