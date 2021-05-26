@@ -1,34 +1,41 @@
 package de.htw.gezumi.model
 
 import android.annotation.SuppressLint
+import de.htw.gezumi.Utils
 import java.nio.ByteBuffer
+import java.nio.file.Files.size
 
-class DeviceData(val deviceAddress: String, val value: Float) {
-    @kotlin.ExperimentalUnsignedTypes
-    @SuppressLint("DefaultLocale")
-    companion object {
+/**
+ * Data container for sending via ble. Holds up to three float values associated with a device.
+ */
+class DeviceData(val deviceAddress: String, val values: FloatArray) {
 
-        fun fromBytes(bytes: ByteArray): DeviceData {
-            val deviceAddress = toHexString(bytes.slice(0 until 6).toByteArray())
-            val value = ByteBuffer.wrap(bytes.slice(6 until bytes.size).toByteArray()).float
-            return DeviceData(deviceAddress, value)
-        }
-        private fun toHexString(bytes: ByteArray) = bytes.asUByteArray().joinToString(":") { it.toString(16).padStart(
-            2,
-            '0'
-        )
-        }.capitalize()
+    init {
+        require(values.size <= 3) { "Too much data for one packet" }
     }
 
     fun toByteArray(): ByteArray {
         val hexString = deviceAddress.replace(":", "")
-        return decodeHex(hexString) + ByteBuffer.allocate(4).putFloat(value).array()
+        val byteBuffer = ByteBuffer.allocate(4 * values.size)
+        values.forEach { byteBuffer.putFloat(it) }
+        return Utils.decodeHex(hexString) + byteBuffer.array()
     }
 
-    private fun decodeHex(hexString: String): ByteArray {
-        require(hexString.length % 2 == 0) { "Must have an even length" }
-        return hexString.chunked(2)
-            .map { it.toInt(16).toByte() }
-            .toByteArray()
+    @kotlin.ExperimentalUnsignedTypes
+    @SuppressLint("DefaultLocale")
+    companion object {
+        fun fromBytes(bytes: ByteArray): DeviceData {
+            val deviceAddress = toHexString(bytes.slice(0 until 6).toByteArray())
+            val values: MutableList<Float> = mutableListOf()
+            val byteBuffer = ByteBuffer.wrap(bytes.slice(6 until bytes.size).toByteArray())
+            while(byteBuffer.hasRemaining()) {
+                values.add(byteBuffer.float)
+            }
+            return DeviceData(deviceAddress, values.toFloatArray())
+        }
+        private fun toHexString(bytes: ByteArray) = bytes.asUByteArray()
+            .joinToString(":") {
+                it.toString(16).padStart(2, '0')
+            }.toUpperCase()
     }
 }
