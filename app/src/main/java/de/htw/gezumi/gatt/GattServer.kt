@@ -48,13 +48,6 @@ class GattServer(private val _context: Context, private val _bluetoothController
         }
     }
 
-    fun pauseServer() {
-        if (_bluetoothManager.adapter.isEnabled) {
-            _bluetoothController.stopAdvertising()
-            Log.d(TAG, "pausing gatt server")
-        }
-    }
-
     fun notifyJoinApproved(device: BluetoothDevice, approved: Boolean) {
         val joinApprovedCharacteristic = bluetoothGattServer?.getService(GameService.HOST_UUID)?.getCharacteristic(GameService.JOIN_APPROVED_UUID)
         joinApprovedCharacteristic?.value = ByteBuffer.allocate(4).putInt(if (approved) 1 else 0).array()

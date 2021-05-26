@@ -162,7 +162,6 @@ class HostFragment : Fragment() {
         super.onPause()
         updateAdapters()
         _gameViewModel.bluetoothController.stopScan(object: ScanCallback() {})
-        _gattServer.pauseServer()
     }
 
     @kotlin.ExperimentalUnsignedTypes
