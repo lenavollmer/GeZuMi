@@ -26,9 +26,6 @@ class SurfaceCallback(
     SurfaceHolder.Callback {
 
     private val _paints = Paints(_context, POINT_SIZE)
-//    private val _oldPlayerPos: Point? = null;
-//    private val _playerPos: Point? = null;
-
 
     override fun surfaceChanged(
         holder: SurfaceHolder, format: Int,
@@ -127,29 +124,6 @@ class SurfaceCallback(
             (POINT_SIZE * 2).toInt()
         )
 
-//        val newPlayerPos = allPoints.subList(0, playerCount)
-//
-//        // TODO add animation here
-//        val playerPosToAnimate = newPlayerPos[0]
-//        // TODO what todo when there is no old position
-//        // TODO move xPos into constant var
-//        // TODO do animation for y
-//        val propertyRadius: PropertyValuesHolder = PropertyValuesHolder.ofInt(
-//            "xPos", _oldPlayerPos!!.x,
-//            playerPosToAnimate.x
-//        )
-//        val propertyRotate: PropertyValuesHolder = PropertyValuesHolder.ofInt("yPos", 0, 360)
-
-//        val animator = ValueAnimator()
-//        animator.setValues(propertyRadius)
-//        animator.setDuration(2000)
-//        animator.addUpdateListener(AnimatorUpdateListener { animation ->
-//            _playerPos!!.x = animation.getAnimatedValue("xPos") as Int
-//            _playerPos.x = animation.getAnimatedValue(PROPERTY_RADIUS) as Int
-//            drawCircle(canvas, _playerPos!!)
-//        })
-//        animator.start()
-
         // draw target shape
         drawFigure(
             canvas,
@@ -171,13 +145,6 @@ class SurfaceCallback(
             POINT_SIZE
         )
     }
-
-//    private fun drawCircle(
-//        canvas: Canvas,
-//        points: Point
-//    ) {
-//        // TODO implement
-//    }
 
     private fun drawFigure(
         canvas: Canvas,
