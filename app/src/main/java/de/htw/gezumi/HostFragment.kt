@@ -49,7 +49,6 @@ class HostFragment : Fragment() {
             _connectedDevices.removeAt(position)
         }
         else {
-            // TODO add code to let device know that they are rejected
             _gattServer.notifyJoinApproved(_connectedDevices[position], false)
             _connectedDevices.removeAt(position)
         }
