@@ -128,7 +128,7 @@ class HostFragment : Fragment() {
             if (actionId == EditorInfo.IME_ACTION_GO) {
                 Log.d(TAG, "game name changed")
                 onGameNameChanged(textView.text.toString())
-                val imm: InputMethodManager = context!!.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                val imm: InputMethodManager = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
                 imm.hideSoftInputFromWindow(_binding.editTextGameName.windowToken, 0)
                 _binding.editTextGameName.clearFocus()
                 return@setOnEditorActionListener true
