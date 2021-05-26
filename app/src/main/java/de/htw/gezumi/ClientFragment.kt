@@ -40,9 +40,9 @@ class ClientFragment : Fragment() {
 
     private val _availableHostDevices: ArrayList<Device> = ArrayList()
     private val _hostDeviceListAdapter: JoinGameListAdapter = JoinGameListAdapter(_availableHostDevices) {
-        _gattClient.disconnect()
 
         _gameViewModel.host = _availableHostDevices[it]
+
         val gattClientCallback = GattClientCallback(_gameViewModel)
         _gattClient.connect(_availableHostDevices[it].bluetoothDevice, gattClientCallback)
 
@@ -77,6 +77,7 @@ class ClientFragment : Fragment() {
 
                 _gameViewModel.bluetoothController.stopScan(_gameViewModel.hostScanCallback)
                 _gattClient.disconnect()
+
                 _availableHostDevices.clear()
                 updateBtDeviceListAdapter()
             }
