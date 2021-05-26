@@ -49,7 +49,7 @@ class ClientFragment : Fragment() {
         _gattClient.connect(_availableHostDevices[it], gattClientCallback)
 
         _gameViewModel.gameJoinUICallback = gameJoinUICallback
-        _gameViewModel.gattClient = gattClient
+        _gameViewModel.gattClient = _gattClient
 
         _popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0)
     }

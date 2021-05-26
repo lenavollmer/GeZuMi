@@ -1,17 +1,13 @@
 package de.htw.gezumi.controller
 
-import android.Manifest
-import android.app.Activity
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothGattServer
 import android.bluetooth.BluetoothGattServerCallback
 import android.bluetooth.BluetoothManager
 import android.bluetooth.le.*
 import android.content.Context
-import android.content.pm.PackageManager
 import android.os.ParcelUuid
 import android.util.Log
-import androidx.core.app.ActivityCompat
 import de.htw.gezumi.Utils
 
 private const val SCAN_PERIOD = 10000L
@@ -48,7 +44,7 @@ class BluetoothController {
     }
 
     init {
-        checkBluetoothSupport()
+        enableBluetooth()
     }
 
     fun startScan(leScanCallback: ScanCallback, serviceUUID: ParcelUuid, masked: Boolean = false) {
@@ -100,25 +96,6 @@ class BluetoothController {
 
     fun isBluetoothEnabled(): Boolean {
         return _bluetoothAdapter.isEnabled
-    }
-
-    /**
-     * Verify the level of Bluetooth support provided by the hardware.
-     * @return true if Bluetooth is properly supported, false otherwise.
-     */
-    private fun checkBluetoothSupport(): Boolean {
-
-        /* Disabled since currently BluetoothAdapter is forced
-        if (_bluetoothAdapter == null) {
-            Log.w(TAG, "Bluetooth is not supported")
-            return false
-        } */
-        //!_connectionFragment.requireContext().packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)
-        if (_bluetoothLeScanner == null) {
-            Log.w(TAG, "Bluetooth LE is not supported")
-            return false
-        }
-        return true
     }
 
     fun setContext(context: Context) {
