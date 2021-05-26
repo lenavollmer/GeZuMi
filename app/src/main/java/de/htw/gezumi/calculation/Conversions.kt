@@ -26,16 +26,16 @@ class Conversions {
          * Calculates the positions for the given [distances] matrix.
          * @return the calculated positions
          */
-        fun distancesToPoints(distances: List<List<Double>>): List<Point> {
-            val points = mutableListOf<Point>()
+        fun distancesToPoints(distances: List<List<Double>>): List<Vec> {
+            val points = mutableListOf<Vec>()
 
             // assume that the first point is a fix point
-            points.add(Point(0, 0))
+            points.add(Vec(0, 0))
 
             // compute position of the second point with the following assumptions:
             // 1. it shares the same y coordinate as the first point
             // 2. it is to the right of the first point
-            points.add(Point((points[0].x - distances[0][1]).toInt(), points[0].y));
+            points.add(Vec((points[0].x - distances[0][1]), points[0].y));
 
             // compute positions of all other points
             for (i in distances.indices.drop(2)) {
@@ -68,21 +68,20 @@ class Conversions {
          * [c] the distance between the point that needs be calculated and A
          * @return pair of two possible points as the new point can be mirrored vertically
          */
-        private fun getRelativePos(a: Double, b: Double, c: Double, basePoint: Point): Pair<Point, Point> {
+        private fun getRelativePos(a: Double, b: Double, c: Double, basePoint: Vec): Pair<Vec, Vec> {
             val angle = acos((a.pow(2) + b.pow(2) - c.pow(2)) / (2 * a * b));
-            val x = (basePoint.x - b * cos(angle)).toInt()
-            val yAnglePos = (b * sin(angle)).toInt()
+            val x = (basePoint.x - b * cos(angle))
+            val yAnglePos = (b * sin(angle))
             return Pair(
-                Point(x, basePoint.y - yAnglePos), // point is below basePoint and A
-                Point(x, basePoint.y + yAnglePos)  // point is above basePoint and A
+                Vec(x, basePoint.y - yAnglePos), // point is below basePoint and A
+                Vec(x, basePoint.y + yAnglePos)  // point is above basePoint and A
             )
         }
 
         /**
          * Get the euclidean distance between point [a] and point [b].
          */
-        private fun getDist(a: Point, b: Point) = sqrt(
-            (b.x - a.x).toDouble().pow(2) + (b.y - a.y).toDouble().pow(2.0)
-        )
+        private fun getDist(a: Vec, b: Vec) = (a - b).length()
+
     }
 }

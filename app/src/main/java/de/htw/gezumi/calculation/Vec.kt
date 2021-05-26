@@ -5,7 +5,9 @@ import kotlin.math.sqrt
 
 data class Vec(val x: Double = 0.0, val y: Double = 0.0) {
 
-    constructor(point: Point) : this(point.x.toDouble(), point.y.toDouble())
+    constructor(x: Int, y: Int) : this(x.toDouble(), y.toDouble())
+
+    constructor(point: Point) : this(point.x, point.y)
 
     fun toPoint(): Point = Point(x.toInt(), y.toInt())
 
