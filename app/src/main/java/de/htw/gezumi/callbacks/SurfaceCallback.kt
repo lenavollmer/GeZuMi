@@ -65,7 +65,7 @@ class SurfaceCallback(
 
     private fun drawMyStuff(canvas: Canvas, playerLocations: List<Vec>) {
         Log.i(TAG, "playerLocations: $playerLocations")
-        if (playerLocations.size < 2) return
+        if (playerLocations.size < 3) return
         val playerCount = _gameViewModel.game.numberOfPlayers
 
         // clear screen.
