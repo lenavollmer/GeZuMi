@@ -19,7 +19,7 @@ class Conversions {
          */
         fun rssiToDistance(rssi: Double, txPower: Int): Double {
             val envFactor = 3.0
-            return 10.0.pow((txPower.toDouble() - rssi) / (10.0 * envFactor))
+            return 10.0.pow((-txPower.toDouble() - rssi) / (10.0 * envFactor))
         }
 
         /**
