@@ -1,7 +1,6 @@
 package de.htw.gezumi
 
 import android.annotation.SuppressLint
-import android.graphics.Point
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -10,12 +9,12 @@ import android.view.*
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import de.htw.gezumi.calculation.Geometry
 import de.htw.gezumi.callbacks.SurfaceCallback
 import de.htw.gezumi.databinding.FragmentGameBinding
 import de.htw.gezumi.viewmodel.GameViewModel
 import java.util.*
-
+import androidx.lifecycle.Observer
+import de.htw.gezumi.calculation.Geometry
 
 private const val TAG = "GameFragment"
 
@@ -39,13 +38,13 @@ class GameFragment : Fragment() {
     //private lateinit var _hostDevice: BluetoothDevice
 
 
-//    private val changePlayerLocations = object : Runnable {
-//        override fun run() {
-//            _gameViewModel.game.setPlayerLocations(Geometry.generateGeometricObject(_gameViewModel.game.players))
-//            Log.d(TAG, "locations: ${_gameViewModel.game.playerLocations}")
-//            mainHandler.postDelayed(this, 2000)
-//        }
-//    }
+    private val changePlayerLocations = object : Runnable {
+        override fun run() {
+            _gameViewModel.game.setPlayerLocations(Geometry.generateGeometricObject(_gameViewModel.game.players))
+            Log.d(TAG, "locations: ${_gameViewModel.game.playerLocations}")
+            mainHandler.postDelayed(this, 2000)
+        }
+    }
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -73,6 +72,17 @@ class GameFragment : Fragment() {
         _binding = DataBindingUtil.inflate(inflater, R.layout.fragment_game, container, false)
         runTimer();
 
+        val matchedObserver = Observer<Boolean> { shapesMatch ->
+            if(shapesMatch) {
+                Log.d(TAG, "I am in here")
+                _binding.shapesMatched.visibility = View.VISIBLE
+                _binding.shapesMatched.z = 500.0F
+            }
+        }
+
+        // Observe the LiveData, passing in this activity as the LifecycleOwner and the observer.
+        _gameViewModel.game.shapeMatched.observe(viewLifecycleOwner, matchedObserver)
+
         return _binding.root
     }
 
@@ -91,12 +101,6 @@ class GameFragment : Fragment() {
             )
         )
 
-        val matchedObserver = Observer { shapesMatch ->
-            if(shapesMatch) _binding
-        }
-
-        // Observe the LiveData, passing in this activity as the LifecycleOwner and the observer.
-        _gameViewModel.game.shapeMatched.observe(viewLifecycleOwner, matchedObserver)
 
         Log.i(TAG, "surface is valid: ${_surfaceHolder.surface.isValid}")
         _gameViewModel.game.setRunning(true)
@@ -107,7 +111,7 @@ class GameFragment : Fragment() {
         super.onPause()
         //    _gameViewModel.writeRSSILog()
         //    _gattClient.disconnect()
-//        mainHandler.removeCallbacks(changePlayerLocations)
+        mainHandler.removeCallbacks(changePlayerLocations)
         mainHandler.removeCallbacks(_gameViewModel.game.changeTargetLocations(mainHandler))
         _gameViewModel.game.setRunning(false)
     }
@@ -115,7 +119,7 @@ class GameFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         //    _gattClient.reconnect()
-//        mainHandler.post(changePlayerLocations)
+        mainHandler.post(changePlayerLocations)
         mainHandler.post(_gameViewModel.game.changeTargetLocations(mainHandler))
         _gameViewModel.game.setRunning(true)
     }

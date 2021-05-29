@@ -7,9 +7,7 @@ import android.graphics.Point
 import android.util.Log
 import android.view.SurfaceHolder
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
-import androidx.lifecycle.viewModelScope
 import de.htw.gezumi.calculation.Geometry
 import de.htw.gezumi.calculation.Vec
 import de.htw.gezumi.canvas.Paints
