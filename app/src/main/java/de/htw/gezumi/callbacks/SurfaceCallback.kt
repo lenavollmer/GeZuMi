@@ -7,7 +7,9 @@ import android.graphics.Point
 import android.util.Log
 import android.view.SurfaceHolder
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
+import androidx.lifecycle.viewModelScope
 import de.htw.gezumi.calculation.Geometry
 import de.htw.gezumi.calculation.Vec
 import de.htw.gezumi.canvas.Paints
@@ -36,27 +38,55 @@ class SurfaceCallback(
 
     override fun surfaceCreated(holder: SurfaceHolder) {
         Log.d(TAG, "surfaceCreated")
+
         // Create the observer which updates the UI.
-        val positionObserver = Observer<List<Point>> { newLocations ->
-            tryDrawing(holder, newLocations)
+        val matchedObserver = Observer<Boolean> { shapesMatch ->
+            if (shapesMatch) {
+                Log.d(TAG, "in matchedObserver if")
+                _gameViewModel.game.setRunning(false)
+                if (_gameViewModel.game.playerLocations.hasActiveObservers()) _gameViewModel.game.playerLocations.removeObservers(
+                    _viewLifecycleOwner
+                )
+
+                val animationObserver = Observer<List<Point>> { animationLocation ->
+                    tryDrawing(holder, animationLocation, shapesMatch)
+                }
+
+                _gameViewModel.game.targetShapeAnimation.observe(_viewLifecycleOwner, animationObserver)
+
+            } else {
+                Log.d(TAG, "in matchedObserver else")
+                if (_gameViewModel.game.targetShapeAnimation.hasActiveObservers()) _gameViewModel.game.targetShapeAnimation.removeObservers(
+                    _viewLifecycleOwner
+                )
+
+                val positionObserver = Observer<List<Point>> { newLocations ->
+                    tryDrawing(holder, newLocations, shapesMatch)
+                }
+
+                _gameViewModel.game.playerLocations.observe(_viewLifecycleOwner, positionObserver)
+            }
         }
 
+
         // Observe the LiveData, passing in this activity as the LifecycleOwner and the observer.
-        _gameViewModel.game.playerLocations.observe(_viewLifecycleOwner, positionObserver)
+        _gameViewModel.game.shapeMatched.observe(_viewLifecycleOwner, matchedObserver)
     }
 
     override fun surfaceDestroyed(holder: SurfaceHolder) {
         // and here you need to stop it
     }
 
-    private fun tryDrawing(holder: SurfaceHolder, locations: List<Point>) {
+    private fun tryDrawing(holder: SurfaceHolder, locations: List<Point>, gameWon: Boolean) {
         Log.i(TAG, "Trying to draw... ${holder.isCreating}")
 
         val canvas = holder.lockCanvas()
         if (canvas == null) {
             Log.e(TAG, "Cannot draw onto the canvas as it's null")
         } else {
-            drawMyStuff(canvas, locations)
+            Log.d(TAG, "GameWon? $gameWon")
+            if (gameWon) drawWinningShape(canvas, locations)
+            else drawMyStuff(canvas, locations)
             holder.unlockCanvasAndPost(canvas)
         }
     }
@@ -111,7 +141,6 @@ class SurfaceCallback(
         Log.d(TAG, "isMatch: $shapesMatch")
         _gameViewModel.game.setShapeMatched(shapesMatch)
 
-
         // scale all points to fit canvas
         val allPoints = Geometry.scaleToCanvas(
             players + targetShape,
@@ -120,6 +149,10 @@ class SurfaceCallback(
             (POINT_SIZE * 2).toInt()
         )
 
+        if (_gameViewModel.game.shapeMatched.value!!) {
+            Log.d(TAG, "shapes matched")
+            _gameViewModel.game.setRunning(false)
+        }
         // draw target shape
         drawFigure(
             canvas,
@@ -140,7 +173,43 @@ class SurfaceCallback(
             _paints.fillPaint,
             POINT_SIZE
         )
+
     }
+
+    private fun drawWinningShape(canvas: Canvas, currentTargetShape: List<Point>) {
+        Log.d(TAG, "In drawWinningShape")
+
+        // clear screen
+        val backgroundColor = _context.getColorFromAttr(android.R.attr.windowBackground)
+        canvas.drawColor(backgroundColor)
+
+        // translate player location to target shape
+        var targetShape = currentTargetShape.map { Vec(it) }
+        val allAnimationPoints = _gameViewModel.game.animationPointsArray.flatMap { list -> list.map {point -> Vec(point) } }
+
+        // center players and target shape independently
+        targetShape = Geometry.center(targetShape)
+        val animationPoints = Geometry.center(allAnimationPoints)
+
+        // scale all points to fit canvas
+        val allPoints = Geometry.scaleToCanvas(
+            targetShape + animationPoints,
+            canvas.height,
+            canvas.width,
+            (POINT_SIZE * 2).toInt()
+        )
+
+        // draw and animate target shape
+        drawFigure(
+            canvas,
+            allPoints.subList(0, _gameViewModel.game.players).map { it.toPoint() },
+            _paints.lineStrokeTargetShapeSuccess,
+            _paints.circleStrokeTargetShapeSuccess,
+            _paints.fillPaintTargetShapeSuccess,
+            POINT_SIZE * 1.2f
+        )
+    }
+
 
     private fun drawFigure(
         canvas: Canvas,

@@ -1,6 +1,7 @@
 package de.htw.gezumi.model
 
 import android.graphics.Point
+import android.os.Handler
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 
@@ -25,22 +26,72 @@ class Game() {
     )
     val targetShape: List<Point> get() = _targetShape
 
+    private val _targetShapeAnimation = MutableLiveData<List<Point>>()
+    val targetShapeAnimation: MutableLiveData<List<Point>> get() = _targetShapeAnimation
+
     // Determines whether the target shape has been matched by the players
-    private var _shapeMatched: Boolean = false
-    val shapeMatched: Boolean get() = _shapeMatched
+    private var _shapeMatched = MutableLiveData<Boolean>(false)
+    val shapeMatched: LiveData<Boolean> get() = _shapeMatched
 
     private var _time = 0
     val time: Int get() = _time
+
+    // stopwatch running?
+    private var _running = false
+    val running: Boolean get() = _running
+
+    private var _currentIdx = 0
+
+    private val _animationPointsArray = generateTargetShapeAnimationPoints()
+    val animationPointsArray: Array<List<Point>> get() = _animationPointsArray
 
     fun setPlayerLocations(locations: List<Point>) {
         _playerLocations.postValue(locations)
     }
 
     fun setShapeMatched(matchedShape: Boolean) {
-        _shapeMatched = matchedShape
+        _shapeMatched.postValue(matchedShape)
+    }
+
+    private fun setTargetShapeAnimation(points: List<Point>) {
+        _targetShapeAnimation.postValue(points)
     }
 
     fun setTime(time: Int) {
         _time = time
+    }
+
+    fun setRunning(running: Boolean) {
+        _running = running
+    }
+
+    fun resetCurrentIdx() {
+        _currentIdx = 0
+    }
+
+    fun changeTargetLocations(handler: Handler) = object : Runnable {
+        override fun run() {
+            if (_currentIdx < 12) {
+                setTargetShapeAnimation(_animationPointsArray[_currentIdx])
+                _currentIdx++
+                handler.postDelayed(this, 100)
+            }
+        }
+    }
+
+    private fun generateTargetShapeAnimationPoints(): Array<List<Point>> {
+        val array: Array<List<Point>> = Array<List<Point>>(12) { _targetShape }
+
+        for (int: Int in 0..4) {
+            val current = array[int]
+            array[int + 1] = current.map { it -> Point(it.x / 2, it.y / 2) }
+        }
+
+        for (int: Int in 4..(array.size - 2)) {
+            val current = array[int]
+            array[int + 1] = current.map { it -> Point(it.x * 2, it.y * 2) }
+        }
+
+        return array
     }
 }

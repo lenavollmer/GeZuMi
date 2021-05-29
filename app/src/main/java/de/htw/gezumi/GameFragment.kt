@@ -33,22 +33,20 @@ class GameFragment : Fragment() {
     private lateinit var _surfaceView: SurfaceView
     private lateinit var _surfaceHolder: SurfaceHolder
 
-    // stopwatch running?
-    private var running = false
-
 
     // bluetooth stuff also in game fragment or is it possible to manage all that in client and host?
     //private lateinit var _gattClient: GattClient
     //private lateinit var _hostDevice: BluetoothDevice
 
 
-    private val changePlayerLocations = object : Runnable {
-        override fun run() {
-            _gameViewModel.game.setPlayerLocations(Geometry.generateGeometricObject(_gameViewModel.game.players))
-            Log.d(TAG, "locations: ${_gameViewModel.game.playerLocations}")
-            mainHandler.postDelayed(this, 2000)
-        }
-    }
+//    private val changePlayerLocations = object : Runnable {
+//        override fun run() {
+//            _gameViewModel.game.setPlayerLocations(Geometry.generateGeometricObject(_gameViewModel.game.players))
+//            Log.d(TAG, "locations: ${_gameViewModel.game.playerLocations}")
+//            mainHandler.postDelayed(this, 2000)
+//        }
+//    }
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -66,7 +64,6 @@ class GameFragment : Fragment() {
 //        _gattClient.connect(_hostDevice, gattClientCallback)
 
         mainHandler = Handler(Looper.getMainLooper())
-
     }
 
     override fun onCreateView(
@@ -75,6 +72,7 @@ class GameFragment : Fragment() {
     ): View {
         _binding = DataBindingUtil.inflate(inflater, R.layout.fragment_game, container, false)
         runTimer();
+
         return _binding.root
     }
 
@@ -93,8 +91,15 @@ class GameFragment : Fragment() {
             )
         )
 
+        val matchedObserver = Observer { shapesMatch ->
+            if(shapesMatch) _binding
+        }
+
+        // Observe the LiveData, passing in this activity as the LifecycleOwner and the observer.
+        _gameViewModel.game.shapeMatched.observe(viewLifecycleOwner, matchedObserver)
+
         Log.i(TAG, "surface is valid: ${_surfaceHolder.surface.isValid}")
-        running = true;
+        _gameViewModel.game.setRunning(true)
 
     }
 
@@ -102,22 +107,26 @@ class GameFragment : Fragment() {
         super.onPause()
         //    _gameViewModel.writeRSSILog()
         //    _gattClient.disconnect()
-        mainHandler.removeCallbacks(changePlayerLocations)
-        running = false;
+//        mainHandler.removeCallbacks(changePlayerLocations)
+        mainHandler.removeCallbacks(_gameViewModel.game.changeTargetLocations(mainHandler))
+        _gameViewModel.game.setRunning(false)
     }
 
     override fun onResume() {
         super.onResume()
         //    _gattClient.reconnect()
-        mainHandler.post(changePlayerLocations)
-        running = true;
+//        mainHandler.post(changePlayerLocations)
+        mainHandler.post(_gameViewModel.game.changeTargetLocations(mainHandler))
+        _gameViewModel.game.setRunning(true)
     }
 
     @kotlin.ExperimentalUnsignedTypes
     @SuppressLint("DefaultLocale")
     override fun onStop() {
         super.onStop()
-        running = false;
+        _gameViewModel.game.setRunning(false)
+        _gameViewModel.game.setShapeMatched(false)
+        _gameViewModel.game.resetCurrentIdx()
         // stop scan and advertise
         // TODO on resume has to start it again (but not twice!) -> implement pause/disconnect functionality
         _gameViewModel.onGameLeave()
@@ -148,7 +157,7 @@ class GameFragment : Fragment() {
 
                 // If running is true, increment the
                 // seconds variable.
-                if (running) {
+                if (_gameViewModel.game.running) {
                     _gameViewModel.game.setTime(seconds + 1)
                 }
 
