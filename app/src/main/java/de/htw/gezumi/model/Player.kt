@@ -1,0 +1,18 @@
+package de.htw.gezumi.model
+
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import de.htw.gezumi.calculation.Vec
+
+class Player(val deviceId: ByteArray) {
+
+    private val _name = MutableLiveData("")
+    val name: LiveData<String> get() = _name
+
+    var position: Vec? = null
+
+    fun setName(name: String) {
+        // postValue makes it possible to post from other threads
+        _name.postValue(name)
+    }
+}

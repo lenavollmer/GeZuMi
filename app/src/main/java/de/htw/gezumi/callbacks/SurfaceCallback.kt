@@ -12,6 +12,7 @@ import de.htw.gezumi.calculation.Geometry
 import de.htw.gezumi.calculation.Vec
 import de.htw.gezumi.canvas.Paints
 import de.htw.gezumi.canvas.getColorFromAttr
+import de.htw.gezumi.model.Player
 import de.htw.gezumi.viewmodel.GameViewModel
 
 
@@ -37,19 +38,19 @@ class SurfaceCallback(
     override fun surfaceCreated(holder: SurfaceHolder) {
         Log.d(TAG, "surfaceCreated")
         // Create the observer which updates the UI.
-        val positionObserver = Observer<List<Point>> { newLocations ->
-            tryDrawing(holder, newLocations)
+        val playerObserver = Observer<List<Player>> { players ->
+            tryDrawing(holder, players.filter{it.position != null}.map{it.position!!})
         }
 
         // Observe the LiveData, passing in this activity as the LifecycleOwner and the observer.
-        _gameViewModel.game.playerLocations.observe(_viewLifecycleOwner, positionObserver)
+        _gameViewModel.game.players.observe(_viewLifecycleOwner, playerObserver)
     }
 
     override fun surfaceDestroyed(holder: SurfaceHolder) {
         // and here you need to stop it
     }
 
-    private fun tryDrawing(holder: SurfaceHolder, locations: List<Point>) {
+    private fun tryDrawing(holder: SurfaceHolder, locations: List<Vec>) {
         Log.i(TAG, "Trying to draw... ${holder.isCreating}")
 
         val canvas = holder.lockCanvas()
@@ -62,16 +63,18 @@ class SurfaceCallback(
     }
 
 
-    private fun drawMyStuff(canvas: Canvas, playerLocations: List<Point>) {
-        val playerCount = _gameViewModel.game.players
+    private fun drawMyStuff(canvas: Canvas, playerLocations: List<Vec>) {
+        Log.i(TAG, "playerLocations: $playerLocations")
+        if (playerLocations.size < 2) return
+        val playerCount = _gameViewModel.game.numberOfPlayers
 
-        // clear screen
+        // clear screen.
         val backgroundColor = _context.getColorFromAttr(android.R.attr.windowBackground)
         canvas.drawColor(backgroundColor)
 
         // translate player location to target shape
-        var targetShape = _gameViewModel.game.targetShape.map { Vec(it) }
-        var players = playerLocations.map { Vec(it) }
+        var targetShape = _gameViewModel.game.targetShape
+        var players = playerLocations
         players = players.map { it + targetShape[0] - players[0] }
         val base = targetShape[0]
 

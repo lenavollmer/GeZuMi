@@ -86,6 +86,7 @@ class HostFragment : Fragment() {
 
         Log.d(TAG, "start gatt server and game service")
         _gattServer = GattServer(requireContext(), _gameViewModel.bluetoothController, connectCallback)
+        _gameViewModel.gattServer = _gattServer
         _gattServer.startServer(gameService)
     }
 

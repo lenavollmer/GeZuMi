@@ -2,5 +2,5 @@ package de.htw.gezumi.filter
 
 
 interface Filter {
-    fun applyFilter(rssi: Double): Double
+    fun applyFilter(rssi: Float): Float
 }

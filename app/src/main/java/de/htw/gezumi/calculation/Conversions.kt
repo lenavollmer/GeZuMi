@@ -17,16 +17,17 @@ class Conversions {
          * [txPower] is the RSSI value with which the distance is 1 meter.
          * @return the distance in meters
          */
-        fun rssiToDistance(rssi: Double, txPower: Int): Double {
-            val envFactor = 3.0
-            return 10.0.pow((txPower.toDouble() - rssi) / (10.0 * envFactor))
+        fun rssiToDistance(rssi: Float, txPower: Int): Float {
+            val envFactor = 3f
+            return 10f.pow((txPower.toFloat() - rssi) / (10f * envFactor))
         }
 
         /**
          * Calculates the positions for the given [distances] matrix.
-         * @return the calculated positions
+         * @return the calculated positions, indices are preserved
          */
-        fun distancesToPoints(distances: List<List<Double>>): List<Vec> {
+        fun distancesToPoints(dists: Array<FloatArray>): List<Vec> {
+            val distances = fixDistanceMat(dists)
             val points = mutableListOf<Vec>()
 
             // assume that the first point is a fix point
@@ -60,6 +61,27 @@ class Conversions {
         }
 
         /**
+         * Make the distance matrix valid and symmetric.
+         */
+        private fun fixDistanceMat(dists: Array<FloatArray>): Array<FloatArray> {
+            val distances = dists.copyOf()
+
+            for (row in dists.indices) {
+                for (col in dists[0].indices.drop(row + 1)) {
+                    val first = dists[row][col]
+                    val second = dists[col][row]
+                    val distance = if (first != 0f && second != 0f) (first + second) / 2
+                    else if (first == 0f && second != 0f) second
+                    else if (first != 0f && second == 0f) first
+                    else 0f
+                    distances[row][col] = distance
+                    distances[col][row] = distance
+                }
+            }
+            return distances
+        }
+
+        /**
          * Calculates the relative position to the [basePoint] using the given distances ([a],[b],[c]).
          * [a] is the distance between the [basePoint] and the point A that meets 2 conditions:
          *  1. it shares the same y coordinate as the [basePoint]
@@ -68,7 +90,7 @@ class Conversions {
          * [c] the distance between the point that needs be calculated and A
          * @return pair of two possible points as the new point can be mirrored vertically
          */
-        private fun getRelativePos(a: Double, b: Double, c: Double, basePoint: Vec): Pair<Vec, Vec> {
+        private fun getRelativePos(a: Float, b: Float, c: Float, basePoint: Vec): Pair<Vec, Vec> {
             val angle = acos((a.pow(2) + b.pow(2) - c.pow(2)) / (2 * a * b));
             val x = (basePoint.x - b * cos(angle))
             val yAnglePos = (b * sin(angle))

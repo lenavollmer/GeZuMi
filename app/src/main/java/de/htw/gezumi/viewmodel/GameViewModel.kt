@@ -9,11 +9,16 @@ import android.bluetooth.le.ScanSettings
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import de.htw.gezumi.Utils
+import de.htw.gezumi.calculation.Conversions
+import de.htw.gezumi.calculation.Vec
 import de.htw.gezumi.callbacks.GameJoinUICallback
+import de.htw.gezumi.callbacks.PlayerUpdateCallback
 import de.htw.gezumi.controller.BluetoothController
 import de.htw.gezumi.gatt.GameService
 import de.htw.gezumi.gatt.GattClient
+import de.htw.gezumi.gatt.GattServer
 import de.htw.gezumi.model.Device
+import de.htw.gezumi.model.DeviceData
 import de.htw.gezumi.model.Game
 import de.htw.gezumi.util.FileStorage
 import java.util.*
@@ -22,31 +27,40 @@ private const val TAG = "GameViewModel"
 const val RSSI_READ_INTERVAL = 500
 const val GAME_ID_LENGTH = 8 // 8 bytes for game id (4 prefix, 4 random)
 const val RANDOM_GAME_ID_PART_LENGTH = 4
+
 // remaining 13 bytes of advertise package for name and device id
 const val GAME_NAME_LENGTH = 8 // don't forget to change edit_text limitation
-const val DEVICE_ID_LENGTH = 5
+const val DEVICE_ID_LENGTH = 3
 const val DEVICE_ID_OFFSET = GAME_ID_LENGTH + GAME_NAME_LENGTH
 
 class GameViewModel(application: Application) : AndroidViewModel(application) {
 
-    val myDeviceId = ByteArray(5)
+    companion object {
+        lateinit var instance: GameViewModel
+    }
+
+    val myDeviceId = ByteArray(3)
 
     lateinit var gameJoinUICallback: GameJoinUICallback
     lateinit var hostScanCallback: ScanCallback
     lateinit var gattClient: GattClient
+    lateinit var gattServer: GattServer
 
     val bluetoothController: BluetoothController = BluetoothController()
-    private val _devices = mutableMapOf<Device, Long>()
-    val devices: List<Device> get() = _devices.keys.toList()
+    val devices = mutableListOf<Device>()
 
-    var host: Device? = null // is null for host themselves // is currently not the same object as host in _devices (and has default txpower)
+    private lateinit var _distances: Array<FloatArray>
+    private var _positions: List<Vec> = listOf()
+
+    var host: Device? =
+        null // is null for host themselves // is currently not the same object as host in _devices (and has default txpower)
 
     val game = Game()
 
     // the game id consists of a fixed host prefix (4 bytes) and a random id part (4 bytes)
     var gameId: ByteArray = ByteArray(0) // 21 bytes left for game attributes like game name etc.
         get() {
-            require(field.size <= GAME_ID_LENGTH) {"Wrong game id"}
+            require(field.size <= GAME_ID_LENGTH) { "Wrong game id" }
             return field + ByteArray(GAME_ID_LENGTH - field.size) // fill with zeros if
         }
 
@@ -68,7 +82,49 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+
+    val playerUpdateCallback: PlayerUpdateCallback = object : PlayerUpdateCallback {
+        /**
+         * Fill distance matrix, calculate positions, send host updates with changed positions.
+         */
+        override fun onPlayerUpdate(deviceData: DeviceData) {
+            val senderDeviceIdx = Utils.findDeviceIndex(devices, deviceData.senderId)
+            var deviceDistanceToIdx = Utils.findDeviceIndex(devices, deviceData.deviceId)
+            if (deviceData.deviceId contentEquals myDeviceId) {
+                deviceDistanceToIdx = devices.size // is myself
+            }   
+
+            // device not present yet
+            if (senderDeviceIdx == -1 || deviceDistanceToIdx == -1) return
+
+            _distances[senderDeviceIdx][deviceDistanceToIdx] = deviceData.values[0]
+
+            val newPositions = Conversions.distancesToPoints(_distances)
+
+            // if contains new player, take all new
+            val changedPositionsIndices = if(newPositions.size > _positions.size) newPositions.indices else newPositions.indices.filter {
+                newPositions[it] != _positions[it]
+            }
+
+            changedPositionsIndices.forEach {
+                val deviceId = if (it == devices.size) myDeviceId else devices[it].deviceId
+                gattServer.notifyHostUpdate(
+                    DeviceData(
+                        deviceId,
+                        ByteArray(3),
+                        floatArrayOf(newPositions[it].x, newPositions[it].y)
+                    )
+                )
+            }
+            _positions = newPositions
+        }
+
+    }
+
+
     init {
+        // singleton
+        instance = this
         // generate random id
         Random().nextBytes(myDeviceId)
         bluetoothController.myDeviceId = myDeviceId
@@ -116,11 +172,12 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun addDevice(device: Device) {
-        _devices[device] = System.currentTimeMillis()
+        devices.add(device)
+        _distances = Array(devices.size + 1) { FloatArray(devices.size + 1) } // +1 for self
     }
 
     private fun getLastRssiMillis(device: Device): Long {
-        return System.currentTimeMillis() - _devices[device]!!
+        return System.currentTimeMillis() - device.lastSeen
     }
 
     /**
@@ -140,9 +197,9 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             Log.d(TAG, "game scan: read rssi of ${Utils.toHexString(deviceAddress)}, last read: $millisPassed")
             device.addRssi(rssi)
             if (!isHost())
-                gattClient.sendPlayerUpdate(device.getDeviceData())
+                gattClient.sendPlayerUpdate(DeviceData.fromDevice(device, myDeviceId))
             // TODO: else isHost: call fun that processes data received from clients with own data
-            _devices[device] = System.currentTimeMillis()
+            device.lastSeen = System.currentTimeMillis()
         }
     }
 

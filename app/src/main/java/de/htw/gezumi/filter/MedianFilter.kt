@@ -1,9 +1,9 @@
 package de.htw.gezumi.filter
 
 class MedianFilter: Filter {
-    private val _values = mutableListOf<Double>()
+    private val _values = mutableListOf<Float>()
 
-    override fun applyFilter(rssi: Double): Double {
+    override fun applyFilter(rssi: Float): Float {
         _values.add(rssi)
 
         // only use the 10 most recent values
@@ -11,8 +11,8 @@ class MedianFilter: Filter {
 
         val sortedArray = _values.sorted()
 
-        return if (sortedArray.size % 2 == 0) (sortedArray[sortedArray.size / 2].toDouble() + sortedArray[
-                sortedArray.size / 2 - 1].toDouble()) / 2
-        else sortedArray[sortedArray.size / 2].toDouble()
+        return if (sortedArray.size % 2 == 0) (sortedArray[sortedArray.size / 2] + sortedArray[
+                sortedArray.size / 2 - 1]) / 2f
+        else sortedArray[sortedArray.size / 2]
     }
 }

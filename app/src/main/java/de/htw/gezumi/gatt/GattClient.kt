@@ -8,8 +8,6 @@ import android.content.Context
 import android.util.Log
 import de.htw.gezumi.Utils
 import de.htw.gezumi.model.DeviceData
-import java.nio.ByteBuffer
-import java.util.*
 
 private const val TAG = "GattClient"
 
@@ -44,7 +42,7 @@ class GattClient(private val _context: Context) {
         playerUpdateCharacteristic?.value = deviceData.toByteArray()
         Log.d(
             TAG,
-            "send player update: ${Utils.toHexString(deviceData.deviceAddress)}, values=${deviceData.values.contentToString()}"
+            "send player update: ${Utils.toHexString(deviceData.deviceId)}, values=${deviceData.values.contentToString()}"
         )
         if (playerUpdateCharacteristic != null) {
             _gatt?.writeCharacteristic(playerUpdateCharacteristic)

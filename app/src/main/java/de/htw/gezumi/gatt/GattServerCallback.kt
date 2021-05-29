@@ -2,7 +2,6 @@ package de.htw.gezumi.gatt
 
 import android.bluetooth.*
 import android.util.Log
-import androidx.fragment.app.activityViewModels
 import de.htw.gezumi.HostFragment
 import de.htw.gezumi.Utils
 import de.htw.gezumi.model.DeviceData
@@ -69,9 +68,9 @@ class GattServerCallback(private val _subscribedDevices: MutableSet<BluetoothDev
         when (characteristic?.uuid) {
             GameService.PLAYER_UPDATE_UUID -> {
                 val deviceData = DeviceData.fromBytes(value!!)
-                Log.d(TAG, "received player update: device: ${Utils.toHexString(deviceData.deviceAddress)} values=${deviceData.values.contentToString()}, size=${value.size}")
+                Log.d(TAG, "received player update: device: ${Utils.toHexString(deviceData.deviceId)} values=${deviceData.values.contentToString()}, size=${value.size}")
+                GameViewModel.instance.playerUpdateCallback.onPlayerUpdate(deviceData)
                 // TODO: do something with the received data (use for calculations)
-                _gattServer.notifyHostUpdate(deviceData) // for test
             }
         }
     }
