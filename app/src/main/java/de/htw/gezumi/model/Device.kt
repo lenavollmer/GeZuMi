@@ -30,6 +30,7 @@ class Device(val deviceId: ByteArray, private val _txPower: Int, var bluetoothDe
     }
 
     fun addRssi(rssi: Int) {
+        rssiHistory.add(rssi)
         // TODO get real txPower values, 127 means there is no txPower value
         val unfilteredDistance = Conversions.rssiToDistance(rssi.toDouble(), if(_txPower != 127) _txPower else 70)
         _distance.postValue(_filter.applyFilter(unfilteredDistance))
