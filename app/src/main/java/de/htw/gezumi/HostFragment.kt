@@ -39,7 +39,9 @@ class HostFragment : Fragment() {
 
     private val _connectedDevices: ArrayList<BluetoothDevice> = ArrayList() // devices that are connected, but neither approved nor declined
     private val _approvedDevices: ArrayList<BluetoothDevice> = ArrayList()
+    // for displayed list
     private val _playerListAdapter: ApprovedDevicesAdapter = ApprovedDevicesAdapter(_approvedDevices)
+    // for bottom sheet
     private val _connectedListAdapter = ConnectedPlayerDeviceAdapter(_connectedDevices) { position, status ->
         if (status == ConnectedPlayerDeviceAdapter.STATUS.APPROVED) {
             _approvedDevices.add(_connectedDevices[position])

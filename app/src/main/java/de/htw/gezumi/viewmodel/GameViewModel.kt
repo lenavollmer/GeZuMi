@@ -52,8 +52,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     private lateinit var _distances: Array<FloatArray>
     private var _positions: List<Vec> = listOf()
 
-    var host: Device? =
-        null // is null for host themselves // is currently not the same object as host in _devices (and has default txpower)
+    var host: Device? = null // is null for host themselves // is currently not the same object as host in _devices (and has default txpower)
 
     val game = Game()
 
@@ -72,7 +71,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             when (callbackType) {
                 ScanSettings.CALLBACK_TYPE_ALL_MATCHES -> {
                     val deviceId = GameService.extractDeviceId(result)
-                    onGameScanResult(deviceId, result.rssi, result.txPower, result.device)
+                    val playerName = GameService.extractGameName(result)
+                    onGameScanResult(deviceId, playerName, result.rssi, result.txPower, result.device)
                 }
                 ScanSettings.CALLBACK_TYPE_MATCH_LOST -> {
                     Log.d(TAG, "lost " + result.device.name)
@@ -145,7 +145,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         gameJoinUICallback.gameJoined()
         // waiting for game start is not necessary
         Log.d(TAG, "start advertising on game id: $gameId")
-        bluetoothController.startAdvertising(gameId)
+        bluetoothController.startAdvertising(gameId, "gustav".toByteArray(Charsets.UTF_8))
         Log.d(TAG, "start scanning for players on game id: $gameId")
         bluetoothController.stopScan(hostScanCallback)
         bluetoothController.startScan(gameScanCallback, gameId)
@@ -181,6 +181,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun addDevice(device: Device) {
         devices.add(device)
+        // extend distance matrix for new player
         _distances = Array(devices.size + 1) { FloatArray(devices.size + 1) } // +1 for self
     }
 
@@ -194,15 +195,18 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
      */
     @kotlin.ExperimentalUnsignedTypes
     @SuppressLint("DefaultLocale")
-    fun onGameScanResult(deviceAddress: ByteArray, rssi: Int, txPower: Int, bluetoothDevice: BluetoothDevice) {
-        // add device to game if necessary
-        if (!Utils.contains(devices, deviceAddress))
-            addDevice(Device(deviceAddress, txPower, bluetoothDevice))
+    fun onGameScanResult(deviceId: ByteArray, playerName: String, rssi: Int, txPower: Int, bluetoothDevice: BluetoothDevice) {
+        // add device if necessary
+        if (!Utils.contains(devices, deviceId))
+            addDevice(Device(deviceId, txPower, bluetoothDevice))
 
-        val device = Utils.findDevice(devices, deviceAddress)!!
+        game.addPlayer(deviceId)
+        game.getPlayer(deviceId)!!.setName(playerName)
+
+        val device = Utils.findDevice(devices, deviceId)!!
         val millisPassed = getLastRssiMillis(device)
         if (millisPassed > RSSI_READ_INTERVAL) {
-            Log.d(TAG, "game scan: read rssi of ${Utils.toHexString(deviceAddress)}, last read: $millisPassed")
+            Log.d(TAG, "game scan: read rssi of ${Utils.toHexString(deviceId)}, last read: $millisPassed")
             device.addRssi(rssi)
             val deviceData = DeviceData.fromDevice(device, myDeviceId)
             if (!isHost())

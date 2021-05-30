@@ -71,6 +71,9 @@ class GattServerCallback(private val _subscribedDevices: MutableSet<BluetoothDev
                 Log.d(TAG, "received player update from: ${Utils.toHexString(deviceData.senderId)} device: ${Utils.toHexString(deviceData.deviceId)} values=${deviceData.values.contentToString()}, size=${value.size}")
                 GameViewModel.instance.playerUpdateCallback.onPlayerUpdate(deviceData)
             }
+            GameService.PLAYER_NAME_UUID -> {
+
+            }
         }
     }
 
