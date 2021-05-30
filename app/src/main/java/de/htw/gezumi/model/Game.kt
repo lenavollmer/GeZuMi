@@ -2,8 +2,10 @@ package de.htw.gezumi.model
 
 import android.graphics.Point
 import android.os.Handler
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import de.htw.gezumi.calculation.Geometry
 
 class Game() {
     // Set numbers of players = currently fixed to three
@@ -19,11 +21,12 @@ class Game() {
     )
     val playerLocations: LiveData<List<Point>> get() = _playerLocations
 
-    private val _targetShape = listOf(
-        Point(0, 0),
-        Point(200, 0),
-        Point(100, 200)
-    )
+    private var _targetShape = Geometry.generateGeometricObject(_players)
+//    listOf(
+//        Point(0, 0),
+//        Point(200, 0),
+//        Point(100, 200)
+//    )
     val targetShape: List<Point> get() = _targetShape
 
     private val _targetShapeAnimation = MutableLiveData<List<Point>>()
@@ -69,14 +72,19 @@ class Game() {
         _currentIdx = 0
     }
 
-    fun changeTargetLocations(handler: Handler) = object : Runnable {
-        override fun run() {
-            if (_currentIdx < 12) {
-                setTargetShapeAnimation(_animationPointsArray[_currentIdx])
-                _currentIdx++
-                handler.postDelayed(this, 100)
-            }
+    fun changeTargetLocationsLogic() {
+        if (_currentIdx < 12 && _shapeMatched.value!!) {
+            setTargetShapeAnimation(_animationPointsArray[_currentIdx])
+            _currentIdx++
         }
+    }
+
+    fun resetState() {
+        setRunning(false)
+        setShapeMatched(false)
+        setTime(0)
+        resetCurrentIdx()
+        _targetShape = Geometry.generateGeometricObject(_players)
     }
 
     private fun generateTargetShapeAnimationPoints(): Array<List<Point>> {

@@ -29,7 +29,7 @@ const val DEVICE_ID_OFFSET = GAME_ID_LENGTH + GAME_NAME_LENGTH
 
 class GameViewModel(application: Application) : AndroidViewModel(application) {
 
-    val myDeviceId = ByteArray(5)
+    private val myDeviceId = ByteArray(5)
 
     lateinit var gameJoinUICallback: GameJoinUICallback
     lateinit var hostScanCallback: ScanCallback
@@ -94,6 +94,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun onGameStart() {
+        Log.d(TAG, "I'm in onGameStart: $game")
         gameJoinUICallback.gameStarted()
     }
 
@@ -104,6 +105,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         // TODO host leaves game
         bluetoothController.stopAdvertising()
         bluetoothController.stopScan(gameScanCallback)
+        game.resetState()
         // Handler(Looper.getMainLooper()).post{}
     }
 

@@ -39,36 +39,22 @@ class SurfaceCallback(
 
         // Create the observer which updates the UI.
         val matchedObserver = Observer<Boolean> { shapesMatch ->
-            if (shapesMatch) {
-                Log.d(TAG, "in matchedObserver if")
-                _gameViewModel.game.setRunning(false)
-                if (_gameViewModel.game.playerLocations.hasActiveObservers()) _gameViewModel.game.playerLocations.removeObservers(
-                    _viewLifecycleOwner
-                )
+            if (shapesMatch) _gameViewModel.game.setRunning(false)
+        }
 
-                val animationObserver = Observer<List<Point>> { animationLocation ->
-                    tryDrawing(holder, animationLocation, shapesMatch)
-                }
+        val animationObserver = Observer<List<Point>> { animationLocation ->
+            if(!_gameViewModel.game.running) tryDrawing(holder, animationLocation, true)
+        }
 
-                _gameViewModel.game.targetShapeAnimation.observe(_viewLifecycleOwner, animationObserver)
-
-            } else {
-                Log.d(TAG, "in matchedObserver else")
-                if (_gameViewModel.game.targetShapeAnimation.hasActiveObservers()) _gameViewModel.game.targetShapeAnimation.removeObservers(
-                    _viewLifecycleOwner
-                )
-
-                val positionObserver = Observer<List<Point>> { newLocations ->
-                    tryDrawing(holder, newLocations, shapesMatch)
-                }
-
-                _gameViewModel.game.playerLocations.observe(_viewLifecycleOwner, positionObserver)
-            }
+        val positionObserver = Observer<List<Point>> { newLocations ->
+            if(_gameViewModel.game.running) tryDrawing(holder, newLocations, false)
         }
 
 
         // Observe the LiveData, passing in this activity as the LifecycleOwner and the observer.
         _gameViewModel.game.shapeMatched.observe(_viewLifecycleOwner, matchedObserver)
+        _gameViewModel.game.targetShapeAnimation.observe(_viewLifecycleOwner, animationObserver)
+        _gameViewModel.game.playerLocations.observe(_viewLifecycleOwner, positionObserver)
     }
 
     override fun surfaceDestroyed(holder: SurfaceHolder) {
@@ -82,7 +68,6 @@ class SurfaceCallback(
         if (canvas == null) {
             Log.e(TAG, "Cannot draw onto the canvas as it's null")
         } else {
-            Log.d(TAG, "GameWon? $gameWon")
             if (gameWon) drawWinningShape(canvas, locations)
             else drawMyStuff(canvas, locations)
             holder.unlockCanvasAndPost(canvas)
@@ -137,7 +122,10 @@ class SurfaceCallback(
             targetShape
         )
         Log.d(TAG, "isMatch: $shapesMatch")
-        _gameViewModel.game.setShapeMatched(shapesMatch)
+        if(shapesMatch) {
+            _gameViewModel.game.setShapeMatched(shapesMatch)
+            _gameViewModel.game.setRunning(false)
+        }
 
         // scale all points to fit canvas
         val allPoints = Geometry.scaleToCanvas(
@@ -147,10 +135,6 @@ class SurfaceCallback(
             (POINT_SIZE * 2).toInt()
         )
 
-        if (_gameViewModel.game.shapeMatched.value!!) {
-            Log.d(TAG, "shapes matched")
-            _gameViewModel.game.setRunning(false)
-        }
         // draw target shape
         drawFigure(
             canvas,
@@ -160,7 +144,6 @@ class SurfaceCallback(
             _paints.fillPaintTargetShape,
             POINT_SIZE * 1.2f
         )
-
 
         // draw player locations
         drawFigure(

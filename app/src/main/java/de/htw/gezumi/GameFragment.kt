@@ -40,15 +40,25 @@ class GameFragment : Fragment() {
 
     private val changePlayerLocations = object : Runnable {
         override fun run() {
-            _gameViewModel.game.setPlayerLocations(Geometry.generateGeometricObject(_gameViewModel.game.players))
-            Log.d(TAG, "locations: ${_gameViewModel.game.playerLocations}")
+            if(_gameViewModel.game.time < 10)
+                _gameViewModel.game.setPlayerLocations(Geometry.generateGeometricObject(_gameViewModel.game.players))
+            else _gameViewModel.game.setPlayerLocations(_gameViewModel.game.targetShape)
             mainHandler.postDelayed(this, 2000)
         }
     }
 
+    private val changeTargetLocations = object : Runnable {
+        override fun run() {
+            _gameViewModel.game.changeTargetLocationsLogic()
+            mainHandler.postDelayed(this, 100)
+        }
+    }
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Log.d(TAG, "I'm in onCreate: ${_gameViewModel.game.shapeMatched.value!!}")
 
 //        val hostDevice = Device(_hostDevice.address, -70, _hostDevice)
 //        //hostDevice.setName(_hostDevice.name)
@@ -70,11 +80,13 @@ class GameFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = DataBindingUtil.inflate(inflater, R.layout.fragment_game, container, false)
+        Log.d(TAG, "I'm in onCreateView: ${_gameViewModel.game.shapeMatched.value!!}")
+        _gameViewModel.game.resetState()
+        Log.d(TAG, "after reset: ${_gameViewModel.game.shapeMatched.value!!}")
         runTimer();
 
         val matchedObserver = Observer<Boolean> { shapesMatch ->
             if(shapesMatch) {
-                Log.d(TAG, "I am in here")
                 _binding.shapesMatched.visibility = View.VISIBLE
                 _binding.shapesMatched.z = 500.0F
             }
@@ -112,7 +124,7 @@ class GameFragment : Fragment() {
         //    _gameViewModel.writeRSSILog()
         //    _gattClient.disconnect()
         mainHandler.removeCallbacks(changePlayerLocations)
-        mainHandler.removeCallbacks(_gameViewModel.game.changeTargetLocations(mainHandler))
+        mainHandler.removeCallbacks(changeTargetLocations)
         _gameViewModel.game.setRunning(false)
     }
 
@@ -120,7 +132,7 @@ class GameFragment : Fragment() {
         super.onResume()
         //    _gattClient.reconnect()
         mainHandler.post(changePlayerLocations)
-        mainHandler.post(_gameViewModel.game.changeTargetLocations(mainHandler))
+        mainHandler.post(changeTargetLocations)
         _gameViewModel.game.setRunning(true)
     }
 
@@ -131,13 +143,14 @@ class GameFragment : Fragment() {
         _gameViewModel.game.setRunning(false)
         _gameViewModel.game.setShapeMatched(false)
         _gameViewModel.game.resetCurrentIdx()
+        mainHandler.removeCallbacks(changePlayerLocations)
+        mainHandler.removeCallbacks(changeTargetLocations)
         // stop scan and advertise
         // TODO on resume has to start it again (but not twice!) -> implement pause/disconnect functionality
         _gameViewModel.onGameLeave()
     }
 
     private fun runTimer() {
-
         // Get the text view.
         val timeView = _binding.timeView
 
