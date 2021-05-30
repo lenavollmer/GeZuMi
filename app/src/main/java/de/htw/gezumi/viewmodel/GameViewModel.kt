@@ -86,13 +86,17 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     val playerUpdateCallback: PlayerUpdateCallback = object : PlayerUpdateCallback {
         /**
          * Fill distance matrix, calculate positions, send host updates with changed positions.
+         * Only called on the host device.
          */
         override fun onPlayerUpdate(deviceData: DeviceData) {
-            val senderDeviceIdx = Utils.findDeviceIndex(devices, deviceData.senderId)
+            var senderDeviceIdx = Utils.findDeviceIndex(devices, deviceData.senderId)
             var deviceDistanceToIdx = Utils.findDeviceIndex(devices, deviceData.deviceId)
             if (deviceData.deviceId contentEquals myDeviceId) {
-                deviceDistanceToIdx = devices.size // is myself
-            }   
+                deviceDistanceToIdx = devices.size // another device measured distance to myself
+            }
+            else if (deviceData.senderId contentEquals myDeviceId) {
+                senderDeviceIdx = devices.size // the measurement is by myself (the host)
+            }
 
             // device not present yet
             if (senderDeviceIdx == -1 || deviceDistanceToIdx == -1) return
@@ -115,6 +119,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                         floatArrayOf(newPositions[it].x, newPositions[it].y)
                     )
                 )
+                // also update own game
+                game.updatePlayer(deviceData.deviceId, Vec(newPositions[it].x, newPositions[it].y))
             }
             _positions = newPositions
         }
@@ -196,9 +202,11 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         if (millisPassed > RSSI_READ_INTERVAL) {
             Log.d(TAG, "game scan: read rssi of ${Utils.toHexString(deviceAddress)}, last read: $millisPassed")
             device.addRssi(rssi)
+            val deviceData = DeviceData.fromDevice(device, myDeviceId)
             if (!isHost())
-                gattClient.sendPlayerUpdate(DeviceData.fromDevice(device, myDeviceId))
-            // TODO: else isHost: call fun that processes data received from clients with own data
+                gattClient.sendPlayerUpdate(deviceData)
+            else // also take own data in account
+                playerUpdateCallback.onPlayerUpdate(deviceData)
             device.lastSeen = System.currentTimeMillis()
         }
     }

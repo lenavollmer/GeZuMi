@@ -68,9 +68,8 @@ class GattServerCallback(private val _subscribedDevices: MutableSet<BluetoothDev
         when (characteristic?.uuid) {
             GameService.PLAYER_UPDATE_UUID -> {
                 val deviceData = DeviceData.fromBytes(value!!)
-                Log.d(TAG, "received player update: device: ${Utils.toHexString(deviceData.deviceId)} values=${deviceData.values.contentToString()}, size=${value.size}")
+                Log.d(TAG, "received player update from: ${Utils.toHexString(deviceData.senderId)} device: ${Utils.toHexString(deviceData.deviceId)} values=${deviceData.values.contentToString()}, size=${value.size}")
                 GameViewModel.instance.playerUpdateCallback.onPlayerUpdate(deviceData)
-                // TODO: do something with the received data (use for calculations)
             }
         }
     }

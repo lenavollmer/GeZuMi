@@ -4,7 +4,8 @@ import de.htw.gezumi.viewmodel.DEVICE_ID_LENGTH
 import java.nio.ByteBuffer
 
 /**
- * Data container for sending via ble. Holds up to two float values associated with a device.
+ * Data container for sending via ble. Holds the sender id and up to two float values associated with a device.
+ * Max. size: 20 bytes
  */
 class DeviceData(val deviceId: ByteArray, val senderId: ByteArray, val values: FloatArray) {
 
