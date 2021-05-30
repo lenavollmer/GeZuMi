@@ -34,7 +34,7 @@ class Game() {
 
     // Determines whether the target shape has been matched by the players
     private var _shapeMatched = MutableLiveData<Boolean>(false)
-    val shapeMatched: LiveData<Boolean> get() = _shapeMatched
+    val shapeMatched: MutableLiveData<Boolean> get() = _shapeMatched
 
     private var _time = 0
     val time: Int get() = _time
@@ -53,6 +53,7 @@ class Game() {
     }
 
     fun setShapeMatched(matchedShape: Boolean) {
+        Log.d("TAG", "I'm in setShapeMatched: $matchedShape")
         _shapeMatched.postValue(matchedShape)
     }
 
@@ -80,11 +81,12 @@ class Game() {
     }
 
     fun resetState() {
+        Log.d("TAG", "I'm in here")
         setRunning(false)
-        setShapeMatched(false)
         setTime(0)
         resetCurrentIdx()
         _targetShape = Geometry.generateGeometricObject(_players)
+        _shapeMatched.value = false
     }
 
     private fun generateTargetShapeAnimationPoints(): Array<List<Point>> {

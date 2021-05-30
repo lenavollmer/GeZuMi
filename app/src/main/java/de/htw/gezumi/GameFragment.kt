@@ -1,20 +1,24 @@
 package de.htw.gezumi
 
+import android.R.attr.button
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.view.*
+import android.widget.Button
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Observer
+import androidx.navigation.fragment.findNavController
+import de.htw.gezumi.calculation.Geometry
 import de.htw.gezumi.callbacks.SurfaceCallback
 import de.htw.gezumi.databinding.FragmentGameBinding
 import de.htw.gezumi.viewmodel.GameViewModel
 import java.util.*
-import androidx.lifecycle.Observer
-import de.htw.gezumi.calculation.Geometry
+
 
 private const val TAG = "GameFragment"
 
@@ -40,7 +44,8 @@ class GameFragment : Fragment() {
 
     private val changePlayerLocations = object : Runnable {
         override fun run() {
-            if(_gameViewModel.game.time < 10)
+            Log.d(TAG, "_gameViewModel.game.time: ${_gameViewModel.game.time}")
+            if(_gameViewModel.game.time < 5)
                 _gameViewModel.game.setPlayerLocations(Geometry.generateGeometricObject(_gameViewModel.game.players))
             else _gameViewModel.game.setPlayerLocations(_gameViewModel.game.targetShape)
             mainHandler.postDelayed(this, 2000)
@@ -80,14 +85,18 @@ class GameFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = DataBindingUtil.inflate(inflater, R.layout.fragment_game, container, false)
+        _binding.shapesMatched.visibility = View.INVISIBLE
+        _binding.startNewGame.visibility = View.INVISIBLE
         Log.d(TAG, "I'm in onCreateView: ${_gameViewModel.game.shapeMatched.value!!}")
         _gameViewModel.game.resetState()
         Log.d(TAG, "after reset: ${_gameViewModel.game.shapeMatched.value!!}")
-        runTimer();
+        runTimer()
 
         val matchedObserver = Observer<Boolean> { shapesMatch ->
             if(shapesMatch) {
                 _binding.shapesMatched.visibility = View.VISIBLE
+                _binding.shapesMatched.z = 500.0F
+                _binding.startNewGame.visibility = View.VISIBLE
                 _binding.shapesMatched.z = 500.0F
             }
         }
@@ -116,6 +125,12 @@ class GameFragment : Fragment() {
 
         Log.i(TAG, "surface is valid: ${_surfaceHolder.surface.isValid}")
         _gameViewModel.game.setRunning(true)
+
+        view.findViewById<Button>(R.id.start_new_game).setOnClickListener {
+            Log.d(TAG, "I am in the clicky thing")
+            _gameViewModel.game.resetState()
+            Log.d(TAG, "${_gameViewModel.game.shapeMatched.value!!}")
+        }
 
     }
 
