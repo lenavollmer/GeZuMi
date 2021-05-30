@@ -83,6 +83,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     }
 
 
+    @kotlin.ExperimentalUnsignedTypes
+    @SuppressLint("DefaultLocale")
     val playerUpdateCallback: PlayerUpdateCallback = object : PlayerUpdateCallback {
         /**
          * Fill distance matrix, calculate positions, send host updates with changed positions.
@@ -115,7 +117,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 gattServer.notifyHostUpdate(
                     DeviceData(
                         deviceId,
-                        ByteArray(3),
+                        myDeviceId,
                         floatArrayOf(newPositions[it].x, newPositions[it].y)
                     )
                 )

@@ -7,10 +7,11 @@ import de.htw.gezumi.calculation.Vec
 
 private const val TAG = "Game"
 
-class Game() {
+class Game {
 
     val numberOfPlayers: Int get() = _players.value?.size ?: 0
 
+    // contains a player for myself
     private val _players = MutableLiveData<MutableList<Player>>(
         mutableListOf()
     )

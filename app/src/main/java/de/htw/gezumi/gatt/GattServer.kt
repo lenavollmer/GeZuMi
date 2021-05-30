@@ -1,5 +1,6 @@
 package de.htw.gezumi.gatt
 
+import android.annotation.SuppressLint
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGattServer
 import android.bluetooth.BluetoothGattService
@@ -7,6 +8,7 @@ import android.bluetooth.BluetoothManager
 import android.content.Context
 import android.util.Log
 import de.htw.gezumi.HostFragment
+import de.htw.gezumi.Utils
 import de.htw.gezumi.controller.BluetoothController
 import de.htw.gezumi.model.DeviceData
 import java.nio.ByteBuffer
@@ -69,8 +71,10 @@ class GattServer(private val _context: Context, private val _bluetoothController
         }
     }
 
+    @kotlin.ExperimentalUnsignedTypes
+    @SuppressLint("DefaultLocale")
     fun notifyHostUpdate(deviceData: DeviceData) {
-        Log.d(TAG, "notify host update")
+        Log.d(TAG, "notify host update sender: ${Utils.toHexString(deviceData.senderId)} distance to: ${Utils.toHexString(deviceData.deviceId)}")
         val hostUpdateCharacteristic = bluetoothGattServer?.getService(GameService.HOST_UUID)?.getCharacteristic(GameService.HOST_UPDATE_UUID)
         hostUpdateCharacteristic?.value = deviceData.toByteArray()
         for (device in _subscribedDevices) {
