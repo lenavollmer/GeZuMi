@@ -1,12 +1,11 @@
 package de.htw.gezumi.calculation
 
-import android.graphics.Point
+import android.util.Log
 import kotlin.math.acos
 import kotlin.math.cos
 import kotlin.math.pow
 import kotlin.math.sin
 import kotlin.math.abs
-import kotlin.math.sqrt
 
 
 class Conversions {
@@ -19,15 +18,17 @@ class Conversions {
          */
         fun rssiToDistance(rssi: Float, txPower: Int): Float {
             val envFactor = 3f
-            return 10f.pow((txPower.toFloat() - rssi) / (10f * envFactor))
+            val distance = 10f.pow((-txPower.toFloat() - rssi) / (10f * envFactor))
+            Log.d("Distance Calculation", "unfilteredDistance: $distance, rssi: $rssi, txPower: $txPower")
+            return distance
         }
 
         /**
          * Calculates the positions for the given [distances] matrix.
          * @return the calculated positions, indices are preserved
          */
-        fun distancesToPoints(dists: Array<FloatArray>): List<Vec> {
-            val distances = fixDistanceMat(dists)
+        fun distancesToPoints(distances: Array<FloatArray>): List<Vec> {
+            val dists = fixDistanceMat(distances)
             val points = mutableListOf<Vec>()
 
             // assume that the first point is a fix point
@@ -36,13 +37,13 @@ class Conversions {
             // compute position of the second point with the following assumptions:
             // 1. it shares the same y coordinate as the first point
             // 2. it is to the right of the first point
-            points.add(Vec((points[0].x - distances[0][1]), points[0].y));
+            points.add(Vec((points[0].x - dists[0][1]), points[0].y));
 
             // compute positions of all other points
-            for (i in distances.indices.drop(2)) {
-                val a = distances[0][1]
-                val b = distances[0][i]
-                val c = distances[1][i]
+            for (i in dists.indices.drop(2)) {
+                val a = dists[0][1]
+                val b = dists[0][i]
+                val c = dists[1][i]
                 val possiblePoints = getRelativePos(a, b, c, points[0])
                 println(possiblePoints)
 
@@ -50,8 +51,8 @@ class Conversions {
                 var favor1 = 0
                 var favor2 = 0
                 for (i2 in points.indices.drop(2)) {
-                    val difference1 = getDist(possiblePoints.first, points[i2]) - distances[i2][i]
-                    val difference2 = getDist(possiblePoints.second, points[i2]) - distances[i2][i]
+                    val difference1 = getDist(possiblePoints.first, points[i2]) - dists[i2][i]
+                    val difference2 = getDist(possiblePoints.second, points[i2]) - dists[i2][i]
                     if (abs(difference1) < abs(difference2)) favor1++
                     else favor2++
                 }
@@ -63,22 +64,22 @@ class Conversions {
         /**
          * Make the distance matrix valid and symmetric.
          */
-        private fun fixDistanceMat(dists: Array<FloatArray>): Array<FloatArray> {
-            val distances = dists.copyOf()
+        private fun fixDistanceMat(distances: Array<FloatArray>): Array<FloatArray> {
+            val dists = distances.copyOf()
 
-            for (row in dists.indices) {
-                for (col in dists[0].indices.drop(row + 1)) {
-                    val first = dists[row][col]
-                    val second = dists[col][row]
+            for (row in distances.indices) {
+                for (col in distances[0].indices.drop(row + 1)) {
+                    val first = distances[row][col]
+                    val second = distances[col][row]
                     val distance = if (first != 0f && second != 0f) (first + second) / 2
                     else if (first == 0f && second != 0f) second
                     else if (first != 0f && second == 0f) first
                     else 0f
-                    distances[row][col] = distance
-                    distances[col][row] = distance
+                    dists[row][col] = distance
+                    dists[col][row] = distance
                 }
             }
-            return distances
+            return dists
         }
 
         /**
@@ -104,6 +105,5 @@ class Conversions {
          * Get the euclidean distance between point [a] and point [b].
          */
         private fun getDist(a: Vec, b: Vec) = (a - b).length()
-
     }
 }

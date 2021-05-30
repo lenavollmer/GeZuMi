@@ -29,7 +29,6 @@ class Device(val deviceId: ByteArray, private val _txPower: Int, var bluetoothDe
         // TODO get real txPower values, 127 means there is no txPower value
         val unfilteredDistance = Conversions.rssiToDistance(rssi.toFloat(), if(_txPower != 127) _txPower else 70)
         _distance.postValue(_filter.applyFilter(unfilteredDistance))
-        Log.d(TAG, "unfilteredDistance: $unfilteredDistance, rssi: $rssi, txPower: $_txPower")
         // TODO we don't know how often the device is discovered by the scan, so it might be good to limit the execution of the distance calculation
     }
     /*
