@@ -8,7 +8,10 @@ import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import de.htw.gezumi.Utils
+import de.htw.gezumi.adapter.ApprovedDevicesAdapter
 import de.htw.gezumi.calculation.Conversions
 import de.htw.gezumi.calculation.Vec
 import de.htw.gezumi.callbacks.GameJoinUICallback
@@ -179,10 +182,18 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         bluetoothController.setContext(application.applicationContext)
     }
 
+    private var _playerListAdapter: ApprovedDevicesAdapter? = null
+
+    fun setPlayerListAdapter(playerListAdapter: ApprovedDevicesAdapter) {
+        _playerListAdapter = playerListAdapter
+    }
+
     private fun addDevice(device: Device) {
         devices.add(device)
         // extend distance matrix for new player
         _distances = Array(devices.size + 1) { FloatArray(devices.size + 1) } // +1 for self
+        // refresh host screen, if is host
+        _playerListAdapter?.notifyDataSetChanged()
     }
 
     private fun getLastRssiMillis(device: Device): Long {

@@ -24,6 +24,7 @@ import de.htw.gezumi.adapter.ConnectedPlayerDeviceAdapter
 import de.htw.gezumi.databinding.FragmentHostBinding
 import de.htw.gezumi.gatt.GameService
 import de.htw.gezumi.gatt.GattServer
+import de.htw.gezumi.model.Device
 import de.htw.gezumi.viewmodel.GameViewModel
 
 private const val TAG = "HostFragment"
@@ -38,13 +39,13 @@ class HostFragment : Fragment() {
     private lateinit var _gattServer: GattServer
 
     private val _connectedDevices: ArrayList<BluetoothDevice> = ArrayList() // devices that are connected, but neither approved nor declined
-    private val _approvedDevices: ArrayList<BluetoothDevice> = ArrayList()
+    //private val _approvedDevices: ArrayList<Device> = ArrayList()
     // for displayed list
-    private val _playerListAdapter: ApprovedDevicesAdapter = ApprovedDevicesAdapter(_approvedDevices)
+    private lateinit var _playerListAdapter: ApprovedDevicesAdapter
     // for bottom sheet
     private val _connectedListAdapter = ConnectedPlayerDeviceAdapter(_connectedDevices) { position, status ->
         if (status == ConnectedPlayerDeviceAdapter.STATUS.APPROVED) {
-            _approvedDevices.add(_connectedDevices[position])
+            //_approvedDevices.add(_connectedDevices[position])
             _gattServer.notifyJoinApproved(_connectedDevices[position], true)
             _connectedDevices.removeAt(position)
         }
@@ -71,7 +72,10 @@ class HostFragment : Fragment() {
 
         override fun onGattDisconnect(device: BluetoothDevice) {
             _connectedDevices.remove(device)
-            _approvedDevices.remove(device)
+            //_approvedDevices.remove(device)
+            val devicesd = _gameViewModel.devices.find{ it.bluetoothDevice == device }
+            Log.d(TAG, "to BE REMOVED: $devicesd")
+            _gameViewModel.devices.remove(devicesd)
             Handler(Looper.getMainLooper()).post{updateAdapters()}
         }
     }
@@ -82,6 +86,11 @@ class HostFragment : Fragment() {
         arguments?.let {
 
         }
+
+        _playerListAdapter = ApprovedDevicesAdapter(_gameViewModel.devices)
+        _gameViewModel.setPlayerListAdapter(_playerListAdapter)
+
+
         val gameService = GameService.createHostService()
 
         _gameViewModel.gameId = GameService.GAME_ID_PREFIX + GameService.randomIdPart
@@ -175,6 +184,6 @@ class HostFragment : Fragment() {
 
     private fun updateAdapters() {
         _connectedListAdapter.notifyDataSetChanged()
-        _playerListAdapter.notifyDataSetChanged()
+        _playerListAdapter.notifyDataSetChanged() // this is NOT CALLED! XXXXXXXX
     }
 }
