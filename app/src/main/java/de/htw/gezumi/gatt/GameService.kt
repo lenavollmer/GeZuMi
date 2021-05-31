@@ -19,6 +19,7 @@ object GameService {
     val HOST_UUID: UUID = UUID.fromString("4a92d33c-0000-1000-8000-00805f9b34fc")
     val GAME_ID_UUID: UUID = UUID.fromString("4a92d33c-0000-1000-8000-00805f9b34fb")
     val PLAYER_UPDATE_UUID: UUID = UUID.fromString("4a92d33c-0000-1000-8000-00805f9b51ab")
+    val PLAYER_IDENTIFICATION_UUID: UUID = UUID.fromString("4a92d33c-0000-1000-8000-00805f9b128c")
     val PLAYER_NAME_UUID: UUID = UUID.fromString("4a92d33c-0000-1000-8000-00805f9b3156")
     val HOST_UPDATE_UUID: UUID = UUID.fromString("4a92d33c-0000-1000-8000-00805f9b34fa") // all game_event subscribed devices also get host updates
     val JOIN_APPROVED_UUID: UUID = UUID.fromString("4a92d33c-0000-1000-8000-00805f9b34aa")
@@ -41,6 +42,7 @@ object GameService {
         val gameIdCharacteristic = BluetoothGattCharacteristic(GAME_ID_UUID, BluetoothGattCharacteristic.PROPERTY_READ, BluetoothGattCharacteristic.PERMISSION_READ)
 
         val playerUpdate = BluetoothGattCharacteristic(PLAYER_UPDATE_UUID, BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE, BluetoothGattCharacteristic.PERMISSION_WRITE)
+        val identification = BluetoothGattCharacteristic(PLAYER_IDENTIFICATION_UUID, BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE, BluetoothGattCharacteristic.PERMISSION_WRITE)
         val playerName = BluetoothGattCharacteristic(PLAYER_UPDATE_UUID, BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE, BluetoothGattCharacteristic.PERMISSION_WRITE)
         val hostUpdate = BluetoothGattCharacteristic(HOST_UPDATE_UUID, BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE, BluetoothGattCharacteristic.PERMISSION_WRITE)
         val joinApproved = BluetoothGattCharacteristic(JOIN_APPROVED_UUID, BluetoothGattCharacteristic.PROPERTY_NOTIFY, BluetoothGattCharacteristic.PERMISSION_READ)
@@ -51,6 +53,7 @@ object GameService {
 
         service.addCharacteristic(gameIdCharacteristic)
         service.addCharacteristic(playerUpdate)
+        service.addCharacteristic(identification)
         service.addCharacteristic(playerName)
         service.addCharacteristic(hostUpdate)
         service.addCharacteristic(joinApproved)

@@ -6,6 +6,7 @@ import android.util.Log
 import de.htw.gezumi.Utils
 import de.htw.gezumi.calculation.Vec
 import de.htw.gezumi.model.DeviceData
+import de.htw.gezumi.model.Game
 import de.htw.gezumi.viewmodel.GameViewModel
 import de.htw.gezumi.viewmodel.RANDOM_GAME_ID_PART_LENGTH
 import java.nio.ByteBuffer
@@ -59,6 +60,10 @@ class GattClientCallback() : BluetoothGattCallback() {
                         Log.d(TAG, "game event and host update subscribe successful")
                         gatt?.setCharacteristicNotification(gatt.getService(GameService.HOST_UUID)?.getCharacteristic(GameService.GAME_EVENT_UUID), true)
                         gatt?.setCharacteristicNotification(gatt.getService(GameService.HOST_UUID)?.getCharacteristic(GameService.HOST_UPDATE_UUID), true)
+                        Log.d(TAG, "send identification to host")
+                        val identificationCharacteristic = gatt?.getService(GameService.HOST_UUID)?.getCharacteristic(GameService.PLAYER_IDENTIFICATION_UUID)
+                        identificationCharacteristic!!.value = GameViewModel.instance.myDeviceId
+                        gatt.writeCharacteristic(identificationCharacteristic)
                     }
                     else if (Arrays.equals(descriptor.value, BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE)) {
                         Log.d(TAG, "game event unsubscribe successful")

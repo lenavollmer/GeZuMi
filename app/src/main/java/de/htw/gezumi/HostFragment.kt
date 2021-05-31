@@ -24,7 +24,6 @@ import de.htw.gezumi.adapter.ConnectedPlayerDeviceAdapter
 import de.htw.gezumi.databinding.FragmentHostBinding
 import de.htw.gezumi.gatt.GameService
 import de.htw.gezumi.gatt.GattServer
-import de.htw.gezumi.model.Device
 import de.htw.gezumi.viewmodel.GameViewModel
 
 private const val TAG = "HostFragment"
@@ -47,36 +46,43 @@ class HostFragment : Fragment() {
         if (status == ConnectedPlayerDeviceAdapter.STATUS.APPROVED) {
             //_approvedDevices.add(_connectedDevices[position])
             _gattServer.notifyJoinApproved(_connectedDevices[position], true)
-            _connectedDevices.removeAt(position)
         }
         else {
             _gattServer.notifyJoinApproved(_connectedDevices[position], false)
-            _connectedDevices.removeAt(position)
         }
+        _connectedDevices.removeAt(position)
+        if (_connectedDevices.size == 0)
+            _bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
         updateAdapters()
     }
 
     interface GattConnectCallback {
-        fun onGattConnect(device: BluetoothDevice)
-        fun onGattDisconnect(device: BluetoothDevice)
+        fun onGattConnect(bluetoothDevice: BluetoothDevice)
+        fun onGattDisconnect(bluetoothDevice: BluetoothDevice)
     }
     // TODO refactor GattConnectCallback
     private val connectCallback = object : GattConnectCallback {
-        override fun onGattConnect(device: BluetoothDevice) {
-            _connectedDevices.add(device)
+        override fun onGattConnect(bluetoothDevice: BluetoothDevice) {
+            _connectedDevices.add(bluetoothDevice)
             Handler(Looper.getMainLooper()).post{
                 _bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
                 updateAdapters()
             }
         }
 
-        override fun onGattDisconnect(device: BluetoothDevice) {
-            _connectedDevices.remove(device)
-            //_approvedDevices.remove(device)
-            val devicesd = _gameViewModel.devices.find{ it.bluetoothDevice == device }
-            Log.d(TAG, "to BE REMOVED: $devicesd")
-            _gameViewModel.devices.remove(devicesd)
-            Handler(Looper.getMainLooper()).post{updateAdapters()}
+        override fun onGattDisconnect(bluetoothDevice: BluetoothDevice) {
+            _connectedDevices.remove(bluetoothDevice) // is only present if currently neither approved nor declined
+            _gattServer.subscribedDevices.remove(bluetoothDevice)
+            // remove device TODO: remove player
+            val device = GameViewModel.instance.devices.find{it.bluetoothDevice == bluetoothDevice}
+            Log.d(TAG, "REMOVEEEEEEEEEEEEEEE DEVICE: $device")
+            GameViewModel.instance.devices.remove(device)
+            // update UI
+            Handler(Looper.getMainLooper()).post{
+                if (_connectedDevices.size == 0)
+                    _bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+                updateAdapters()
+            }
         }
     }
 
