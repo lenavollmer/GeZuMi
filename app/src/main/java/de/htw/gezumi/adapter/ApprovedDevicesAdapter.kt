@@ -2,27 +2,38 @@ package de.htw.gezumi.adapter
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.RecyclerView
-import de.htw.gezumi.Utils
 import de.htw.gezumi.databinding.ItemApprovedDeviceBinding
 import de.htw.gezumi.model.Device
 import de.htw.gezumi.viewmodel.GameViewModel
 
 class ApprovedDevicesAdapter(private val _devices: List<Device>) : RecyclerView.Adapter<ApprovedDevicesAdapter.ItemViewHolder>() {
+    lateinit var lifecycleOwner: LifecycleOwner
 
-    class ItemViewHolder(private val binding: ItemApprovedDeviceBinding): RecyclerView.ViewHolder(binding.root) {
+    inner class ItemViewHolder(private val _binding: ItemApprovedDeviceBinding): RecyclerView.ViewHolder(_binding.root) {
 
         @kotlin.ExperimentalUnsignedTypes
         fun bind(device: Device) {
             // TODO move to item_bt_device per data binding
-            val playerName = GameViewModel.instance.game.getPlayer(device.deviceId)?.name
-            if (playerName != null)
-                binding.deviceName.text = playerName.value
-            else
-                binding.deviceName.text = Utils.toHexString(device.deviceId)
+            //_binding.deviceName.text = GameViewModel.instance.game.getPlayer(device.deviceId)!!.name.value
+            // Create the observer which updates the UI.
+            val nameObserver = Observer<String> { newName ->
+                // Update the UI, in this case, a TextView.
+                _binding.deviceName.text = newName
+            }
+
+            // Observe the LiveData, passing in this activity as the LifecycleOwner and the observer.
+            val liveName = GameViewModel.instance.game.getPlayer(device.deviceId)!!.name
+            liveName.observe(lifecycleOwner, nameObserver)
+
+            _binding.deviceName.text = liveName.value
+
+
             // make sure to include this so your view will be updated
-            binding.invalidateAll()
-            binding.executePendingBindings()
+            _binding.invalidateAll()
+            _binding.executePendingBindings()
         }
     }
 

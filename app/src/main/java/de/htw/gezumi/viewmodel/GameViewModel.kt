@@ -2,7 +2,6 @@ package de.htw.gezumi.viewmodel
 
 import android.annotation.SuppressLint
 import android.app.Application
-import android.bluetooth.BluetoothDevice
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
@@ -148,9 +147,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         Log.d(TAG, "on game join")
         gameJoinUICallback.gameJoined()
         // waiting for game start is not necessary
-        Log.d(TAG, "start advertising on game id: $gameId")
         bluetoothController.startAdvertising(gameId, "gustav".toByteArray(Charsets.UTF_8))
-        Log.d(TAG, "start scanning for players on game id: $gameId")
         bluetoothController.stopScan(hostScanCallback)
         bluetoothController.startScan(gameScanCallback, gameId)
     }
@@ -169,9 +166,14 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     @SuppressLint("DefaultLocale")
     fun onGameLeave() {
         Log.d(TAG, "on game leave")
-        // TODO host leaves game
         bluetoothController.stopAdvertising()
         bluetoothController.stopScan(gameScanCallback)
+        gameJoinUICallback.gameLeft()
+        // TODO: test game leave and join new game
+        // TODO: go back to join activity if game already started
+        // TODO: differentiate between game left and game terminated by host
+        devices.clear()
+        game.clear()
         // Handler(Looper.getMainLooper()).post{}
     }
 
@@ -185,8 +187,12 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         _playerListAdapter = playerListAdapter
     }
 
+    @kotlin.ExperimentalUnsignedTypes
     fun addDevice(device: Device) {
         devices.add(device)
+        // also add player and set name to address until it gets updated
+        game.addPlayerIfNew(device.deviceId)
+        game.getPlayer(device.deviceId)!!.setName(Utils.toHexString(device.deviceId))
         // extend distance matrix for new player
         _distances = Array(devices.size + 1) { FloatArray(devices.size + 1) } // +1 for self
         // refresh host screen, if is host
@@ -214,7 +220,6 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             device.txPower = txPower
 
         // update player name
-        game.addPlayerIfNew(deviceId)
         game.getPlayer(deviceId)!!.setName(playerName)
 
         // store rssi and send player update

@@ -112,6 +112,7 @@ class HostFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = DataBindingUtil.inflate(inflater, R.layout.fragment_host, container, false)
+        _playerListAdapter.lifecycleOwner = viewLifecycleOwner
         return _binding.root
     }
 

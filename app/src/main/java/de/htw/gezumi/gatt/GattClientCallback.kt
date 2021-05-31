@@ -16,6 +16,7 @@ private const val TAG = "ClientGattCallback"
 
 class GattClientCallback() : BluetoothGattCallback() {
 
+    @kotlin.ExperimentalUnsignedTypes
     override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
         if (newState == BluetoothProfile.STATE_CONNECTED) {
             Log.d(TAG, "callback: connected")
@@ -23,6 +24,8 @@ class GattClientCallback() : BluetoothGattCallback() {
             gatt?.discoverServices()
 
         } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+            Log.d(TAG, "callback: disconnected")
+            GameViewModel.instance.onGameLeave() // game was terminated
         }
     }
 

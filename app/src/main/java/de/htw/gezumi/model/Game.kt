@@ -60,4 +60,9 @@ class Game {
         addPlayerIfNew(deviceId)
         _players.value?.find {it.deviceId contentEquals deviceId}!!.position = position
     }
+
+    fun clear() {
+        // add more stuff here
+        _players.value?.clear()
+    }
 }

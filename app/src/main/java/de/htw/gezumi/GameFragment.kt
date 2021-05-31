@@ -9,7 +9,6 @@ import android.view.*
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import de.htw.gezumi.calculation.Geometry
 import de.htw.gezumi.callbacks.SurfaceCallback
 import de.htw.gezumi.databinding.FragmentGameBinding
 import de.htw.gezumi.viewmodel.GameViewModel

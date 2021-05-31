@@ -8,7 +8,6 @@ import androidx.recyclerview.widget.RecyclerView
 import de.htw.gezumi.databinding.ItemJoinBinding
 import de.htw.gezumi.model.Device
 
-
 class JoinGameListAdapter(private val _hostDevices: List<Device>, private val listener: (position: Int) -> Unit) : RecyclerView.Adapter<JoinGameListAdapter.ItemViewHolder>() {
     lateinit var lifecycleOwner: LifecycleOwner
 

@@ -15,8 +15,6 @@ import de.htw.gezumi.viewmodel.GAME_ID_LENGTH
 import de.htw.gezumi.viewmodel.GAME_NAME_LENGTH
 import de.htw.gezumi.viewmodel.RANDOM_GAME_ID_PART_LENGTH
 
-private const val SCAN_PERIOD = 10000L
-private const val SERVICE_UUID_MASK_STRING = "FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFF0000"
 private const val TAG = "BTController"
 
 class BluetoothController {
@@ -50,7 +48,8 @@ class BluetoothController {
 
 
     fun startHostScan(leScanCallback: ScanCallback) {
-        enableBluetooth()
+        enableBluetooth() // TODO: this is not good
+        stopScan()
         // just scan for host prefix
         val ignore = ByteArray(RANDOM_GAME_ID_PART_LENGTH + GAME_NAME_LENGTH + DEVICE_ID_LENGTH)
         val mask = byteArrayOf(1, 1, 1, 1) + ignore
@@ -68,13 +67,14 @@ class BluetoothController {
     @kotlin.ExperimentalUnsignedTypes
     @SuppressLint("DefaultLocale")
     fun startScan(leScanCallback: ScanCallback, gameId: ByteArray) {
-        enableBluetooth()
+        enableBluetooth() // TODO: this is not good
+        stopScan()
         // scan for specific game with prefix and random part
         val ignore = ByteArray(GAME_NAME_LENGTH + DEVICE_ID_LENGTH) // mask device address and game name
         val filterBytes = gameId + ignore
         val mask = ByteArray(GAME_ID_LENGTH) { 1 } + ignore
 
-        Log.d(TAG, "starting scan: ${Utils.toHexString(filterBytes)} size: ${filterBytes.size}")
+        Log.d(TAG, "start scan: ${Utils.toHexString(filterBytes)} size: ${filterBytes.size}")
 
         val filterBuilder = ScanFilter.Builder()
         filterBuilder.setManufacturerData(76, filterBytes, mask)
@@ -84,13 +84,14 @@ class BluetoothController {
         _bluetoothLeScanner?.startScan(_scanFilters, _scanSettings, leScanCallback)
     }
 
-    fun stopScan(leScanCallback: ScanCallback) {
+    fun stopScan(leScanCallback: ScanCallback = object: ScanCallback() {}) {
         _bluetoothLeScanner?.stopScan(leScanCallback)
     }
 
     @kotlin.ExperimentalUnsignedTypes
     fun startAdvertising(gameId: ByteArray, gameName: ByteArray = ByteArray(0)) { // leave empty if client because name is not important then
-        enableBluetooth()
+        enableBluetooth() // TODO: this is not good
+        stopAdvertising()
         require(::_bluetoothManager.isInitialized) {"Must have context set"}
         val bluetoothLeAdvertiser: BluetoothLeAdvertiser? = _bluetoothManager.adapter.bluetoothLeAdvertiser
 

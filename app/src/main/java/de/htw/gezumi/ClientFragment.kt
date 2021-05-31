@@ -76,7 +76,7 @@ class ClientFragment : Fragment() {
                 _popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0)
 
                 _gameViewModel.bluetoothController.stopScan(_gameViewModel.hostScanCallback)
-                _gattClient.disconnect()
+                _gattClient.disconnect() // functionality should not be in UI callback
 
                 _availableHostDevices.clear()
                 updateBtDeviceListAdapter()
@@ -89,6 +89,12 @@ class ClientFragment : Fragment() {
                 Log.d(TAG, "game started")
                 findNavController().navigate(R.id.action_ClientFragment_to_Game)
             }
+        }
+
+        override fun gameLeft() {
+            _popupWindow.dismiss()
+            _popupBinding.joinText.text = getString(R.string.game_left)
+            _popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0)
         }
 
     }
