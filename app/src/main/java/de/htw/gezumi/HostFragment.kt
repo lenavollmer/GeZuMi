@@ -161,13 +161,17 @@ class HostFragment : Fragment() {
     private fun onGameNameChanged(gameName: String) {
         require(gameName.length <= 8) {"Game name too long"}
         GameService.gameName = gameName // must be in game service so gattServerCallback can access it
-        _gameViewModel.gameId = GameService.GAME_ID_PREFIX + GameService.randomIdPart
+        _gameViewModel.gameId = GameService.GAME_ID_PREFIX + GameService.randomIdPart // TODO REMOVE?
+        // restart advertisement with new name
+        scanAndAdvertise()
+    }
 
+    @kotlin.ExperimentalUnsignedTypes
+    private fun scanAndAdvertise() {
         _gameViewModel.bluetoothController.stopAdvertising()
         _gameViewModel.bluetoothController.stopScan(object: ScanCallback() {})
 
-        _gameViewModel.bluetoothController.startAdvertising(_gameViewModel.gameId, gameName.toByteArray(Charsets.UTF_8))
-        Log.d(TAG, "start game scan")
+        _gameViewModel.bluetoothController.startAdvertising(_gameViewModel.gameId, GameService.gameName.toByteArray(Charsets.UTF_8))
         _gameViewModel.bluetoothController.startScan(_gameViewModel.gameScanCallback, _gameViewModel.gameId)
     }
 
@@ -178,18 +182,24 @@ class HostFragment : Fragment() {
 
     override fun onPause() {
         super.onPause()
+        wasOnPause = true
         updateAdapters()
-        _gameViewModel.bluetoothController.stopScan(object: ScanCallback() {})
+        _gameViewModel.bluetoothController.stopAdvertising()
+        _gameViewModel.bluetoothController.stopScan(object: ScanCallback() {}) // why just stop scan?? TODO: klären!
     }
-
+    var wasOnPause = false
     @kotlin.ExperimentalUnsignedTypes
     override fun onResume() {
         super.onResume()
-        _gameViewModel.bluetoothController.startAdvertising(_gameViewModel.gameId, GameService.gameName.toByteArray(Charsets.UTF_8))
+        if (wasOnPause) {
+            wasOnPause = false
+            scanAndAdvertise()
+            // _gameViewModel.bluetoothController.startAdvertising(_gameViewModel.gameId, GameService.gameName.toByteArray(Charsets.UTF_8)) why just restart advertisement??
+        }
     }
 
     private fun updateAdapters() {
         _connectedListAdapter.notifyDataSetChanged()
-        _playerListAdapter.notifyDataSetChanged() // this is NOT CALLED! XXXXXXXX
+        _playerListAdapter.notifyDataSetChanged()
     }
 }

@@ -72,17 +72,15 @@ class BluetoothController {
         // scan for specific game with prefix and random part
         val ignore = ByteArray(GAME_NAME_LENGTH + DEVICE_ID_LENGTH) // mask device address and game name
         val filterBytes = gameId + ignore
-        var mask = ByteArray(GAME_ID_LENGTH) { 1 } + ignore
+        val mask = ByteArray(GAME_ID_LENGTH) { 1 } + ignore
 
-        Log.d(TAG, "" + Utils.toHexString(filterBytes))
-        Log.d(TAG, "SCAN SIZE:        ${filterBytes.size}")
+        Log.d(TAG, "starting scan: ${Utils.toHexString(filterBytes)} size: ${filterBytes.size}")
 
         val filterBuilder = ScanFilter.Builder()
         filterBuilder.setManufacturerData(76, filterBytes, mask)
 
         val filter = filterBuilder.build()
         if (!_scanFilters.contains(filter)) _scanFilters.add(filter)
-        Log.d(TAG, "start ble scanning")
         _bluetoothLeScanner?.startScan(_scanFilters, _scanSettings, leScanCallback)
     }
 
@@ -107,7 +105,7 @@ class BluetoothController {
             .build()
 
         val size = (gameId + fullGameNameBytes + myDeviceId).size
-        Log.d(TAG, "${Utils.toHexString(gameId + fullGameNameBytes + myDeviceId)} SIZE:        $size")
+        Log.d(TAG, "starting advertisement: ${Utils.toHexString(gameId + fullGameNameBytes + myDeviceId)} size: $size")
         bluetoothLeAdvertiser?.startAdvertising(_advertiseSettings, advertiseData, advertiseCallback)
         ?: Log.d(TAG, "advertise failed")
     }
@@ -115,7 +113,7 @@ class BluetoothController {
     fun stopAdvertising() {
         Log.d(TAG, "stop advertising")
         val bluetoothLeAdvertiser: BluetoothLeAdvertiser? = _bluetoothManager.adapter.bluetoothLeAdvertiser
-        bluetoothLeAdvertiser?.stopAdvertising(advertiseCallback) ?: Log.d(TAG, "stop advertise failed")
+        bluetoothLeAdvertiser?.stopAdvertising(object : AdvertiseCallback() {}) ?: Log.d(TAG, "stop advertise failed")
     }
 
     fun openGattServer(gattServerCallback: BluetoothGattServerCallback): BluetoothGattServer {

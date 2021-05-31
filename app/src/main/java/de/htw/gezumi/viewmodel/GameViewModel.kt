@@ -190,7 +190,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         // extend distance matrix for new player
         _distances = Array(devices.size + 1) { FloatArray(devices.size + 1) } // +1 for self
         // refresh host screen, if is host
-        Handler(Looper.getMainLooper()).post{ _playerListAdapter?.notifyDataSetChanged() }
+        Handler(Looper.getMainLooper()).post{ _playerListAdapter?.notifyDataSetChanged() } // TODO: use intent here
     }
 
     private fun getLastRssiMillis(device: Device): Long {
