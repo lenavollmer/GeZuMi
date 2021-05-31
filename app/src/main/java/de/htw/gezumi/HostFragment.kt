@@ -162,7 +162,6 @@ class HostFragment : Fragment() {
     private fun onGameNameChanged(gameName: String) {
         require(gameName.length <= 8) {"Game name too long"}
         GameService.gameName = gameName // must be in game service so gattServerCallback can access it
-        _gameViewModel.gameId = GameService.GAME_ID_PREFIX + GameService.randomIdPart // TODO REMOVE?
         // restart advertisement with new name
         scanAndAdvertise()
     }
@@ -178,6 +177,9 @@ class HostFragment : Fragment() {
 
     override fun onDestroy() {
         super.onDestroy()
+        _gameViewModel.bluetoothController.stopAdvertising()
+        _gameViewModel.bluetoothController.stopScan()
+        _gameViewModel.clearModel()
         _gattServer.stopServer()
     }
 

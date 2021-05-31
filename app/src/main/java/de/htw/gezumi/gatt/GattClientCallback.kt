@@ -23,7 +23,7 @@ class GattClientCallback() : BluetoothGattCallback() {
             Log.d(TAG, "discover services")
             gatt?.discoverServices()
 
-        } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+        } else if (newState == BluetoothProfile.STATE_DISCONNECTED) { // TODO: this is not called
             Log.d(TAG, "callback: disconnected")
             GameViewModel.instance.onGameLeave() // game was terminated
         }

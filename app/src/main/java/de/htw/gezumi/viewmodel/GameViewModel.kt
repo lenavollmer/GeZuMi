@@ -172,9 +172,14 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         // TODO: test game leave and join new game
         // TODO: go back to join activity if game already started
         // TODO: differentiate between game left and game terminated by host
+        // Handler(Looper.getMainLooper()).post{}
+        clearModel()
+    }
+
+    fun clearModel() {
+        // TODO lifecycle: add stuff here
         devices.clear()
         game.clear()
-        // Handler(Looper.getMainLooper()).post{}
     }
 
     fun isJoined(): Boolean = gameId.isNotEmpty()
