@@ -44,7 +44,6 @@ class GameFragment : Fragment() {
 
     private val changePlayerLocations = object : Runnable {
         override fun run() {
-            Log.d(TAG, "_gameViewModel.game.time: ${_gameViewModel.game.time}")
             if(_gameViewModel.game.time < 5)
                 _gameViewModel.game.setPlayerLocations(Geometry.generateGeometricObject(_gameViewModel.game.players))
             else _gameViewModel.game.setPlayerLocations(_gameViewModel.game.targetShape)
@@ -63,8 +62,6 @@ class GameFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Log.d(TAG, "I'm in onCreate: ${_gameViewModel.game.shapeMatched.value!!}")
-
 //        val hostDevice = Device(_hostDevice.address, -70, _hostDevice)
 //        //hostDevice.setName(_hostDevice.name)
 //        _gameViewModel.host = hostDevice
@@ -85,11 +82,8 @@ class GameFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = DataBindingUtil.inflate(inflater, R.layout.fragment_game, container, false)
-        _binding.shapesMatched.visibility = View.INVISIBLE
-        _binding.startNewGame.visibility = View.INVISIBLE
-        Log.d(TAG, "I'm in onCreateView: ${_gameViewModel.game.shapeMatched.value!!}")
+
         _gameViewModel.game.resetState()
-        Log.d(TAG, "after reset: ${_gameViewModel.game.shapeMatched.value!!}")
         runTimer()
 
         val matchedObserver = Observer<Boolean> { shapesMatch ->
@@ -121,15 +115,13 @@ class GameFragment : Fragment() {
                 viewLifecycleOwner
             )
         )
-
-
-        Log.i(TAG, "surface is valid: ${_surfaceHolder.surface.isValid}")
         _gameViewModel.game.setRunning(true)
 
         view.findViewById<Button>(R.id.start_new_game).setOnClickListener {
-            Log.d(TAG, "I am in the clicky thing")
+            _binding.shapesMatched.visibility = View.INVISIBLE
+            _binding.startNewGame.visibility = View.INVISIBLE
             _gameViewModel.game.resetState()
-            Log.d(TAG, "${_gameViewModel.game.shapeMatched.value!!}")
+            _gameViewModel.game.setRunning(true)
         }
 
     }
