@@ -16,6 +16,8 @@ import de.htw.gezumi.viewmodel.GAME_NAME_LENGTH
 import de.htw.gezumi.viewmodel.RANDOM_GAME_ID_PART_LENGTH
 
 private const val TAG = "BTController"
+const val HOST_SCAN_KEY = "host"
+const val GAME_SCAN_KEY = "game"
 
 class BluetoothController {
 
@@ -24,8 +26,10 @@ class BluetoothController {
     private val _bluetoothAdapter: BluetoothAdapter = BluetoothAdapter.getDefaultAdapter() // TODO clean up nullables and do proper bt support checking
     private val _bluetoothLeScanner: BluetoothLeScanner? = _bluetoothAdapter.bluetoothLeScanner
 
-    private var _scanFilters = mutableListOf<ScanFilter>()
     private val _scanSettings = ScanSettings.Builder().setCallbackType(ScanSettings.CALLBACK_TYPE_ALL_MATCHES).build()
+
+    // we need a map of lists because scans might be started, but fail on start. it must be ensure, that all scans are stopped if we call stop
+    val startedScans: MutableMap<String, MutableList<ScanCallback>>  = mutableMapOf(HOST_SCAN_KEY to mutableListOf(), GAME_SCAN_KEY to mutableListOf())
 
     private val _advertiseSettings: AdvertiseSettings = AdvertiseSettings.Builder()
         .setAdvertiseMode(AdvertiseSettings.ADVERTISE_MODE_LOW_LATENCY)
@@ -49,30 +53,31 @@ class BluetoothController {
 
     fun startHostScan(leScanCallback: ScanCallback) {
         enableBluetooth() // TODO: this is not good
-        stopScan()
+        stopScan(HOST_SCAN_KEY)
         // just scan for host prefix
         val ignore = ByteArray(RANDOM_GAME_ID_PART_LENGTH + GAME_NAME_LENGTH + DEVICE_ID_LENGTH)
         val mask = byteArrayOf(1, 1, 1, 1) + ignore
-        val filterBytes = GameService.GAME_ID_PREFIX + ignore
+        val filterBytes = GameService.HOST_ID_PREFIX + ignore
 
         val filterBuilder = ScanFilter.Builder()
         filterBuilder.setManufacturerData(76, filterBytes, mask)
 
         val filter = filterBuilder.build()
-        if (!_scanFilters.contains(filter)) _scanFilters.add(filter)
         Log.d(TAG, "start scanning for hosts")
-        _bluetoothLeScanner?.startScan(_scanFilters, _scanSettings, leScanCallback)
+        _bluetoothLeScanner?.startScan(listOf(filter), _scanSettings, leScanCallback)
+        startedScans[HOST_SCAN_KEY]!!.add(leScanCallback)
     }
 
     @kotlin.ExperimentalUnsignedTypes
     @SuppressLint("DefaultLocale")
     fun startScan(leScanCallback: ScanCallback, gameId: ByteArray) {
         enableBluetooth() // TODO: this is not good
-        stopScan()
+        stopScan(GAME_SCAN_KEY)
         // scan for specific game with prefix and random part
         val ignore = ByteArray(GAME_NAME_LENGTH + DEVICE_ID_LENGTH) // mask device address and game name
         val filterBytes = gameId + ignore
         val mask = ByteArray(GAME_ID_LENGTH) { 1 } + ignore
+        mask[3] = 0 // ignore 4th byte to see host too
 
         Log.d(TAG, "start scan: ${Utils.toHexString(filterBytes)} size: ${filterBytes.size}")
 
@@ -80,12 +85,22 @@ class BluetoothController {
         filterBuilder.setManufacturerData(76, filterBytes, mask)
 
         val filter = filterBuilder.build()
-        if (!_scanFilters.contains(filter)) _scanFilters.add(filter)
-        _bluetoothLeScanner?.startScan(_scanFilters, _scanSettings, leScanCallback)
+        _bluetoothLeScanner?.startScan(listOf(filter), _scanSettings, leScanCallback)
+        startedScans[GAME_SCAN_KEY]!!.add(leScanCallback)
     }
 
-    fun stopScan(leScanCallback: ScanCallback = object: ScanCallback() {}) {
-        _bluetoothLeScanner?.stopScan(leScanCallback)
+    /**
+     * Stop the scan using the scan key constant.
+     */
+    fun stopScan(scanKey: String) {
+        if (startedScans[scanKey]!!.size == 0) {
+            Log.d(TAG, "scan stop: no scans started")
+            return
+        }
+        else
+            Log.d(TAG, "scan stop: ${startedScans[scanKey]!!.size} callbacks were registered and stopped")
+        for (scanCallback in startedScans[scanKey]!!)
+            _bluetoothLeScanner?.stopScan(scanCallback)
     }
 
     @kotlin.ExperimentalUnsignedTypes

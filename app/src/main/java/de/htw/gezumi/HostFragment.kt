@@ -21,6 +21,7 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import de.htw.gezumi.adapter.ApprovedDevicesAdapter
 import de.htw.gezumi.adapter.ConnectedPlayerDeviceAdapter
+import de.htw.gezumi.controller.GAME_SCAN_KEY
 import de.htw.gezumi.databinding.FragmentHostBinding
 import de.htw.gezumi.gatt.GameService
 import de.htw.gezumi.gatt.GattServer
@@ -99,7 +100,7 @@ class HostFragment : Fragment() {
 
         val gameService = GameService.createHostService()
 
-        _gameViewModel.gameId = GameService.GAME_ID_PREFIX + GameService.randomIdPart
+        _gameViewModel.gameId = GameService.HOST_ID_PREFIX + GameService.randomIdPart
 
         Log.d(TAG, "start gatt server and game service")
         _gattServer = GattServer(requireContext(), _gameViewModel.bluetoothController, connectCallback)
@@ -168,17 +169,19 @@ class HostFragment : Fragment() {
 
     @kotlin.ExperimentalUnsignedTypes
     private fun scanAndAdvertise() {
-        _gameViewModel.bluetoothController.stopAdvertising()
-        _gameViewModel.bluetoothController.stopScan(object: ScanCallback() {})
-
+        stopScanAndAdvertise()
         _gameViewModel.bluetoothController.startAdvertising(_gameViewModel.gameId, GameService.gameName.toByteArray(Charsets.UTF_8))
         _gameViewModel.bluetoothController.startScan(_gameViewModel.gameScanCallback, _gameViewModel.gameId)
     }
 
+    private fun stopScanAndAdvertise() {
+        _gameViewModel.bluetoothController.stopAdvertising()
+        _gameViewModel.bluetoothController.stopScan(GAME_SCAN_KEY)
+    }
+
     override fun onDestroy() {
         super.onDestroy()
-        _gameViewModel.bluetoothController.stopAdvertising()
-        _gameViewModel.bluetoothController.stopScan()
+        stopScanAndAdvertise()
         _gameViewModel.clearModel()
         _gattServer.stopServer()
     }
@@ -187,8 +190,9 @@ class HostFragment : Fragment() {
         super.onPause()
         wasOnPause = true
         updateAdapters()
-        _gameViewModel.bluetoothController.stopAdvertising()
-        _gameViewModel.bluetoothController.stopScan(object: ScanCallback() {}) // why just stop scan?? TODO: klären!
+        stopScanAndAdvertise()
+        //_gameViewModel.bluetoothController.stopAdvertising()
+        //_gameViewModel.bluetoothController.stopScan(GAME_SCAN_KEY) // why just stop scan?? TODO: klären!
     }
     var wasOnPause = false
     @kotlin.ExperimentalUnsignedTypes

@@ -18,6 +18,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import de.htw.gezumi.adapter.JoinGameListAdapter
 import de.htw.gezumi.callbacks.GameJoinUICallback
+import de.htw.gezumi.controller.HOST_SCAN_KEY
 import de.htw.gezumi.databinding.FragmentClientBinding
 import de.htw.gezumi.databinding.PopupJoinBinding
 import de.htw.gezumi.gatt.GameService
@@ -75,7 +76,7 @@ class ClientFragment : Fragment() {
                 _popupBinding.joinText.text = getString(R.string.join_declined)
                 _popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0)
 
-                _gameViewModel.bluetoothController.stopScan(_gameViewModel.hostScanCallback)
+                _gameViewModel.bluetoothController.stopScan(HOST_SCAN_KEY)
                 _gattClient.disconnect() // functionality should not be in UI callback
 
                 _availableHostDevices.clear()
@@ -92,9 +93,11 @@ class ClientFragment : Fragment() {
         }
 
         override fun gameLeft() {
-            _popupWindow.dismiss()
-            _popupBinding.joinText.text = getString(R.string.game_left)
-            _popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0)
+            Handler(Looper.getMainLooper()).post {
+                _popupWindow.dismiss()
+                _popupBinding.joinText.text = getString(R.string.game_left)
+                _popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0)
+            }
         }
 
     }
@@ -178,7 +181,7 @@ class ClientFragment : Fragment() {
 
     override fun onDestroy() {
         super.onDestroy()
-        _gameViewModel.bluetoothController.stopScan(_gameViewModel.hostScanCallback)
+        _gameViewModel.bluetoothController.stopScan(HOST_SCAN_KEY)
     }
 
     private fun updateBtDeviceListAdapter() {

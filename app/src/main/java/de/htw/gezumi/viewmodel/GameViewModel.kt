@@ -16,6 +16,8 @@ import de.htw.gezumi.calculation.Vec
 import de.htw.gezumi.callbacks.GameJoinUICallback
 import de.htw.gezumi.callbacks.PlayerUpdateCallback
 import de.htw.gezumi.controller.BluetoothController
+import de.htw.gezumi.controller.GAME_SCAN_KEY
+import de.htw.gezumi.controller.HOST_SCAN_KEY
 import de.htw.gezumi.gatt.GameService
 import de.htw.gezumi.gatt.GattClient
 import de.htw.gezumi.gatt.GattServer
@@ -148,7 +150,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         gameJoinUICallback.gameJoined()
         // waiting for game start is not necessary
         bluetoothController.startAdvertising(gameId, "gustav".toByteArray(Charsets.UTF_8))
-        bluetoothController.stopScan(hostScanCallback)
+        bluetoothController.stopScan(HOST_SCAN_KEY)
         bluetoothController.startScan(gameScanCallback, gameId)
     }
 
@@ -167,11 +169,11 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     fun onGameLeave() {
         Log.d(TAG, "on game leave")
         bluetoothController.stopAdvertising()
-        bluetoothController.stopScan(gameScanCallback)
+        bluetoothController.stopScan(GAME_SCAN_KEY)
         gameJoinUICallback.gameLeft()
         // TODO: test game leave and join new game
         // TODO: go back to join activity if game already started
-        // TODO: differentiate between game left and game terminated by host
+        // TODO: differentiate between game left and game terminated by host (terminated by host does not work)
         // Handler(Looper.getMainLooper()).post{}
         clearModel()
     }

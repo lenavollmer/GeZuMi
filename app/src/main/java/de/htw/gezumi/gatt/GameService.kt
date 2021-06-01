@@ -26,7 +26,9 @@ object GameService {
     val GAME_EVENT_UUID: UUID = UUID.fromString("4a92d33c-0000-1000-8000-00805f9b34ab")
     val CLIENT_CONFIG: UUID = UUID.fromString("4a92d33c-0000-1000-8000-00805f9b34fb")
 
-    val GAME_ID_PREFIX = Utils.decodeHex("4a92d33c")
+    val GAME_ID_PREFIX = Utils.decodeHex("4a92d31a") // any active players are not found in host scans
+    val HOST_ID_PREFIX = Utils.decodeHex("4a92d3ad") // 4th byte is ignored in game scan, so host is found
+    //val HOST_ID_PREFIX = Utils.decodeHex("a3df123c")
     // the random part of the game id
     val randomIdPart = ByteArray(RANDOM_GAME_ID_PART_LENGTH)
     lateinit var gameName: String
