@@ -129,7 +129,7 @@ class BluetoothController {
     fun stopAdvertising() {
         Log.d(TAG, "stop advertising")
         val bluetoothLeAdvertiser: BluetoothLeAdvertiser? = _bluetoothManager.adapter.bluetoothLeAdvertiser
-        bluetoothLeAdvertiser?.stopAdvertising(object : AdvertiseCallback() {}) ?: Log.d(TAG, "stop advertise failed")
+        bluetoothLeAdvertiser?.stopAdvertising(advertiseCallback) ?: Log.d(TAG, "stop advertise failed")
     }
 
     fun openGattServer(gattServerCallback: BluetoothGattServerCallback): BluetoothGattServer {
