@@ -59,6 +59,7 @@ class Game {
     fun updatePlayer(deviceId: ByteArray, position: Vec) {
         addPlayerIfNew(deviceId)
         _players.value?.find {it.deviceId contentEquals deviceId}!!.position = position
+        _players.postValue(_players.value) // TODO find better way needed to refresh the observer
     }
 
     fun clear() {
