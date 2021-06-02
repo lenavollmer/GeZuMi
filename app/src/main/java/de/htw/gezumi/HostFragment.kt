@@ -38,6 +38,8 @@ class HostFragment : Fragment() {
 
     private lateinit var _gattServer: GattServer
 
+    private var _gameStarted = false
+
     private val _connectedDevices: ArrayList<BluetoothDevice> = ArrayList() // devices that are connected, but neither approved nor declined
     //private val _approvedDevices: ArrayList<Device> = ArrayList()
     // for displayed list
@@ -182,7 +184,6 @@ class HostFragment : Fragment() {
 
     override fun onDestroy() {
         super.onDestroy()
-        stopScanAndAdvertise()
         _gameViewModel.clearModel()
         _gattServer.stopServer()
     }
@@ -191,7 +192,7 @@ class HostFragment : Fragment() {
         super.onPause()
         wasOnPause = true
         updateAdapters()
-        stopScanAndAdvertise()
+        if(!_gameStarted) stopScanAndAdvertise()
         //_gameViewModel.bluetoothController.stopAdvertising()
         //_gameViewModel.bluetoothController.stopScan(GAME_SCAN_KEY) // why just stop scan?? TODO: klären!
     }
