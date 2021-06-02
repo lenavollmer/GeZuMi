@@ -39,7 +39,7 @@ class ClientFragment : Fragment() {
     private lateinit var _popupWindow: PopupWindow
     private lateinit var _gattClient: GattClient
 
-    var _gameStarted = false;
+    private var _gameStarted = false
 
     private val _availableHostDevices: ArrayList<Device> = ArrayList()
     private val _hostDeviceListAdapter: JoinGameListAdapter = JoinGameListAdapter(_availableHostDevices) {
@@ -169,6 +169,9 @@ class ClientFragment : Fragment() {
             LinearLayout.LayoutParams.WRAP_CONTENT,
             true
         )
+        _popupWindow.isOutsideTouchable = false
+        _popupWindow.isFocusable = false
+
 
         _gattClient = GattClient(requireContext())
     }
