@@ -1,5 +1,6 @@
 package de.htw.gezumi.gatt
 
+import android.annotation.SuppressLint
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGattServer
 import android.bluetooth.BluetoothGattService
@@ -7,6 +8,7 @@ import android.bluetooth.BluetoothManager
 import android.content.Context
 import android.util.Log
 import de.htw.gezumi.HostFragment
+import de.htw.gezumi.Utils
 import de.htw.gezumi.controller.BluetoothController
 import de.htw.gezumi.model.DeviceData
 import java.nio.ByteBuffer
@@ -18,7 +20,7 @@ class GattServer(private val _context: Context, private val _bluetoothController
     var bluetoothGattServer: BluetoothGattServer? = null
     private val _bluetoothManager = _context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
 
-    private val _subscribedDevices = mutableSetOf<BluetoothDevice>()
+    val subscribedDevices = mutableSetOf<BluetoothDevice>()
 
 
     init {
@@ -30,7 +32,7 @@ class GattServer(private val _context: Context, private val _bluetoothController
         //_bluetoothController.startAdvertising(ParcelUuid(GameService.HOST_UUID))
 
         Log.d(TAG, "start gatt server")
-        bluetoothGattServer = _bluetoothController.openGattServer(GattServerCallback(_subscribedDevices, this, _connectCallback))
+        bluetoothGattServer = _bluetoothController.openGattServer(GattServerCallback( this, _connectCallback))
 
         bluetoothGattServer?.addService(gameService)
             ?: Log.d(TAG, "Unable to create GATT server")
@@ -39,11 +41,11 @@ class GattServer(private val _context: Context, private val _bluetoothController
     /**
      * Shut down the GATT server.
      */
-
     fun stopServer() {
         if (_bluetoothManager.adapter.isEnabled) {
-            _bluetoothController.stopAdvertising()
             Log.d(TAG, "stop gatt server")
+            subscribedDevices.forEach{ bluetoothGattServer?.cancelConnection(it) }
+            subscribedDevices.clear()
             bluetoothGattServer?.close()
         }
     }
@@ -57,23 +59,25 @@ class GattServer(private val _context: Context, private val _bluetoothController
 
     fun notifyGameStart() {
         Log.d(TAG, "notify game start")
-        if (_subscribedDevices.isEmpty()) {
+        if (subscribedDevices.isEmpty()) {
             Log.i(TAG, "No subscribers registered")
             return
         }
 
         val gameStartCharacteristic = bluetoothGattServer?.getService(GameService.HOST_UUID)?.getCharacteristic(GameService.GAME_EVENT_UUID)
         gameStartCharacteristic?.value = ByteBuffer.allocate(4).putInt(GameService.GAME_START_EVENT).array()
-        for (device in _subscribedDevices) {
+        for (device in subscribedDevices) {
             bluetoothGattServer?.notifyCharacteristicChanged(device, gameStartCharacteristic, false)
         }
     }
 
+    @kotlin.ExperimentalUnsignedTypes
+    @SuppressLint("DefaultLocale")
     fun notifyHostUpdate(deviceData: DeviceData) {
-        Log.d(TAG, "notify host update")
+        Log.d(TAG, "notify host update sender: ${Utils.toHexString(deviceData.senderId)} distance to: ${Utils.toHexString(deviceData.deviceId)}")
         val hostUpdateCharacteristic = bluetoothGattServer?.getService(GameService.HOST_UUID)?.getCharacteristic(GameService.HOST_UPDATE_UUID)
         hostUpdateCharacteristic?.value = deviceData.toByteArray()
-        for (device in _subscribedDevices) {
+        for (device in subscribedDevices) {
             bluetoothGattServer?.notifyCharacteristicChanged(device, hostUpdateCharacteristic, false)
         }
     }

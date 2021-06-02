@@ -21,6 +21,7 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import de.htw.gezumi.adapter.ApprovedDevicesAdapter
 import de.htw.gezumi.adapter.ConnectedPlayerDeviceAdapter
+import de.htw.gezumi.controller.GAME_SCAN_KEY
 import de.htw.gezumi.databinding.FragmentHostBinding
 import de.htw.gezumi.gatt.GameService
 import de.htw.gezumi.gatt.GattServer
@@ -37,40 +38,55 @@ class HostFragment : Fragment() {
 
     private lateinit var _gattServer: GattServer
 
+    private var _gameStarted = false
+
     private val _connectedDevices: ArrayList<BluetoothDevice> = ArrayList() // devices that are connected, but neither approved nor declined
-    private val _approvedDevices: ArrayList<BluetoothDevice> = ArrayList()
-    private val _playerListAdapter: ApprovedDevicesAdapter = ApprovedDevicesAdapter(_approvedDevices)
+    //private val _approvedDevices: ArrayList<Device> = ArrayList()
+    // for displayed list
+    private lateinit var _playerListAdapter: ApprovedDevicesAdapter
+    // for bottom sheet
     private val _connectedListAdapter = ConnectedPlayerDeviceAdapter(_connectedDevices) { position, status ->
         if (status == ConnectedPlayerDeviceAdapter.STATUS.APPROVED) {
-            _approvedDevices.add(_connectedDevices[position])
+            //_approvedDevices.add(_connectedDevices[position])
             _gattServer.notifyJoinApproved(_connectedDevices[position], true)
-            _connectedDevices.removeAt(position)
         }
         else {
             _gattServer.notifyJoinApproved(_connectedDevices[position], false)
-            _connectedDevices.removeAt(position)
         }
+        _connectedDevices.removeAt(position)
+        if (_connectedDevices.size == 0)
+            _bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
         updateAdapters()
     }
 
     interface GattConnectCallback {
-        fun onGattConnect(device: BluetoothDevice)
-        fun onGattDisconnect(device: BluetoothDevice)
+        fun onGattConnect(bluetoothDevice: BluetoothDevice)
+        fun onGattDisconnect(bluetoothDevice: BluetoothDevice)
     }
     // TODO refactor GattConnectCallback
     private val connectCallback = object : GattConnectCallback {
-        override fun onGattConnect(device: BluetoothDevice) {
-            _connectedDevices.add(device)
+        override fun onGattConnect(bluetoothDevice: BluetoothDevice) {
+            _connectedDevices.add(bluetoothDevice)
             Handler(Looper.getMainLooper()).post{
                 _bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
                 updateAdapters()
             }
         }
 
-        override fun onGattDisconnect(device: BluetoothDevice) {
-            _connectedDevices.remove(device)
-            _approvedDevices.remove(device)
-            Handler(Looper.getMainLooper()).post{updateAdapters()}
+        override fun onGattDisconnect(bluetoothDevice: BluetoothDevice) {
+            _connectedDevices.remove(bluetoothDevice) // is only present if currently neither approved nor declined
+            _gattServer.subscribedDevices.remove(bluetoothDevice)
+
+            // remove device TODO: remove player
+            val device = GameViewModel.instance.devices.find{it.bluetoothDevice == bluetoothDevice}
+            Log.d(TAG, "REMOVEEEEEEEEEEEEEEE DEVICE: $device")
+            GameViewModel.instance.devices.remove(device)
+            // update UI
+            Handler(Looper.getMainLooper()).post{
+                if (_connectedDevices.size == 0)
+                    _bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+                updateAdapters()
+            }
         }
     }
 
@@ -80,12 +96,18 @@ class HostFragment : Fragment() {
         arguments?.let {
 
         }
+
+        _playerListAdapter = ApprovedDevicesAdapter(_gameViewModel.devices)
+        _gameViewModel.setPlayerListAdapter(_playerListAdapter)
+
+
         val gameService = GameService.createHostService()
 
-        _gameViewModel.gameId = GameService.GAME_ID_PREFIX + GameService.randomIdPart
+        _gameViewModel.gameId = GameService.HOST_ID_PREFIX + GameService.randomIdPart
 
         Log.d(TAG, "start gatt server and game service")
         _gattServer = GattServer(requireContext(), _gameViewModel.bluetoothController, connectCallback)
+        _gameViewModel.gattServer = _gattServer
         _gattServer.startServer(gameService)
     }
 
@@ -94,6 +116,7 @@ class HostFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = DataBindingUtil.inflate(inflater, R.layout.fragment_host, container, false)
+        _playerListAdapter.lifecycleOwner = viewLifecycleOwner
         return _binding.root
     }
 
@@ -119,6 +142,7 @@ class HostFragment : Fragment() {
 
         _binding.startGame.setOnClickListener {
             _gattServer.notifyGameStart()
+            _gameStarted = true
             findNavController().navigate(R.id.action_HostFragment_to_Game)
         }
 
@@ -143,31 +167,45 @@ class HostFragment : Fragment() {
     private fun onGameNameChanged(gameName: String) {
         require(gameName.length <= 8) {"Game name too long"}
         GameService.gameName = gameName // must be in game service so gattServerCallback can access it
-        _gameViewModel.gameId = GameService.GAME_ID_PREFIX + GameService.randomIdPart
+        // restart advertisement with new name
+        scanAndAdvertise()
+    }
 
-        _gameViewModel.bluetoothController.stopAdvertising()
-        _gameViewModel.bluetoothController.stopScan(object: ScanCallback() {})
-
-        _gameViewModel.bluetoothController.startAdvertising(_gameViewModel.gameId, gameName.toByteArray(Charsets.UTF_8))
-        Log.d(TAG, "start game scan")
+    @kotlin.ExperimentalUnsignedTypes
+    private fun scanAndAdvertise() {
+        stopScanAndAdvertise()
+        _gameViewModel.bluetoothController.startAdvertising(_gameViewModel.gameId, GameService.gameName.toByteArray(Charsets.UTF_8))
         _gameViewModel.bluetoothController.startScan(_gameViewModel.gameScanCallback, _gameViewModel.gameId)
+    }
+
+    private fun stopScanAndAdvertise() {
+        _gameViewModel.bluetoothController.stopAdvertising()
+        _gameViewModel.bluetoothController.stopScan(GAME_SCAN_KEY)
     }
 
     override fun onDestroy() {
         super.onDestroy()
+        _gameViewModel.clearModel()
         _gattServer.stopServer()
     }
 
     override fun onPause() {
         super.onPause()
+        wasOnPause = true
         updateAdapters()
-        _gameViewModel.bluetoothController.stopScan(object: ScanCallback() {})
+        if(!_gameStarted) stopScanAndAdvertise()
+        //_gameViewModel.bluetoothController.stopAdvertising()
+        //_gameViewModel.bluetoothController.stopScan(GAME_SCAN_KEY) // why just stop scan?? TODO: klären!
     }
-
+    var wasOnPause = false
     @kotlin.ExperimentalUnsignedTypes
     override fun onResume() {
         super.onResume()
-        _gameViewModel.bluetoothController.startAdvertising(_gameViewModel.gameId, GameService.gameName.toByteArray(Charsets.UTF_8))
+        if (wasOnPause) {
+            wasOnPause = false
+            scanAndAdvertise()
+            // _gameViewModel.bluetoothController.startAdvertising(_gameViewModel.gameId, GameService.gameName.toByteArray(Charsets.UTF_8)) why just restart advertisement??
+        }
     }
 
     private fun updateAdapters() {

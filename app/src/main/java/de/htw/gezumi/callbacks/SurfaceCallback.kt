@@ -12,6 +12,7 @@ import de.htw.gezumi.calculation.Geometry
 import de.htw.gezumi.calculation.Vec
 import de.htw.gezumi.canvas.Paints
 import de.htw.gezumi.canvas.getColorFromAttr
+import de.htw.gezumi.model.Player
 import de.htw.gezumi.viewmodel.GameViewModel
 
 
@@ -43,25 +44,25 @@ class SurfaceCallback(
         }
 
         val animationObserver = Observer<List<Point>> { animationLocation ->
-            if(!_gameViewModel.game.running) tryDrawing(holder, animationLocation, true)
+            if(!_gameViewModel.game.running) tryDrawing(holder, animationLocation.map { Vec(it) }, true)
         }
 
-        val positionObserver = Observer<List<Point>> { newLocations ->
-            if(_gameViewModel.game.running) tryDrawing(holder, newLocations, false)
+        val playerObserver = Observer<List<Player>> { players ->
+            if(_gameViewModel.game.running)tryDrawing(holder, players.filter{it.position != null}.map{it.position!!}, false)
         }
 
 
         // Observe the LiveData, passing in this activity as the LifecycleOwner and the observer.
         _gameViewModel.game.shapeMatched.observe(_viewLifecycleOwner, matchedObserver)
         _gameViewModel.game.targetShapeAnimation.observe(_viewLifecycleOwner, animationObserver)
-        _gameViewModel.game.playerLocations.observe(_viewLifecycleOwner, positionObserver)
+        _gameViewModel.game.players.observe(_viewLifecycleOwner, playerObserver)
     }
 
     override fun surfaceDestroyed(holder: SurfaceHolder) {
         // and here you need to stop it
     }
 
-    private fun tryDrawing(holder: SurfaceHolder, locations: List<Point>, gameWon: Boolean) {
+    private fun tryDrawing(holder: SurfaceHolder, locations: List<Vec>, gameWon: Boolean) {
         Log.i(TAG, "Trying to draw... ${holder.isCreating}")
 
         val canvas = holder.lockCanvas()
@@ -75,16 +76,18 @@ class SurfaceCallback(
     }
 
 
-    private fun drawMyStuff(canvas: Canvas, playerLocations: List<Point>) {
-        val playerCount = _gameViewModel.game.players
+    private fun drawMyStuff(canvas: Canvas, playerLocations: List<Vec>) {
+        Log.i(TAG, "playerLocations: $playerLocations")
+        if (playerLocations.size < 3) return
+        val playerCount = _gameViewModel.game.numberOfPlayers
 
-        // clear screen
+        // clear screen.
         val backgroundColor = _context.getColorFromAttr(android.R.attr.windowBackground)
         canvas.drawColor(backgroundColor)
 
         // translate player location to target shape
-        var targetShape = _gameViewModel.game.targetShape.map { Vec(it) }
-        var players = playerLocations.map { Vec(it) }
+        var targetShape = _gameViewModel.game.targetShape
+        var players = playerLocations
         players = players.map { it + targetShape[0] - players[0] }
         val base = targetShape[0]
 
@@ -157,7 +160,7 @@ class SurfaceCallback(
 
     }
 
-    private fun drawWinningShape(canvas: Canvas, currentTargetShape: List<Point>) {
+    private fun drawWinningShape(canvas: Canvas, currentTargetShape: List<Vec>) {
         Log.d(TAG, "In drawWinningShape")
 
         // clear screen
@@ -165,11 +168,10 @@ class SurfaceCallback(
         canvas.drawColor(backgroundColor)
 
         // translate player location to target shape
-        var targetShape = currentTargetShape.map { Vec(it) }
         val allAnimationPoints = _gameViewModel.game.animationPointsArray.flatMap { list -> list.map {point -> Vec(point) } }
 
         // center players and target shape independently
-        targetShape = Geometry.center(targetShape)
+        val targetShape = Geometry.center(currentTargetShape)
         val animationPoints = Geometry.center(allAnimationPoints)
 
         // scale all points to fit canvas
@@ -183,7 +185,7 @@ class SurfaceCallback(
         // draw and animate target shape
         drawFigure(
             canvas,
-            allPoints.subList(0, _gameViewModel.game.players).map { it.toPoint() },
+            allPoints.subList(0, _gameViewModel.game.numberOfPlayers).map { it.toPoint() },
             _paints.lineStrokeTargetShapeSuccess,
             _paints.circleStrokeTargetShapeSuccess,
             _paints.fillPaintTargetShapeSuccess,

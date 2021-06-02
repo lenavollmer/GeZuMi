@@ -14,6 +14,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import de.htw.gezumi.calculation.Geometry
+import de.htw.gezumi.calculation.Vec
 import de.htw.gezumi.callbacks.SurfaceCallback
 import de.htw.gezumi.databinding.FragmentGameBinding
 import de.htw.gezumi.viewmodel.GameViewModel
@@ -42,11 +43,24 @@ class GameFragment : Fragment() {
     //private lateinit var _hostDevice: BluetoothDevice
 
 
+    // TODO remove generating random player location
     private val changePlayerLocations = object : Runnable {
+        val player1 = byteArrayOf()
+        val player2 = byteArrayOf()
+        val player3 = byteArrayOf()
+
         override fun run() {
-            if(_gameViewModel.game.time < 5)
-                _gameViewModel.game.setPlayerLocations(Geometry.generateGeometricObject(_gameViewModel.game.players))
-            else _gameViewModel.game.setPlayerLocations(_gameViewModel.game.targetShape)
+            if(_gameViewModel.game.time < 5) {
+                val currentObj = Geometry.generateGeometricObject(_gameViewModel.game.numberOfPlayers)
+                _gameViewModel.game.updatePlayer(player1, Vec(currentObj[0]))
+                _gameViewModel.game.updatePlayer(player2, Vec(currentObj[1]))
+                _gameViewModel.game.updatePlayer(player3, Vec(currentObj[2]))
+            }
+            else {
+                _gameViewModel.game.updatePlayer(player1, _gameViewModel.game.targetShape[0])
+                _gameViewModel.game.updatePlayer(player2, _gameViewModel.game.targetShape[1])
+                _gameViewModel.game.updatePlayer(player3, _gameViewModel.game.targetShape[2])
+            }
             mainHandler.postDelayed(this, 2000)
         }
     }

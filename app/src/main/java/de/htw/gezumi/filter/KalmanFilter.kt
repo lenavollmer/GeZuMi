@@ -6,32 +6,32 @@ package de.htw.gezumi.filter
  */
 class KalmanFilter: Filter {
     private var processNoise //Process noise
-            : Double
+            : Float
     private var measurementNoise //Measurement noise
-            : Double
+            : Float
     private var estimatedRSSI //calculated rssi
-            = 0.0
+            = 0f
     private var errorCovarianceRSSI //calculated covariance
-            = 0.0
+            = 0f
     private var isInitialized = false //initialization flag
 
     constructor() {
-        processNoise = 0.125
-        measurementNoise = 0.8
+        processNoise = 0.125f
+        measurementNoise = 0.8f
     }
 
-    constructor(processNoise: Double, measurementNoise: Double) {
+    constructor(processNoise: Float, measurementNoise: Float) {
         this.processNoise = processNoise
         this.measurementNoise = measurementNoise
     }
 
-    override fun applyFilter(rssi: Double): Double {
-        val priorRSSI: Double
-        val kalmanGain: Double
-        val priorErrorCovarianceRSSI: Double
+    override fun applyFilter(rssi: Float): Float {
+        val priorRSSI: Float
+        val kalmanGain: Float
+        val priorErrorCovarianceRSSI: Float
         if (!isInitialized) {
             priorRSSI = rssi
-            priorErrorCovarianceRSSI = 1.0
+            priorErrorCovarianceRSSI = 1f
             isInitialized = true
         } else {
             priorRSSI = estimatedRSSI
@@ -39,7 +39,7 @@ class KalmanFilter: Filter {
         }
         kalmanGain = priorErrorCovarianceRSSI / (priorErrorCovarianceRSSI + measurementNoise)
         estimatedRSSI = priorRSSI + kalmanGain * (rssi - priorRSSI)
-        errorCovarianceRSSI = (1 - kalmanGain) * priorErrorCovarianceRSSI
+        errorCovarianceRSSI = (1f - kalmanGain) * priorErrorCovarianceRSSI
         return estimatedRSSI
     }
 }
