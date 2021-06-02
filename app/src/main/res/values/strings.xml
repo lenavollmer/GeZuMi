@@ -33,6 +33,6 @@
     <string name="permission_denied">You can not use this app without the necessary permissions. Please click the
         button below to grant the necessary permissions.
     </string>
-    <string name="game_left">You left the game</string>
+    <!-- <string name="game_left">You left the game</string> -->
 
 </resources>
