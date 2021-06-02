@@ -4,23 +4,22 @@ import android.bluetooth.*
 import android.util.Log
 import de.htw.gezumi.HostFragment
 import de.htw.gezumi.Utils
+import de.htw.gezumi.model.Device
 import de.htw.gezumi.model.DeviceData
 import de.htw.gezumi.viewmodel.GameViewModel
 import java.util.*
 
 private const val TAG = "GattServerCallback"
 
-class GattServerCallback(private val _subscribedDevices: MutableSet<BluetoothDevice>, private val _gattServer: GattServer, private val _connectCallback : HostFragment.GattConnectCallback) : BluetoothGattServerCallback() {
+class GattServerCallback(private val _gattServer: GattServer, private val _connectCallback : HostFragment.GattConnectCallback) : BluetoothGattServerCallback() {
 
-    override fun onConnectionStateChange(device: BluetoothDevice, status: Int, newState: Int) {
+    override fun onConnectionStateChange(bluetoothDevice: BluetoothDevice, status: Int, newState: Int) {
         if (newState == BluetoothProfile.STATE_CONNECTED) {
-            Log.d(TAG, "bluetoothDevice CONNECTED: $device")
-            _connectCallback.onGattConnect(device)
+            Log.d(TAG, "bluetoothDevice CONNECTED: $bluetoothDevice")
+            _connectCallback.onGattConnect(bluetoothDevice)
         } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-            Log.d(TAG, "bluetoothDevice DISCONNECTED: $device")
-            //Remove device from any active subscriptions
-            _connectCallback.onGattDisconnect(device)
-            _subscribedDevices.remove(device)
+            Log.d(TAG, "bluetoothDevice DISCONNECTED: $bluetoothDevice")
+            _connectCallback.onGattDisconnect(bluetoothDevice)
         }
     }
 
@@ -71,6 +70,20 @@ class GattServerCallback(private val _subscribedDevices: MutableSet<BluetoothDev
                 Log.d(TAG, "received player update from: ${Utils.toHexString(deviceData.senderId)} device: ${Utils.toHexString(deviceData.deviceId)} values=${deviceData.values.contentToString()}, size=${value.size}")
                 GameViewModel.instance.playerUpdateCallback.onPlayerUpdate(deviceData)
             }
+            GameService.PLAYER_IDENTIFICATION_UUID -> {
+                // set active bluetooth device of device
+                val deviceId = value!!
+                Log.d(TAG, "received device identification: ${Utils.toHexString(deviceId)} bluetooth address: ${device!!.address}")
+                val mDevice = Utils.findDevice(GameViewModel.instance.devices, deviceId)
+                // if not known yet, add new device
+                if (mDevice == null)
+                    GameViewModel.instance.addDevice(Device(deviceId, 0, device))
+                else // otherwise set bluetooth device to the one, that is connected over the gatt
+                    mDevice.bluetoothDevice = device
+            }
+            GameService.PLAYER_NAME_UUID -> {
+                // TODO DELETE
+            }
         }
     }
 
@@ -84,10 +97,10 @@ class GattServerCallback(private val _subscribedDevices: MutableSet<BluetoothDev
             GameService.CLIENT_CONFIG -> {
                 if (Arrays.equals(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE, value)) {
                     Log.d(TAG, "subscribe device to notifications: $device")
-                    _subscribedDevices.add(device)
+                        _gattServer.subscribedDevices.add(device)
                 } else if (Arrays.equals(BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE, value)) {
                     Log.d(TAG, "unsubscribe device from notifications: $device")
-                    _subscribedDevices.remove(device)
+                    _gattServer.subscribedDevices.remove(device)
                 }
                 if (responseNeeded) {
                     _gattServer.bluetoothGattServer?.sendResponse(

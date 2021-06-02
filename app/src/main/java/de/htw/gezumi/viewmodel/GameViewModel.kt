@@ -2,18 +2,22 @@ package de.htw.gezumi.viewmodel
 
 import android.annotation.SuppressLint
 import android.app.Application
-import android.bluetooth.BluetoothDevice
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import de.htw.gezumi.Utils
+import de.htw.gezumi.adapter.ApprovedDevicesAdapter
 import de.htw.gezumi.calculation.Conversions
 import de.htw.gezumi.calculation.Vec
 import de.htw.gezumi.callbacks.GameJoinUICallback
 import de.htw.gezumi.callbacks.PlayerUpdateCallback
 import de.htw.gezumi.controller.BluetoothController
+import de.htw.gezumi.controller.GAME_SCAN_KEY
+import de.htw.gezumi.controller.HOST_SCAN_KEY
 import de.htw.gezumi.gatt.GameService
 import de.htw.gezumi.gatt.GattClient
 import de.htw.gezumi.gatt.GattServer
@@ -52,8 +56,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     private lateinit var _distances: Array<FloatArray>
     private var _positions: List<Vec> = listOf()
 
-    var host: Device? =
-        null // is null for host themselves // is currently not the same object as host in _devices (and has default txpower)
+    var host: Device? = null // is null for host themselves // is currently not the same object as host in _devices (and has default txpower)
 
     val game = Game()
 
@@ -72,7 +75,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             when (callbackType) {
                 ScanSettings.CALLBACK_TYPE_ALL_MATCHES -> {
                     val deviceId = GameService.extractDeviceId(result)
-                    onGameScanResult(deviceId, result.rssi, result.txPower, result.device)
+                    val playerName = GameService.extractGameName(result)
+                    onGameScanResult(deviceId, playerName, result.rssi, result.txPower)
                 }
                 ScanSettings.CALLBACK_TYPE_MATCH_LOST -> {
                     Log.d(TAG, "lost " + result.device.name)
@@ -135,6 +139,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         instance = this
         // generate random id
         Random().nextBytes(myDeviceId)
+        bluetoothController.setContext(application.applicationContext)
         bluetoothController.myDeviceId = myDeviceId
     }
 
@@ -144,10 +149,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         Log.d(TAG, "on game join")
         gameJoinUICallback.gameJoined()
         // waiting for game start is not necessary
-        Log.d(TAG, "start advertising on game id: $gameId")
-        bluetoothController.startAdvertising(gameId)
-        Log.d(TAG, "start scanning for players on game id: $gameId")
-        bluetoothController.stopScan(hostScanCallback)
+        bluetoothController.startAdvertising(gameId, "gustav".toByteArray(Charsets.UTF_8))
+        bluetoothController.stopScan(HOST_SCAN_KEY)
         bluetoothController.startScan(gameScanCallback, gameId)
     }
 
@@ -165,23 +168,42 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     @SuppressLint("DefaultLocale")
     fun onGameLeave() {
         Log.d(TAG, "on game leave")
-        // TODO host leaves game
         bluetoothController.stopAdvertising()
-        bluetoothController.stopScan(gameScanCallback)
+        bluetoothController.stopScan(GAME_SCAN_KEY)
+        gameJoinUICallback.gameLeft()
+        // TODO: test game leave and join new game
+        // TODO: go back to join activity if game already started
+        // TODO: differentiate between game left and game terminated by host (terminated by host does not work)
         // Handler(Looper.getMainLooper()).post{}
+        clearModel()
+    }
+
+    fun clearModel() {
+        // TODO lifecycle: add stuff here
+        devices.clear()
+        game.clear()
     }
 
     fun isJoined(): Boolean = gameId.isNotEmpty()
 
     private fun isHost(): Boolean = host == null
 
-    init {
-        bluetoothController.setContext(application.applicationContext)
+    private var _playerListAdapter: ApprovedDevicesAdapter? = null
+
+    fun setPlayerListAdapter(playerListAdapter: ApprovedDevicesAdapter) {
+        _playerListAdapter = playerListAdapter
     }
 
-    private fun addDevice(device: Device) {
+    @kotlin.ExperimentalUnsignedTypes
+    fun addDevice(device: Device) {
         devices.add(device)
+        // also add player and set name to address until it gets updated
+        game.addPlayerIfNew(device.deviceId)
+        game.getPlayer(device.deviceId)!!.setName(Utils.toHexString(device.deviceId))
+        // extend distance matrix for new player
         _distances = Array(devices.size + 1) { FloatArray(devices.size + 1) } // +1 for self
+        // refresh host screen, if is host
+        Handler(Looper.getMainLooper()).post{ _playerListAdapter?.notifyDataSetChanged() } // TODO: use intent here
     }
 
     private fun getLastRssiMillis(device: Device): Long {
@@ -194,15 +216,23 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
      */
     @kotlin.ExperimentalUnsignedTypes
     @SuppressLint("DefaultLocale")
-    fun onGameScanResult(deviceAddress: ByteArray, rssi: Int, txPower: Int, bluetoothDevice: BluetoothDevice) {
-        // add device to game if necessary
-        if (!Utils.contains(devices, deviceAddress))
-            addDevice(Device(deviceAddress, txPower, bluetoothDevice))
+    fun onGameScanResult(deviceId: ByteArray, playerName: String, rssi: Int, txPower: Int) {
+        var device = Utils.findDevice(devices, deviceId)
+        // add device if not present yet
+        if (device == null) {
+            addDevice(Device(deviceId, txPower, null))
+            device = Utils.findDevice(devices, deviceId)!!
+        }
+        else if (device.txPower == 0) // if devices was added at identification, then fill txpower
+            device.txPower = txPower
 
-        val device = Utils.findDevice(devices, deviceAddress)!!
+        // update player name
+        game.getPlayer(deviceId)!!.setName(playerName)
+
+        // store rssi and send player update
         val millisPassed = getLastRssiMillis(device)
         if (millisPassed > RSSI_READ_INTERVAL) {
-            Log.d(TAG, "game scan: read rssi of ${Utils.toHexString(deviceAddress)}, last read: $millisPassed")
+            Log.d(TAG, "game scan: read rssi of ${Utils.toHexString(deviceId)}, last read: $millisPassed")
             device.addRssi(rssi)
             val deviceData = DeviceData.fromDevice(device, myDeviceId)
             if (!isHost())

@@ -1,6 +1,5 @@
 package de.htw.gezumi.model
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import de.htw.gezumi.calculation.Vec
@@ -45,12 +44,25 @@ class Game {
     }
 
     /**
+     * Add player if not exists.
+     */
+    fun addPlayerIfNew(deviceId: ByteArray) {
+        if (!_players.value?.any {it.deviceId contentEquals deviceId}!!)
+            (_players.value as MutableList<Player>).add(Player(deviceId))
+    }
+
+    fun getPlayer(deviceId: ByteArray): Player? = _players.value?.find{ it.deviceId contentEquals deviceId }
+
+    /**
      * Add player if not exists. Update player position.
      */
     fun updatePlayer(deviceId: ByteArray, position: Vec) {
-        if (!_players.value?.any {it.deviceId contentEquals deviceId}!!)
-            (_players.value as MutableList<Player>).add(Player(deviceId))
-        Log.d(TAG, " RARHSIAORS position: $position")
+        addPlayerIfNew(deviceId)
         _players.value?.find {it.deviceId contentEquals deviceId}!!.position = position
+    }
+
+    fun clear() {
+        // add more stuff here
+        _players.value?.clear()
     }
 }

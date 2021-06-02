@@ -12,7 +12,6 @@ class Player(val deviceId: ByteArray) {
     var position: Vec? = null
 
     fun setName(name: String) {
-        // postValue makes it possible to post from other threads
         _name.postValue(name)
     }
 }
