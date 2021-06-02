@@ -1,7 +1,6 @@
 package de.htw.gezumi
 
 import android.annotation.SuppressLint
-import android.graphics.Point
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -42,10 +41,11 @@ class GameFragment : Fragment() {
     //private lateinit var _hostDevice: BluetoothDevice
 
 
+    // TODO remove generating random player location
     private val changePlayerLocations = object : Runnable {
         override fun run() {
-            _gameViewModel.game.setPlayerLocations(Geometry.generateGeometricObject(_gameViewModel.game.players))
-            Log.d(TAG, "locations: ${_gameViewModel.game.playerLocations}")
+            //_gameViewModel.game.setPlayerLocations(Geometry.generateGeometricObject(_gameViewModel.game.numberOfPlayers))
+            //Log.d(TAG, "locations: ${_gameViewModel.game.players}")
             mainHandler.postDelayed(this, 2000)
         }
     }

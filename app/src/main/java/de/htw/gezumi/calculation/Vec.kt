@@ -3,9 +3,9 @@ package de.htw.gezumi.calculation
 import android.graphics.Point
 import kotlin.math.sqrt
 
-data class Vec(val x: Double = 0.0, val y: Double = 0.0) {
+data class Vec(val x: Float = 0f, val y: Float = 0f) {
 
-    constructor(x: Int, y: Int) : this(x.toDouble(), y.toDouble())
+    constructor(x: Int, y: Int) : this(x.toFloat(), y.toFloat())
 
     constructor(point: Point) : this(point.x, point.y)
 
@@ -17,9 +17,9 @@ data class Vec(val x: Double = 0.0, val y: Double = 0.0) {
 
     operator fun unaryMinus() = Vec(-x, -y)
 
-    operator fun plus(v: Double) = Vec(x + v, y + v)
+    operator fun plus(v: Float) = Vec(x + v, y + v)
     operator fun plus(v: Vec) = Vec(x + v.x, y + v.y)
-    operator fun minus(v: Double) = Vec(x - v, y - v)
+    operator fun minus(v: Float) = Vec(x - v, y - v)
     operator fun minus(v: Vec) = Vec(x - v.x, y - v.y)
-    operator fun times(v: Double) = Vec(x * v, y * v)
+    operator fun times(v: Float) = Vec(x * v, y * v)
 }

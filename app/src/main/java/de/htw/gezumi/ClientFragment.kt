@@ -43,7 +43,7 @@ class ClientFragment : Fragment() {
 
         _gameViewModel.host = _availableHostDevices[it]
 
-        val gattClientCallback = GattClientCallback(_gameViewModel)
+        val gattClientCallback = GattClientCallback()
         _gattClient.connect(_availableHostDevices[it].bluetoothDevice, gattClientCallback)
 
         _gameViewModel.gameJoinUICallback = gameJoinUICallback

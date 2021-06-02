@@ -19,14 +19,14 @@ class Geometry {
             val w = width - margin * 2
             val maxX = newPoints.map { it.x }.maxOrNull() ?: 0
             val maxY = newPoints.map { it.y }.maxOrNull() ?: 0
-            val yScaleFactor = h / maxY.toDouble()
-            val xScaleFactor = w / maxX.toDouble()
+            val yScaleFactor = h / maxY.toFloat()
+            val xScaleFactor = w / maxX.toFloat()
 
             val scaleFactor = if (xScaleFactor < yScaleFactor) xScaleFactor else yScaleFactor
             newPoints = newPoints.map { Vec((it.x * scaleFactor), (it.y * scaleFactor)) }
 
             // center everything
-            return center(newPoints, h, w).map { Vec(it.x + margin.toDouble(), it.y + margin.toDouble()) }
+            return center(newPoints, h, w).map { Vec(it.x + margin.toFloat(), it.y + margin.toFloat()) }
         }
 
         /**
@@ -35,7 +35,7 @@ class Geometry {
         private fun moveTopLeft(points: List<Vec>): List<Vec> {
             val minX = points.map { it.x }.minOrNull() ?: 0
             val minY = points.map { it.y }.minOrNull() ?: 0
-            return points.map { Vec(it.x - minX.toDouble(), it.y - minY.toDouble()) }
+            return points.map { Vec(it.x - minX.toFloat(), it.y - minY.toFloat()) }
         }
 
         /**
@@ -47,8 +47,8 @@ class Geometry {
             val maxY = translatedPoints.map { it.y }.maxOrNull() ?: 0
             return translatedPoints.map {
                 Vec(
-                    it.x + (width - maxX.toDouble()) / 2,
-                    it.y + (height - maxY.toDouble()) / 2
+                    it.x + (width - maxX.toFloat()) / 2,
+                    it.y + (height - maxY.toFloat()) / 2
                 )
             }
         }
@@ -57,7 +57,7 @@ class Geometry {
          * Calculate the angle between two vectors ([u],[v]).
          * The angle is positive if it is the inner angle and negative if it is the outer angle.
          */
-        fun getAngleSigned(u: Vec, v: Vec): Double {
+        fun getAngleSigned(u: Vec, v: Vec): Float {
             val dot = u.dot(v)
             val det = u.x * v.y - u.y * v.x
             return atan2(det, dot)
@@ -75,7 +75,7 @@ class Geometry {
         /**
          * Rotates the [point] around the point [o] for the given [angle].
          */
-        private fun rotatePoint(point: Vec, o: Vec, angle: Double): Vec {
+        private fun rotatePoint(point: Vec, o: Vec, angle: Float): Vec {
             val s = sin(angle)
             val c = cos(angle)
             // translate point back to origin:
@@ -89,7 +89,7 @@ class Geometry {
         /**
          * Rotates the [points] around the point [o] for the given [angle].
          */
-        fun rotatePoints(points: List<Vec>, o: Vec, angle: Double): List<Vec> =
+        fun rotatePoints(points: List<Vec>, o: Vec, angle: Float): List<Vec> =
             points.map { rotatePoint(it, o, angle) }
 
 

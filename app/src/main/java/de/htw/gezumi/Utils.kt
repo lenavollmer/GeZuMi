@@ -23,12 +23,16 @@ class Utils {
         fun contains(list: List<Device>, device: Device): Boolean {
             return contains(list, device.deviceId)
         }
-        fun contains(list: List<Device>, address: ByteArray): Boolean {
-            return list.any { d -> d.deviceId.contentEquals(address) }
+        fun contains(list: List<Device>, id: ByteArray): Boolean {
+            return list.any { d -> d.deviceId.contentEquals(id) }
         }
 
-        fun findDevice(list: List<Device>, address: ByteArray): Device? {
-            return list.find { d -> d.deviceId.contentEquals(address) }
+        fun findDevice(list: List<Device>, id: ByteArray): Device? {
+            return list.find { d -> d.deviceId.contentEquals(id) }
+        }
+
+        fun findDeviceIndex(list: List<Device>, id: ByteArray): Int {
+            return list.indexOfFirst { d -> d.deviceId.contentEquals(id) }
         }
     }
 }
