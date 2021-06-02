@@ -231,6 +231,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
         // store rssi and send player update
         val millisPassed = getLastRssiMillis(device)
+
         if (millisPassed > RSSI_READ_INTERVAL) {
             Log.d(TAG, "game scan: read rssi of ${Utils.toHexString(deviceId)}, last read: $millisPassed")
             device.addRssi(rssi)

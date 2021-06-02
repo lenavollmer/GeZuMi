@@ -38,6 +38,8 @@ class HostFragment : Fragment() {
 
     private lateinit var _gattServer: GattServer
 
+    private var _gameStarted = false
+
     private val _connectedDevices: ArrayList<BluetoothDevice> = ArrayList() // devices that are connected, but neither approved nor declined
     //private val _approvedDevices: ArrayList<Device> = ArrayList()
     // for displayed list
@@ -74,6 +76,7 @@ class HostFragment : Fragment() {
         override fun onGattDisconnect(bluetoothDevice: BluetoothDevice) {
             _connectedDevices.remove(bluetoothDevice) // is only present if currently neither approved nor declined
             _gattServer.subscribedDevices.remove(bluetoothDevice)
+
             // remove device TODO: remove player
             val device = GameViewModel.instance.devices.find{it.bluetoothDevice == bluetoothDevice}
             Log.d(TAG, "REMOVEEEEEEEEEEEEEEE DEVICE: $device")
@@ -139,6 +142,7 @@ class HostFragment : Fragment() {
 
         _binding.startGame.setOnClickListener {
             _gattServer.notifyGameStart()
+            _gameStarted = true
             findNavController().navigate(R.id.action_HostFragment_to_Game)
         }
 
@@ -181,7 +185,6 @@ class HostFragment : Fragment() {
 
     override fun onDestroy() {
         super.onDestroy()
-        stopScanAndAdvertise()
         _gameViewModel.clearModel()
         _gattServer.stopServer()
     }
@@ -190,7 +193,7 @@ class HostFragment : Fragment() {
         super.onPause()
         wasOnPause = true
         updateAdapters()
-        stopScanAndAdvertise()
+        if(!_gameStarted) stopScanAndAdvertise()
         //_gameViewModel.bluetoothController.stopAdvertising()
         //_gameViewModel.bluetoothController.stopScan(GAME_SCAN_KEY) // why just stop scan?? TODO: klären!
     }

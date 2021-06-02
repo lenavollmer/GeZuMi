@@ -32,12 +32,12 @@ class PermissionFragment : Fragment() {
     private val requestMultiplePermissions =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
             if (permissions.all { it.value == true }) {
+                BluetoothAdapter.getDefaultAdapter().enable()
                 findNavController().navigate(R.id.action_MainFragment_to_MainMenuFragment)
             } else {
                 _binding.mainText.text = getString(R.string.permission_denied)
                 _binding.requestPermission.setOnClickListener {
                     requireContext().openAppSystemSettings()
-
                 }
             }
         }

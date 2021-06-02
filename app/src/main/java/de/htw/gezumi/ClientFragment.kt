@@ -39,6 +39,8 @@ class ClientFragment : Fragment() {
     private lateinit var _popupWindow: PopupWindow
     private lateinit var _gattClient: GattClient
 
+    var _gameStarted = false;
+
     private val _availableHostDevices: ArrayList<Device> = ArrayList()
     private val _hostDeviceListAdapter: JoinGameListAdapter = JoinGameListAdapter(_availableHostDevices) {
 
@@ -52,7 +54,6 @@ class ClientFragment : Fragment() {
 
         _popupBinding.joinText.text = getString(R.string.join_wait)
         _popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0)
-
 
         _availableHostDevices.clear()
         updateBtDeviceListAdapter()
@@ -86,6 +87,7 @@ class ClientFragment : Fragment() {
 
         override fun gameStarted() {
             Handler(Looper.getMainLooper()).post {
+                _gameStarted = true
                 _popupWindow.dismiss()
                 Log.d(TAG, "game started")
                 findNavController().navigate(R.id.action_ClientFragment_to_Game)
@@ -174,7 +176,9 @@ class ClientFragment : Fragment() {
     override fun onPause() {
         super.onPause()
         _popupWindow.dismiss()
-        _gattClient.disconnect()
+        if(!_gameStarted){
+            _gattClient.disconnect()
+        }
         _availableHostDevices.clear()
         updateBtDeviceListAdapter()
     }
