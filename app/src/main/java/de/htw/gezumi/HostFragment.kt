@@ -142,6 +142,7 @@ class HostFragment : Fragment() {
 
         _binding.startGame.setOnClickListener {
             _gattServer.notifyGameStart()
+            _gameStarted = true
             findNavController().navigate(R.id.action_HostFragment_to_Game)
         }
 
