@@ -12,7 +12,6 @@ import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.os.HandlerCompat.postDelayed
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -33,6 +32,8 @@ private const val TAG = "HostFragment"
 class HostFragment : Fragment() {
 
     private val _gameViewModel: GameViewModel by activityViewModels()
+    private val _minimumPlayers = 2
+    private var _currentPlayers = 0 // use variable to not use threaded methods for device calcuation
 
     private lateinit var _binding: FragmentHostBinding
     private lateinit var _bottomSheetBehavior: BottomSheetBehavior<ConstraintLayout>
@@ -53,6 +54,9 @@ class HostFragment : Fragment() {
         if (status == ConnectedPlayerDeviceAdapter.STATUS.APPROVED) {
             //_approvedDevices.add(_connectedDevices[position])
             _gattServer.notifyJoinApproved(_connectedDevices[position], true)
+            if((++_currentPlayers) >= (_minimumPlayers-1)){
+                _binding.startGame.isEnabled = true
+            }
         } else {
             _gattServer.notifyJoinApproved(_connectedDevices[position], false)
         }
@@ -70,7 +74,7 @@ class HostFragment : Fragment() {
     // TODO refactor GattConnectCallback
     private val connectCallback = object : GattConnectCallback {
         override fun onGattConnect(bluetoothDevice: BluetoothDevice) {
-            Handler(Looper.getMainLooper()).postDelayed(Runnable {
+            Handler(Looper.getMainLooper()).postDelayed({
                 _connectedDevices.add(bluetoothDevice)
                 _bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
                 updateAdapters()
@@ -87,7 +91,10 @@ class HostFragment : Fragment() {
             GameViewModel.instance.devices.remove(device)
             // update UI
             Handler(Looper.getMainLooper()).post {
-                if (_connectedDevices.size == 0)
+                if((--_currentPlayers) <= (_minimumPlayers-1)){
+                    _binding.startGame.isEnabled = false
+                }
+                if (_gameViewModel.devices.size == 0)
                     _bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
                 updateAdapters()
             }
@@ -146,6 +153,7 @@ class HostFragment : Fragment() {
             _gameStarted = true
             findNavController().navigate(R.id.action_HostFragment_to_Game)
         }
+        _binding.startGame.isEnabled = false
 
         _binding.editTextGameName.setText(R.string.default_game_name)
         onGameNameChanged(_binding.editTextGameName.text.toString())
