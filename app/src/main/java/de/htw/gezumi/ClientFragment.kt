@@ -93,15 +93,6 @@ class ClientFragment : Fragment() {
                 findNavController().navigate(R.id.action_ClientFragment_to_Game)
             }
         }
-
-        override fun gameLeft() {
-            Handler(Looper.getMainLooper()).post {
-                _popupWindow.dismiss()
-                _popupBinding.joinText.text = getString(R.string.game_left)
-                _popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0)
-            }
-        }
-
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

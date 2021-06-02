@@ -14,6 +14,7 @@ import de.htw.gezumi.adapter.ApprovedDevicesAdapter
 import de.htw.gezumi.calculation.Conversions
 import de.htw.gezumi.calculation.Vec
 import de.htw.gezumi.callbacks.GameJoinUICallback
+import de.htw.gezumi.callbacks.GameLeaveUICallback
 import de.htw.gezumi.callbacks.PlayerUpdateCallback
 import de.htw.gezumi.controller.BluetoothController
 import de.htw.gezumi.controller.GAME_SCAN_KEY
@@ -46,6 +47,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     val myDeviceId = ByteArray(3)
 
     lateinit var gameJoinUICallback: GameJoinUICallback
+    var gameLeaveUICallback: GameLeaveUICallback? = null
     lateinit var hostScanCallback: ScanCallback
     lateinit var gattClient: GattClient
     lateinit var gattServer: GattServer
@@ -170,7 +172,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         Log.d(TAG, "on game leave")
         bluetoothController.stopAdvertising()
         bluetoothController.stopScan(GAME_SCAN_KEY)
-        gameJoinUICallback.gameLeft()
+        if(gameLeaveUICallback != null) gameLeaveUICallback?.gameLeft() // it crashes otherwise
         // TODO: test game leave and join new game
         // TODO: go back to join activity if game already started
         // TODO: differentiate between game left and game terminated by host (terminated by host does not work)
