@@ -14,4 +14,8 @@ class Player(val deviceId: ByteArray) {
     fun setName(name: String) {
         _name.postValue(name)
     }
+
+    override fun toString(): String {
+        return "Device ID: $deviceId | Position $position"
+    }
 }
