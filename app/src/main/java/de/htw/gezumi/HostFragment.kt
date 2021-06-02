@@ -74,6 +74,7 @@ class HostFragment : Fragment() {
         override fun onGattDisconnect(bluetoothDevice: BluetoothDevice) {
             _connectedDevices.remove(bluetoothDevice) // is only present if currently neither approved nor declined
             _gattServer.subscribedDevices.remove(bluetoothDevice)
+
             // remove device TODO: remove player
             val device = GameViewModel.instance.devices.find{it.bluetoothDevice == bluetoothDevice}
             Log.d(TAG, "REMOVEEEEEEEEEEEEEEE DEVICE: $device")
