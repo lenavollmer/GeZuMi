@@ -20,7 +20,7 @@ class MainMenuFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 
-        if(arguments?.getBoolean("gameEnded") != null && arguments!!.getBoolean("gameEnded")){
+        if(arguments?.getBoolean("gameEnded") != null && requireArguments().getBoolean("gameEnded")){
             Toast.makeText(context, R.string.game_closed, Toast.LENGTH_LONG).show()
         }
 
