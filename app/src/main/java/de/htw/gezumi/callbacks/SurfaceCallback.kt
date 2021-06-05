@@ -48,7 +48,7 @@ class SurfaceCallback(
         }
 
         val playerObserver = Observer<List<Player>> { players ->
-            if(_gameViewModel.game.running)tryDrawing(holder, players.filter{it.position != null}.map{it.position!!}, false)
+            if(_gameViewModel.game.running) tryDrawing(holder, players.filter{it.position != null}.map{it.position!!}, false)
         }
 
 
@@ -125,10 +125,6 @@ class SurfaceCallback(
             targetShape
         )
         Log.d(TAG, "isMatch: $shapesMatch")
-        if(shapesMatch) {
-            _gameViewModel.game.setShapeMatched(shapesMatch)
-            _gameViewModel.game.setRunning(false)
-        }
 
         // scale all points to fit canvas
         val allPoints = Geometry.scaleToCanvas(
@@ -157,6 +153,12 @@ class SurfaceCallback(
             _paints.fillPaint,
             POINT_SIZE
         )
+
+        if(shapesMatch) {
+            _gameViewModel.game.setShapeMatched(shapesMatch)
+            _gameViewModel.game.setRunning(false)
+            Log.d(TAG, "animationShape: ${_gameViewModel.game.animationPointsArray.map { it }}")
+        }
 
     }
 
