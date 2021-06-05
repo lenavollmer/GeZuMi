@@ -43,8 +43,8 @@ class SurfaceCallback(
             if (shapesMatch) _gameViewModel.game.setRunning(false)
         }
 
-        val animationObserver = Observer<List<Point>> { animationLocation ->
-            if(!_gameViewModel.game.running) tryDrawing(holder, animationLocation.map { Vec(it) }, true)
+        val animationObserver = Observer<List<Vec>> { animationLocation ->
+            if(!_gameViewModel.game.running) tryDrawing(holder, animationLocation, true)
         }
 
         val playerObserver = Observer<List<Player>> { players ->
@@ -87,6 +87,7 @@ class SurfaceCallback(
 
         // translate player location to target shape
         var targetShape = _gameViewModel.game.targetShape
+        Log.d(TAG, "targetShape: $targetShape")
         var players = playerLocations
         players = players.map { it + targetShape[0] - players[0] }
         val base = targetShape[0]
@@ -170,7 +171,7 @@ class SurfaceCallback(
         canvas.drawColor(backgroundColor)
 
         // translate player location to target shape
-        val allAnimationPoints = _gameViewModel.game.animationPointsArray.flatMap { list -> list.map {point -> Vec(point) } }
+        val allAnimationPoints = _gameViewModel.game.animationPointsArray.flatMap { it }
 
         // center players and target shape independently
         val targetShape = Geometry.center(currentTargetShape)

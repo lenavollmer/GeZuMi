@@ -107,10 +107,10 @@ class Geometry {
         /**
          * Generates a geometric object (e.g. triangle) with the given number of [edges].
          */
-        fun generateGeometricObject(edges: Int): List<Point> {
-            val generatedPoints = mutableListOf<Point>()
+        fun generateGeometricObject(edges: Int): List<Vec> {
+            val generatedPoints = mutableListOf<Vec>()
             for (i in 1..edges) {
-                generatedPoints.add(Point((0..250).random(), (0..400).random()))
+                generatedPoints.add(Vec((0..250).random() / 100, (0..300).random() / 100))
             }
             return generatedPoints
         }

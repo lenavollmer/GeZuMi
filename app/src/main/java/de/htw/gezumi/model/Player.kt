@@ -2,6 +2,7 @@ package de.htw.gezumi.model
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import de.htw.gezumi.Utils.Companion.logDeviceId
 import de.htw.gezumi.calculation.Vec
 
 class Player(val deviceId: ByteArray) {
@@ -16,6 +17,6 @@ class Player(val deviceId: ByteArray) {
     }
 
     override fun toString(): String {
-        return "Device ID: $deviceId | Position $position"
+        return "Device ID: ${logDeviceId(deviceId)} | Position $position"
     }
 }

@@ -34,5 +34,7 @@ class Utils {
         fun findDeviceIndex(list: List<Device>, id: ByteArray): Int {
             return list.indexOfFirst { d -> d.deviceId.contentEquals(id) }
         }
+
+        fun logDeviceId(arr: ByteArray) = "${arr[0]},${arr[1]},${arr[2]}"
     }
 }

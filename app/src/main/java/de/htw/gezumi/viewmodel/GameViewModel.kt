@@ -128,7 +128,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                     )
                 )
                 // also update own game
-                game.updatePlayer(deviceData.deviceId, Vec(newPositions[it].x, newPositions[it].y))
+                game.updatePlayer(deviceId, Vec(newPositions[it].x, newPositions[it].y))
             }
             _positions = newPositions
         }
