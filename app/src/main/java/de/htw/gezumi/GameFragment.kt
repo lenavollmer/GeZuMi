@@ -68,7 +68,7 @@ class GameFragment : Fragment() {
         }
     }
 
-
+    @kotlin.ExperimentalUnsignedTypes
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 //        val hostDevice = Device(_hostDevice.address, -70, _hostDevice)
@@ -82,8 +82,8 @@ class GameFragment : Fragment() {
 //
 //        // connect
 //        _gattClient.connect(_hostDevice, gattClientCallback)
-
         mainHandler = Handler(Looper.getMainLooper())
+        _gameViewModel.sendTargetShape()
     }
 
     override fun onCreateView(

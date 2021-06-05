@@ -86,7 +86,8 @@ class SurfaceCallback(
         canvas.drawColor(backgroundColor)
 
         // translate player location to target shape
-        var targetShape = _gameViewModel.game.targetShape
+
+        var targetShape = _gameViewModel.game.targetShape.value!!
         Log.d(TAG, "targetShape: $targetShape")
         var players = playerLocations
         players = players.map { it + targetShape[0] - players[0] }
@@ -156,6 +157,7 @@ class SurfaceCallback(
         )
 
         if(shapesMatch) {
+            _gameViewModel.game.generateTargetShapeAnimationPoints()
             _gameViewModel.game.setShapeMatched(shapesMatch)
             _gameViewModel.game.setRunning(false)
             Log.d(TAG, "animationShape: ${_gameViewModel.game.animationPointsArray.map { it }}")

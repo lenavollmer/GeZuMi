@@ -1,10 +1,8 @@
 package de.htw.gezumi.model
 
-import android.graphics.Point
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import de.htw.gezumi.calculation.Geometry
 import de.htw.gezumi.calculation.Vec
 
 private const val TAG = "Game"
@@ -19,8 +17,14 @@ class Game(private val hostId: ByteArray?) {
     )
     val players: LiveData<MutableList<Player>> = _players
 
-    private var _targetShape = listOf(Vec(0f, 0f), Vec(2f, 0f), Vec(1f, 2f))
-    val targetShape: List<Vec> get() = _targetShape
+    private var _targetShape = MutableLiveData<List<Vec>>(
+        listOf(
+            Vec(0, 0),
+            Vec(2, 0),
+            Vec(1, 2)
+        )
+    )
+    val targetShape: MutableLiveData<List<Vec>> get() = _targetShape
 
     private val _targetShapeAnimation = MutableLiveData<List<Vec>>()
     val targetShapeAnimation: MutableLiveData<List<Vec>> get() = _targetShapeAnimation
@@ -38,7 +42,7 @@ class Game(private val hostId: ByteArray?) {
 
     private var _currentIdx = 0
 
-    private val _animationPointsArray = generateTargetShapeAnimationPoints()
+    private var _animationPointsArray: Array<List<Vec>> = arrayOf()
     val animationPointsArray: Array<List<Vec>> get() = _animationPointsArray
 
 //    fun setPlayerLocations(locations: List<Point>) {
@@ -52,6 +56,10 @@ class Game(private val hostId: ByteArray?) {
 
     private fun setTargetShapeAnimation(points: List<Vec>) {
         _targetShapeAnimation.postValue(points)
+    }
+
+    fun setTargetShape(points: List<Vec>) {
+        _targetShape.postValue(points)
     }
 
     fun setTime(time: Int) {
@@ -68,7 +76,6 @@ class Game(private val hostId: ByteArray?) {
 
     fun changeTargetLocationsLogic() {
         if (_currentIdx < 12 && _shapeMatched.value!!) {
-            Log.d(TAG, "targetShape changeTargetLocationsLogic")
             setTargetShapeAnimation(_animationPointsArray[_currentIdx])
             _currentIdx++
         }
@@ -78,12 +85,12 @@ class Game(private val hostId: ByteArray?) {
         setRunning(false)
         setTime(0)
         resetCurrentIdx()
-        _targetShape = listOf(Vec(0f, 0f), Vec(2f, 0f), Vec(1f, 2f))
+        // TODO generate new target shape and send to clients
         _shapeMatched.value = false
     }
 
-    private fun generateTargetShapeAnimationPoints(): Array<List<Vec>> {
-        val array: Array<List<Vec>> = Array(12) { _targetShape }
+    fun generateTargetShapeAnimationPoints() {
+        val array: Array<List<Vec>> = Array(12) { _targetShape.value!! }
 
         for (int: Int in 0..4) {
             val current = array[int]
@@ -95,7 +102,7 @@ class Game(private val hostId: ByteArray?) {
             array[int + 1] = current.map { Vec(it.x * 2, it.y * 2) }
         }
 
-        return array
+        _animationPointsArray = array
     }
 
     /**

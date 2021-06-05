@@ -104,6 +104,8 @@ class GattClientCallback() : BluetoothGattCallback() {
             GameService.HOST_UPDATE_UUID -> {
                 val deviceData = DeviceData.fromBytes(characteristic.value)
                 Log.d(TAG, "received host update from: ${Utils.toHexString(deviceData.senderId)} to device: ${Utils.toHexString(deviceData.deviceId)} values=${deviceData.values.contentToString()}, size=${characteristic.value.size}")
+                // TODO check if device id is targetshape id
+                //else
                 GameViewModel.instance.game.updatePlayer(deviceData.deviceId, Vec(deviceData.values[0], deviceData.values[1]))
             }
         }
