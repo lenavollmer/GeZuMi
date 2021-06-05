@@ -120,7 +120,6 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
             changedPositionsIndices.forEach {
                 val deviceId = if (it == devices.size) myDeviceId else devices[it].deviceId
-                if (it == devices.size) Log.d(TAG, "Host: ${Utils.logDeviceId(deviceId)}")
                 gattServer.notifyHostUpdate(
                     DeviceData(
                         deviceId,
