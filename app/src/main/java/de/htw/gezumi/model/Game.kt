@@ -1,7 +1,10 @@
 package de.htw.gezumi.model
 
+import android.graphics.Point
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import de.htw.gezumi.calculation.Geometry
 import de.htw.gezumi.calculation.Vec
 
 private const val TAG = "Game"
@@ -17,34 +20,87 @@ class Game {
 
     val players: LiveData<MutableList<Player>> = _players
 
-    private val _targetShape = listOf(
-        Vec(0, 0),
-        Vec(2, 0),
-        Vec(1, 2)
-    )
-    val targetShape: List<Vec> get() = _targetShape
+    private var _targetShape = Geometry.generateGeometricObject(numberOfPlayers)
+    val targetShape: List<Vec> get() = _targetShape.map { Vec(it) }
+
+    private val _targetShapeAnimation = MutableLiveData<List<Point>>()
+    val targetShapeAnimation: MutableLiveData<List<Point>> get() = _targetShapeAnimation
 
     // Determines whether the target shape has been matched by the players
-    private var _shapeMatched: Boolean = false
-    val shapeMatched: Boolean get() = _shapeMatched
+    private var _shapeMatched = MutableLiveData<Boolean>(false)
+    val shapeMatched: MutableLiveData<Boolean> get() = _shapeMatched
 
     private var _time = 0
     val time: Int get() = _time
 
-//    fun setPlayerLocations(locations: List<Vec>) {
+    // stopwatch running?
+    private var _running = false
+    val running: Boolean get() = _running
+
+    private var _currentIdx = 0
+
+    private val _animationPointsArray = generateTargetShapeAnimationPoints()
+    val animationPointsArray: Array<List<Point>> get() = _animationPointsArray
+
+//    fun setPlayerLocations(locations: List<Point>) {
 //        _players.postValue(locations)
 //    }
 
     fun setShapeMatched(matchedShape: Boolean) {
-        _shapeMatched = matchedShape
+        Log.d("TAG", "I'm in setShapeMatched: $matchedShape")
+        _shapeMatched.postValue(matchedShape)
+    }
+
+    private fun setTargetShapeAnimation(points: List<Point>) {
+        _targetShapeAnimation.postValue(points)
     }
 
     fun setTime(time: Int) {
         _time = time
     }
 
+    fun setRunning(running: Boolean) {
+        _running = running
+    }
+
+    fun resetCurrentIdx() {
+        _currentIdx = 0
+    }
+
+    fun changeTargetLocationsLogic() {
+        if (_currentIdx < 12 && _shapeMatched.value!!) {
+            setTargetShapeAnimation(_animationPointsArray[_currentIdx])
+            _currentIdx++
+        }
+    }
+
+    fun resetState() {
+        Log.d("TAG", "I'm in here")
+        setRunning(false)
+        setTime(0)
+        resetCurrentIdx()
+        _targetShape = Geometry.generateGeometricObject(numberOfPlayers)
+        _shapeMatched.value = false
+    }
+
+    private fun generateTargetShapeAnimationPoints(): Array<List<Point>> {
+        val array: Array<List<Point>> = Array<List<Point>>(12) { _targetShape }
+
+        for (int: Int in 0..4) {
+            val current = array[int]
+            array[int + 1] = current.map { it -> Point(it.x / 2, it.y / 2) }
+        }
+
+        for (int: Int in 4..(array.size - 2)) {
+            val current = array[int]
+            array[int + 1] = current.map { it -> Point(it.x * 2, it.y * 2) }
+        }
+
+        return array
+    }
+
     /**
-     * Add player if not exists.
+     * Add player if they do not exist.
      */
     fun addPlayerIfNew(deviceId: ByteArray) {
         if (!_players.value?.any {it.deviceId contentEquals deviceId}!!)
@@ -54,7 +110,7 @@ class Game {
     fun getPlayer(deviceId: ByteArray): Player? = _players.value?.find{ it.deviceId contentEquals deviceId }
 
     /**
-     * Add player if not exists. Update player position.
+     * Add player if they do not exist. Update player position.
      */
     fun updatePlayer(deviceId: ByteArray, position: Vec) {
         addPlayerIfNew(deviceId)

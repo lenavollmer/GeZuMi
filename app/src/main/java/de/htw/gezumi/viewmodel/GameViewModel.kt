@@ -161,6 +161,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun onGameStart() {
+        Log.d(TAG, "I'm in onGameStart: $game")
         gameJoinUICallback.gameStarted()
     }
 
@@ -170,6 +171,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         Log.d(TAG, "on game leave")
         bluetoothController.stopAdvertising()
         bluetoothController.stopScan(GAME_SCAN_KEY)
+        game.resetState()
         gameJoinUICallback.gameLeft()
         // TODO: test game leave and join new game
         // TODO: go back to join activity if game already started

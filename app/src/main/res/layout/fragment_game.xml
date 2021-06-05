@@ -28,6 +28,7 @@
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="20dp"
                 android:layout_marginBottom="20dp" />
+
         </LinearLayout>
 
         <SurfaceView
@@ -44,5 +45,35 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintVertical_bias="0.0" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:layout_marginTop="50dp"
+            tools:context=".GameFragment">
+
+
+            <TextView
+                android:id="@+id/shapes_matched"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:text="@string/shapes_match"
+                android:textSize="40sp"
+                android:visibility="invisible"
+                android:layout_marginVertical="50dp"
+                />
+
+            <Button
+                android:id="@+id/start_new_game"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:text="@string/start_new_game"
+                android:visibility="invisible"
+                />
+        </LinearLayout>
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
