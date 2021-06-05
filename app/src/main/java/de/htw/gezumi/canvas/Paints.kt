@@ -25,6 +25,7 @@ class Paints(
     private val _colorAccent = _context.getColorFromAttr(R.attr.colorAccent)
     private val _backgroundColor = _context.getColorFromAttr(android.R.attr.windowBackground)
     private val _targetColor = _context.getColorFromAttr(R.attr.targetShapeColor)
+    private val _targetSuccessColor = _context.getColorFromAttr(R.attr.colorSecondary)
 
     val lineStroke = Paint().apply {
         isAntiAlias = true
@@ -50,7 +51,7 @@ class Paints(
         style = Paint.Style.STROKE
         strokeWidth = _pointSize * 0.5f
     }
-    val circleStrokeTargetShape= Paint().apply {
+    val circleStrokeTargetShape = Paint().apply {
         isAntiAlias = true
         color = _targetColor
         style = Paint.Style.STROKE
@@ -59,6 +60,24 @@ class Paints(
     val fillPaintTargetShape = Paint().apply {
         isAntiAlias = true
         color = _targetColor
+        style = Paint.Style.FILL
+    }
+
+    val lineStrokeTargetShapeSuccess = Paint().apply {
+        isAntiAlias = true
+        color = _targetSuccessColor
+        style = Paint.Style.STROKE
+        strokeWidth = _pointSize * 0.5f
+    }
+    val circleStrokeTargetShapeSuccess = Paint().apply {
+        isAntiAlias = true
+        color = _targetSuccessColor
+        style = Paint.Style.STROKE
+        strokeWidth = _pointSize * 0.1f
+    }
+    val fillPaintTargetShapeSuccess = Paint().apply {
+        isAntiAlias = true
+        color = _targetSuccessColor
         style = Paint.Style.FILL
     }
 }
