@@ -26,7 +26,7 @@ class Game {
     val targetShapeAnimation: MutableLiveData<List<Vec>> get() = _targetShapeAnimation
 
     // Determines whether the target shape has been matched by the players
-    private var _shapeMatched = MutableLiveData<Boolean>(false)
+    private var _shapeMatched = MutableLiveData(false)
     val shapeMatched: MutableLiveData<Boolean> get() = _shapeMatched
 
     private var _time = 0
@@ -78,7 +78,7 @@ class Game {
         setRunning(false)
         setTime(0)
         resetCurrentIdx()
-        _targetShape = Geometry.generateGeometricObject(numberOfPlayers)
+        _targetShape = listOf(Vec(0f, 0f), Vec(2f, 0f), Vec(1f, 2f))
         _shapeMatched.value = false
     }
 
