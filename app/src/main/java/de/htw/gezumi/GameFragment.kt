@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.view.*
 import android.widget.Button
 import androidx.databinding.DataBindingUtil
@@ -68,7 +69,6 @@ class GameFragment : Fragment() {
     }
 
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 //        val hostDevice = Device(_hostDevice.address, -70, _hostDevice)
@@ -96,7 +96,7 @@ class GameFragment : Fragment() {
         runTimer()
 
         val matchedObserver = Observer<Boolean> { shapesMatch ->
-            if(shapesMatch) {
+            if (shapesMatch) {
                 _binding.shapesMatched.visibility = View.VISIBLE
                 _binding.shapesMatched.z = 500.0F
                 _binding.startNewGame.visibility = View.VISIBLE

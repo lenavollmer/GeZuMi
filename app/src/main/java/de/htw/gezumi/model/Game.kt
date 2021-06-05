@@ -9,7 +9,7 @@ import de.htw.gezumi.calculation.Vec
 
 private const val TAG = "Game"
 
-class Game {
+class Game(private val hostId: ByteArray?) {
 
     val numberOfPlayers: Int get() = _players.value?.size ?: 0
 
@@ -103,6 +103,10 @@ class Game {
      */
     fun addPlayerIfNew(deviceId: ByteArray) {
         if (players.value !== null && !_players.value!!.any { it.deviceId contentEquals deviceId }) {
+            // make sure that the host is always at index 0 of players
+            if (deviceId contentEquals hostId) {
+                (_players.value as MutableList<Player>).add(0, Player(deviceId))
+            }
             (_players.value as MutableList<Player>).add(Player(deviceId))
         }
     }
