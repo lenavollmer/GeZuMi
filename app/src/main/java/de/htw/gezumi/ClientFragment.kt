@@ -11,6 +11,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.PopupWindow
+import androidx.core.os.bundleOf
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -68,7 +69,8 @@ class ClientFragment : Fragment() {
                 Log.d(TAG, "game ended by host")
                 if(_firstLeave){
                     _popupWindow.dismiss()
-                    findNavController().navigate(R.id.action_Client_to_MainMenuFragment)
+                    val bundle = bundleOf("gameEnded" to true)
+                    findNavController().navigate(R.id.action_Client_to_MainMenuFragment, bundle)
                 }
                 _firstLeave = false
             }

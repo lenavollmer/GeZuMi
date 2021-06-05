@@ -7,6 +7,7 @@ import android.os.Looper
 import android.util.Log
 import android.view.*
 import android.widget.Button
+import androidx.core.os.bundleOf
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -42,7 +43,8 @@ class GameFragment : Fragment() {
             Handler(Looper.getMainLooper()).post {
                 Log.d(TAG, "game ended by host")
                 if(_firstLeave){
-                    findNavController().navigate(R.id.action_Game_to_MainMenuFragment)
+                    val bundle = bundleOf("gameEnded" to true)
+                    findNavController().navigate(R.id.action_Game_to_MainMenuFragment, bundle)
                 }
                 _firstLeave = false
             }

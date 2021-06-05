@@ -4,8 +4,6 @@
             xmlns:tools="http://schemas.android.com/tools"
             android:id="@+id/nav_graph"
             app:startDestination="@id/MainFragment">
-
-
     <fragment
             android:id="@+id/MainFragment"
             android:name="de.htw.gezumi.PermissionFragment"
@@ -21,12 +19,8 @@
             android:name="de.htw.gezumi.MainMenuFragment"
             android:label="@string/main_label"
             tools:layout="@layout/fragment_permission">
-        <action android:id="@+id/action_MainMenuFragment_to_Host" app:destination="@id/Host">
-            <argument android:name="isHost" android:defaultValue="true"/>
-        </action>
-        <action android:id="@+id/action_MainMenuFragment_to_Client" app:destination="@id/Client">
-            <argument android:name="isHost" android:defaultValue="false"/>
-        </action>
+        <action android:id="@+id/action_MainMenuFragment_to_Host" app:destination="@id/Host" />
+        <action android:id="@+id/action_MainMenuFragment_to_Client" app:destination="@id/Client" />
         <action android:id="@+id/action_MainMenuFragment_to_Game" app:destination="@id/Game"/>
     </fragment>
     <fragment
@@ -34,10 +28,7 @@
             android:name="de.htw.gezumi.HostFragment"
             android:label="@string/host_label"
             tools:layout="@layout/fragment_host">
-        <action android:id="@+id/action_HostFragment_to_Game" app:destination="@id/Game">
-            <argument android:name="isHost" android:defaultValue="true"/>
-        </action>
-        <argument android:name="isHost" app:argType="boolean"/>
+        <action android:id="@+id/action_HostFragment_to_Game" app:destination="@id/Game" />
     </fragment>
 
     <fragment
@@ -45,11 +36,8 @@
             android:name="de.htw.gezumi.ClientFragment"
             android:label="@string/client_label"
             tools:layout="@layout/fragment_client">
-        <action android:id="@+id/action_ClientFragment_to_Game" app:destination="@id/Game">
-            <argument android:name="isHost" android:defaultValue="false"/>
-        </action>
-        <argument android:name="isHost" app:argType="boolean"/>
-        <action android:id="@+id/action_Client_to_MainMenuFragment" app:destination="@id/MainMenuFragment"/>
+        <action android:id="@+id/action_ClientFragment_to_Game" app:destination="@id/Game" />
+        <action android:id="@+id/action_Client_to_MainMenuFragment" app:destination="@id/MainMenuFragment"  app:popUpTo="@id/MainFragment" app:popUpToInclusive="true"/>
     </fragment>
 
     <fragment
@@ -57,7 +45,6 @@
             android:name="de.htw.gezumi.GameFragment"
             android:label="@string/game_label"
             tools:layout="@layout/fragment_game">
-        <argument android:name="isClient" app:argType="boolean" android:defaultValue="false"/>
-        <action android:id="@+id/action_Game_to_MainMenuFragment" app:destination="@id/MainMenuFragment"/>
+        <action android:id="@+id/action_Game_to_MainMenuFragment" app:destination="@id/MainMenuFragment"  app:popUpTo="@id/MainFragment" app:popUpToInclusive="true"/>
     </fragment>
 </navigation>
