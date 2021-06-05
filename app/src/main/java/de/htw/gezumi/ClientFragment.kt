@@ -39,7 +39,7 @@ class ClientFragment : Fragment() {
     private lateinit var _popupWindow: PopupWindow
     private lateinit var _gattClient: GattClient
 
-    var _gameStarted = false;
+    private var _gameStarted = false
 
     private val _availableHostDevices: ArrayList<Device> = ArrayList()
     private val _hostDeviceListAdapter: JoinGameListAdapter = JoinGameListAdapter(_availableHostDevices) {
@@ -93,15 +93,6 @@ class ClientFragment : Fragment() {
                 findNavController().navigate(R.id.action_ClientFragment_to_Game)
             }
         }
-
-        override fun gameLeft() {
-            Handler(Looper.getMainLooper()).post {
-                _popupWindow.dismiss()
-                _popupBinding.joinText.text = getString(R.string.game_left)
-                _popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0)
-            }
-        }
-
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -169,6 +160,9 @@ class ClientFragment : Fragment() {
             LinearLayout.LayoutParams.WRAP_CONTENT,
             true
         )
+        _popupWindow.isOutsideTouchable = false
+        _popupWindow.isFocusable = false
+
 
         _gattClient = GattClient(requireContext())
     }

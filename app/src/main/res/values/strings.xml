@@ -35,6 +35,6 @@
     </string>
     <string name="shapes_match">Shapes Matched!</string>
     <string name="start_new_game">Start new Game</string>
-    <string name="game_left">You left the game</string>
+    <!-- <string name="game_left">You left the game</string> -->
 
 </resources>
