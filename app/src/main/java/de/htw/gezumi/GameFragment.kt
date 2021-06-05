@@ -4,12 +4,15 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.view.*
 import android.widget.Button
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
+import androidx.navigation.fragment.findNavController
+import de.htw.gezumi.callbacks.GameLeaveUICallback
 import de.htw.gezumi.callbacks.SurfaceCallback
 import de.htw.gezumi.databinding.FragmentGameBinding
 import de.htw.gezumi.viewmodel.GameViewModel
@@ -31,6 +34,20 @@ class GameFragment : Fragment() {
 
     private lateinit var _surfaceView: SurfaceView
     private lateinit var _surfaceHolder: SurfaceHolder
+
+    private var _firstLeave = true
+
+    private val gameLeaveUICallback = object : GameLeaveUICallback {
+        override fun gameLeft() {
+            Handler(Looper.getMainLooper()).post {
+                Log.d(TAG, "game ended by host")
+                if(_firstLeave){
+                    findNavController().navigate(R.id.action_Game_to_MainMenuFragment)
+                }
+                _firstLeave = false
+            }
+        }
+    }
 
 
     // bluetooth stuff also in game fragment or is it possible to manage all that in client and host?
@@ -115,6 +132,8 @@ class GameFragment : Fragment() {
         _binding.lifecycleOwner = viewLifecycleOwner
         _binding.gameViewModel = _gameViewModel
 
+        _gameViewModel.gameLeaveUICallback = gameLeaveUICallback
+
         _surfaceView = _binding.surfaceView
         _surfaceHolder = _surfaceView.holder
         _surfaceHolder.addCallback(
@@ -162,8 +181,8 @@ class GameFragment : Fragment() {
         mainHandler.removeCallbacks(changePlayerLocations)
         mainHandler.removeCallbacks(changeTargetLocations)
         // stop scan and advertise
-        // TODO on resume has to start it again (but not twice!) -> implement pause/disconnect functionality
-        _gameViewModel.onGameLeave()
+        if(_gameViewModel.isGattServerInitialized()) _gameViewModel.gattServer.notifyGameEnding()
+        if(_gameViewModel.isGattClientInitialized()) _gameViewModel.gattClient.disconnect()
     }
 
     private fun runTimer() {

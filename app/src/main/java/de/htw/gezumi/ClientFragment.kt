@@ -18,6 +18,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import de.htw.gezumi.adapter.JoinGameListAdapter
 import de.htw.gezumi.callbacks.GameJoinUICallback
+import de.htw.gezumi.callbacks.GameLeaveUICallback
 import de.htw.gezumi.controller.HOST_SCAN_KEY
 import de.htw.gezumi.databinding.FragmentClientBinding
 import de.htw.gezumi.databinding.PopupJoinBinding
@@ -40,6 +41,7 @@ class ClientFragment : Fragment() {
     private lateinit var _gattClient: GattClient
 
     private var _gameStarted = false
+    private var _firstLeave = true
 
     private val _availableHostDevices: ArrayList<Device> = ArrayList()
     private val _hostDeviceListAdapter: JoinGameListAdapter = JoinGameListAdapter(_availableHostDevices) {
@@ -50,6 +52,7 @@ class ClientFragment : Fragment() {
         _gattClient.connect(_availableHostDevices[it].bluetoothDevice!!, gattClientCallback)
 
         _gameViewModel.gameJoinUICallback = gameJoinUICallback
+        _gameViewModel.gameLeaveUICallback = gameLeaveUICallback
         _gameViewModel.gattClient = _gattClient
 
         _popupBinding.joinText.text = getString(R.string.join_wait)
@@ -57,6 +60,19 @@ class ClientFragment : Fragment() {
 
         _availableHostDevices.clear()
         updateBtDeviceListAdapter()
+    }
+
+    private val gameLeaveUICallback = object : GameLeaveUICallback {
+        override fun gameLeft() {
+            Handler(Looper.getMainLooper()).post {
+                Log.d(TAG, "game ended by host")
+                if(_firstLeave){
+                    _popupWindow.dismiss()
+                    findNavController().navigate(R.id.action_Client_to_MainMenuFragment)
+                }
+                _firstLeave = false
+            }
+        }
     }
 
     private val gameJoinUICallback = object : GameJoinUICallback {
@@ -170,7 +186,7 @@ class ClientFragment : Fragment() {
     override fun onPause() {
         super.onPause()
         _popupWindow.dismiss()
-        if(!_gameStarted){
+        if (!_gameStarted) {
             _gattClient.disconnect()
         }
         _availableHostDevices.clear()

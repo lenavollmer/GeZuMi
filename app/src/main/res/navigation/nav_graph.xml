@@ -49,6 +49,7 @@
             <argument android:name="isHost" android:defaultValue="false"/>
         </action>
         <argument android:name="isHost" app:argType="boolean"/>
+        <action android:id="@+id/action_Client_to_MainMenuFragment" app:destination="@id/MainMenuFragment"/>
     </fragment>
 
     <fragment
@@ -57,5 +58,6 @@
             android:label="@string/game_label"
             tools:layout="@layout/fragment_game">
         <argument android:name="isClient" app:argType="boolean" android:defaultValue="false"/>
+        <action android:id="@+id/action_Game_to_MainMenuFragment" app:destination="@id/MainMenuFragment"/>
     </fragment>
 </navigation>
