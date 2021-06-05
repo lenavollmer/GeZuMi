@@ -183,7 +183,10 @@ class GameFragment : Fragment() {
         mainHandler.removeCallbacks(changePlayerLocations)
         mainHandler.removeCallbacks(changeTargetLocations)
         // stop scan and advertise
-        if(_gameViewModel.isGattServerInitialized()) _gameViewModel.gattServer.notifyGameEnding()
+        if(_gameViewModel.isGattServerInitialized()){
+            _gameViewModel.gattServer.notifyGameEnding()
+            _gameViewModel.gattServer.stopServer()
+        }
         if(_gameViewModel.isGattClientInitialized()) _gameViewModel.gattClient.disconnect()
     }
 
