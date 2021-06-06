@@ -83,7 +83,6 @@ class GameFragment : Fragment() {
 //        // connect
 //        _gattClient.connect(_hostDevice, gattClientCallback)
         mainHandler = Handler(Looper.getMainLooper())
-        _gameViewModel.sendTargetShape()
     }
 
     override fun onCreateView(
@@ -93,6 +92,7 @@ class GameFragment : Fragment() {
         _binding = DataBindingUtil.inflate(inflater, R.layout.fragment_game, container, false)
 
         _gameViewModel.game.resetState()
+        _gameViewModel.sendTargetShape()
         runTimer()
 
         val matchedObserver = Observer<Boolean> { shapesMatch ->
@@ -129,6 +129,7 @@ class GameFragment : Fragment() {
         view.findViewById<Button>(R.id.start_new_game).setOnClickListener {
             _binding.shapesMatched.visibility = View.INVISIBLE
             _binding.startNewGame.visibility = View.INVISIBLE
+            _gameViewModel.sendTargetShape()
             _gameViewModel.game.resetState()
             _gameViewModel.game.setRunning(true)
         }

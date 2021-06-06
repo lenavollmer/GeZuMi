@@ -17,14 +17,14 @@ class Game(private val hostId: ByteArray?) {
     )
     val players: LiveData<MutableList<Player>> = _players
 
-    private var _targetShape = MutableLiveData<List<Vec>>(
-        listOf(
+    private var _targetShape = MutableLiveData<MutableList<Vec>>(
+        mutableListOf(
             Vec(0, 0),
             Vec(2, 0),
             Vec(1, 2)
         )
     )
-    val targetShape: MutableLiveData<List<Vec>> get() = _targetShape
+    val targetShape: MutableLiveData<MutableList<Vec>> get() = _targetShape
 
     private val _targetShapeAnimation = MutableLiveData<List<Vec>>()
     val targetShapeAnimation: MutableLiveData<List<Vec>> get() = _targetShapeAnimation
@@ -58,7 +58,7 @@ class Game(private val hostId: ByteArray?) {
         _targetShapeAnimation.postValue(points)
     }
 
-    fun setTargetShape(points: List<Vec>) {
+    fun setTargetShape(points: MutableList<Vec>) {
         _targetShape.postValue(points)
     }
 
@@ -127,6 +127,20 @@ class Game(private val hostId: ByteArray?) {
         addPlayerIfNew(deviceId)
         _players.value?.find { it.deviceId contentEquals deviceId }!!.position = position
         _players.postValue(_players.value)
+    }
+
+    /**
+     * Add vectors to the target shape - called by clients
+     */
+    fun updateTargetShape(vec: Vec) {
+        !_targetShape.value!!.contains(vec)
+        // if line 139 doesn't work use this instead:
+        // _targetShape.value!!.find { it.x == vec.x && it.y == vec.y } == null
+        if(!_targetShape.value!!.contains(vec)) {
+            val currentTarget = _targetShape.value!!
+            currentTarget.add(vec)
+            setTargetShape(currentTarget)
+        }
     }
 
     fun clear() {

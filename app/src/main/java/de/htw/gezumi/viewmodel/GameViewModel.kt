@@ -49,7 +49,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     val myDeviceId = ByteArray(3)
 
     lateinit var gameJoinUICallback: GameJoinUICallback
-    var gameLeaveUICallback: GameLeaveUICallback? = null
+    private var gameLeaveUICallback: GameLeaveUICallback? = null
     lateinit var hostScanCallback: ScanCallback
     lateinit var gattClient: GattClient
     lateinit var gattServer: GattServer
@@ -262,11 +262,11 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     @kotlin.ExperimentalUnsignedTypes
     fun sendTargetShape() {
-        Log.d(TAG, "devices host ${host}")
+        Log.d(TAG, "devices host $host")
         if (host == null) {
             Log.d(TAG, "devices size ${devices.size + 1}")
             val targetShape = Geometry.generateGeometricObject(devices.size + 1)
-            game.setTargetShape(targetShape)
+            game.setTargetShape(targetShape as MutableList<Vec>)
             targetShape.forEach {
                 gattServer.notifyHostUpdate(
                     DeviceData(
