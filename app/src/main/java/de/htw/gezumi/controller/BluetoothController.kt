@@ -102,14 +102,14 @@ class BluetoothController {
     }
 
     @kotlin.ExperimentalUnsignedTypes
-    fun startAdvertising(gameId: ByteArray, gameName: ByteArray = ByteArray(0)) { // leave empty if client because name is not important then
+    fun startAdvertising(gameId: ByteArray, name: ByteArray = ByteArray(0)) { // leave empty if client because name is not important then
         stopAdvertising()
         require(::_bluetoothManager.isInitialized) {"Must have context set"}
         val bluetoothLeAdvertiser: BluetoothLeAdvertiser? = _bluetoothManager.adapter.bluetoothLeAdvertiser
 
         // fill game name to full length
         val fullGameNameBytes = ByteArray(GAME_NAME_LENGTH)
-        System.arraycopy(gameName, 0, fullGameNameBytes, 0, gameName.size)
+        System.arraycopy(name, 0, fullGameNameBytes, 0, name.size)
 
         val advertiseData = AdvertiseData.Builder()
             .setIncludeDeviceName(false)

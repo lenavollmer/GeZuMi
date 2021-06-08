@@ -45,6 +45,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     val myDeviceId = ByteArray(3)
+    var playerName: String? = null
 
     lateinit var gameJoinUICallback: GameJoinUICallback
     var gameLeaveUICallback: GameLeaveUICallback? = null
@@ -151,7 +152,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         Log.d(TAG, "on game join")
         gameJoinUICallback.gameJoined()
         // waiting for game start is not necessary
-        bluetoothController.startAdvertising(gameId, "gustav".toByteArray(Charsets.UTF_8))
+        bluetoothController.startAdvertising(gameId, if (playerName != null) playerName!!.toByteArray(Charsets.UTF_8) else ByteArray(0))
         bluetoothController.stopScan(HOST_SCAN_KEY)
         bluetoothController.startScan(gameScanCallback, gameId)
     }
@@ -180,6 +181,12 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         // TODO: differentiate between game left and game terminated by host (terminated by host does not work)
         // Handler(Looper.getMainLooper()).post{}
         clearModel()
+    }
+
+    @kotlin.ExperimentalUnsignedTypes
+    fun onPlayerNameChanged() {
+        bluetoothController.stopAdvertising()
+        bluetoothController.startAdvertising(gameId, if (playerName != null) playerName!!.toByteArray(Charsets.UTF_8) else ByteArray(0))
     }
 
     fun clearModel() {

@@ -5,27 +5,44 @@
     <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            tools:context=".ClientFragment">
+            tools:context=".ClientFragment"
+            android:focusable="true"
+            android:focusableInTouchMode="true">
+
+        <EditText
+                android:autofillHints="@string/player_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:inputType="textPersonName"
+                android:ems="6"
+                android:id="@+id/edit_text_player_name"
+                android:textAlignment="center"
+                android:hint="@string/player_name" android:maxLength="8"
+                android:imeOptions="actionGo"
+                android:singleLine="true"
+                app:layout_constraintEnd_toEndOf="parent" app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintHorizontal_bias="0.498"
+                app:layout_constraintTop_toTopOf="parent" android:layout_marginTop="56dp"/>
 
         <Button
                 android:text="@string/scan"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" android:id="@+id/button_scan"
-                app:layout_constraintTop_toTopOf="parent" app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent" android:layout_marginTop="16dp"/>
-
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.498"
+                app:layout_constraintTop_toBottomOf="@+id/recycler_bt_devices" android:layout_marginTop="52dp"/>
         <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recycler_bt_devices"
-                android:layout_width="0dp"
-                android:layout_height="0dp"
+                android:layout_width="325dp"
+                android:layout_height="409dp"
                 android:scrollbars="vertical"
-                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                tools:listitem="@layout/item_approved_device" app:layout_constraintHorizontal_bias="0.0"
-                app:layout_constraintVertical_bias="1.0" app:layout_constraintTop_toBottomOf="@+id/button_scan"
-                android:layout_marginTop="32dp"/>
+                tools:listitem="@layout/item_approved_device"
+                app:layout_constraintTop_toBottomOf="@+id/edit_text_player_name"
+                android:layout_marginTop="44dp"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

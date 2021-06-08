@@ -24,6 +24,7 @@ import de.htw.gezumi.controller.GAME_SCAN_KEY
 import de.htw.gezumi.databinding.FragmentHostBinding
 import de.htw.gezumi.gatt.GameService
 import de.htw.gezumi.gatt.GattServer
+import de.htw.gezumi.viewmodel.GAME_NAME_LENGTH
 import de.htw.gezumi.viewmodel.GameViewModel
 
 
@@ -175,7 +176,7 @@ class HostFragment : Fragment() {
 
     @kotlin.ExperimentalUnsignedTypes
     private fun onGameNameChanged(gameName: String) {
-        require(gameName.length <= 8) { "Game name too long" }
+        require(gameName.length <= GAME_NAME_LENGTH) { "Game name too long" }
         GameService.gameName = gameName // must be in game service so gattServerCallback can access it
         // restart advertisement with new name
         scanAndAdvertise()
