@@ -116,7 +116,7 @@ class ClientFragment : Fragment() {
 
                         val device = Utils.findDevice(_availableHostDevices, deviceId)!!
                         // check for new game name
-                        val newGameName = GameService.extractGameName(result)
+                        val newGameName = GameService.extractName(result)
                         if (!device.gameName.equals(newGameName))
                             device.gameName.postValue(newGameName)
                         // refresh bt device: if game name changed, host uses a new bt device

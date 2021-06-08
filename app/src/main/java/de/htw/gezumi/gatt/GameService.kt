@@ -63,9 +63,10 @@ object GameService {
         return service
     }
 
-    fun extractGameName(result: ScanResult): String = result.scanRecord!!
+    fun extractName(result: ScanResult): String = result.scanRecord!!
         .getManufacturerSpecificData(76)!!
         .sliceArray(GAME_ID_LENGTH until GAME_ID_LENGTH + GAME_NAME_LENGTH)
+        .filter{ byte -> byte != 0.toByte() }.toByteArray()
         .toString(Charsets.UTF_8)
 
     fun extractDeviceId(result: ScanResult): ByteArray = result.scanRecord!!

@@ -78,7 +78,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             when (callbackType) {
                 ScanSettings.CALLBACK_TYPE_ALL_MATCHES -> {
                     val deviceId = GameService.extractDeviceId(result)
-                    val playerName = GameService.extractGameName(result)
+                    val playerName = GameService.extractName(result)
                     onGameScanResult(deviceId, playerName, result.rssi, result.txPower)
                 }
                 ScanSettings.CALLBACK_TYPE_MATCH_LOST -> {
@@ -238,7 +238,10 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             device.txPower = txPower
 
         // update player name
-        game.getPlayer(deviceId)!!.setName(playerName)
+        if (playerName.isNotBlank())
+            game.getPlayer(deviceId)!!.setName(playerName)
+        else // set back to device id if player deletes name
+            game.getPlayer(deviceId)!!.setName(Utils.toHexString(deviceId))
 
         // store rssi and send player update
         val millisPassed = getLastRssiMillis(device)
