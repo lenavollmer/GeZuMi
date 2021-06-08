@@ -153,6 +153,13 @@ class HostFragment : Fragment() {
             _gattServer.notifyGameStart()
             _gameStarted = true
             findNavController().navigate(R.id.action_HostFragment_to_Game)
+            // start advertising with player name
+            _gameViewModel.bluetoothController.stopAdvertising()
+            _gameViewModel.bluetoothController.startAdvertising(
+                _gameViewModel.gameId,
+                if (_gameViewModel.playerName != null)
+                    _gameViewModel.playerName!!.toByteArray(Charsets.UTF_8)
+                else ByteArray(0))
         }
         _binding.startGame.isEnabled = false
 
@@ -167,6 +174,19 @@ class HostFragment : Fragment() {
                     requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
                 imm.hideSoftInputFromWindow(_binding.editTextGameName.windowToken, 0)
                 _binding.editTextGameName.clearFocus()
+                return@setOnEditorActionListener true
+            }
+            return@setOnEditorActionListener false
+        }
+
+        // player name listener
+        _binding.editTextPlayerName.setOnEditorActionListener { textView, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_GO) {
+                Log.d(TAG, "player name changed")
+                _gameViewModel.onPlayerNameChanged(textView.text.toString())
+                val imm: InputMethodManager = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                imm.hideSoftInputFromWindow(_binding.editTextPlayerName.windowToken, 0)
+                _binding.editTextPlayerName.clearFocus()
                 return@setOnEditorActionListener true
             }
             return@setOnEditorActionListener false

@@ -34,11 +34,6 @@ class GameFragment : Fragment() {
     private lateinit var _surfaceHolder: SurfaceHolder
 
 
-    // bluetooth stuff also in game fragment or is it possible to manage all that in client and host?
-    //private lateinit var _gattClient: GattClient
-    //private lateinit var _hostDevice: BluetoothDevice
-
-
     // TODO remove generating random player location
     private val changePlayerLocations = object : Runnable {
 //        val player1 = byteArrayOf()
@@ -68,20 +63,8 @@ class GameFragment : Fragment() {
         }
     }
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-//        val hostDevice = Device(_hostDevice.address, -70, _hostDevice)
-//        //hostDevice.setName(_hostDevice.name)
-//        _gameViewModel.host = hostDevice
-//        Log.d(TAG, "host: ${hostDevice.name} address: ${hostDevice.address}")
-//        _gameViewModel.addDevice(hostDevice)
-//
-//        val gattClientCallback = GattClientCallback(_gameViewModel)
-//        _gattClient = GattClient(requireContext())
-//
-//        // connect
-//        _gattClient.connect(_hostDevice, gattClientCallback)
 
         mainHandler = Handler(Looper.getMainLooper())
     }

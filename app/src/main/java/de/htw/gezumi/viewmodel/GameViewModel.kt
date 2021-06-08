@@ -184,9 +184,14 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     @kotlin.ExperimentalUnsignedTypes
-    fun onPlayerNameChanged() {
-        bluetoothController.stopAdvertising()
-        bluetoothController.startAdvertising(gameId, if (playerName != null) playerName!!.toByteArray(Charsets.UTF_8) else ByteArray(0))
+    fun onPlayerNameChanged(newName: String) {
+        require(newName.length <= GAME_NAME_LENGTH) { "Player name too long" }
+        playerName = newName
+        // restart advertisement with new name if client
+        if (!isHost()) {
+            bluetoothController.stopAdvertising()
+            bluetoothController.startAdvertising(gameId, if (playerName != null) playerName!!.toByteArray(Charsets.UTF_8) else ByteArray(0))
+        }
     }
 
     fun clearModel() {

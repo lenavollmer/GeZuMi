@@ -162,7 +162,7 @@ class ClientFragment : Fragment() {
         _binding.editTextPlayerName.setOnEditorActionListener { textView, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_GO) {
                 Log.d(TAG, "player name changed")
-                onPlayerNameChanged(textView.text.toString())
+                _gameViewModel.onPlayerNameChanged(textView.text.toString())
                 val imm: InputMethodManager = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
                 imm.hideSoftInputFromWindow(_binding.editTextPlayerName.windowToken, 0)
                 _binding.editTextPlayerName.clearFocus()
@@ -182,14 +182,6 @@ class ClientFragment : Fragment() {
 
 
         _gattClient = GattClient(requireContext())
-    }
-
-    @kotlin.ExperimentalUnsignedTypes
-    private fun onPlayerNameChanged(playerName: String) {
-        require(playerName.length <= GAME_NAME_LENGTH) { "Player name too long" }
-        _gameViewModel.playerName = playerName
-        // restart advertisement with new name
-        _gameViewModel.onPlayerNameChanged()
     }
 
     /**

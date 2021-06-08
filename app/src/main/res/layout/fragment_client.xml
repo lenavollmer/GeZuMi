@@ -24,14 +24,6 @@
                 app:layout_constraintHorizontal_bias="0.498"
                 app:layout_constraintTop_toTopOf="parent" android:layout_marginTop="56dp"/>
 
-        <Button
-                android:text="@string/scan"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" android:id="@+id/button_scan"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.498"
-                app:layout_constraintTop_toBottomOf="@+id/recycler_bt_devices" android:layout_marginTop="52dp"/>
         <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recycler_bt_devices"
                 android:layout_width="325dp"
@@ -43,6 +35,16 @@
                 tools:listitem="@layout/item_approved_device"
                 app:layout_constraintTop_toBottomOf="@+id/edit_text_player_name"
                 android:layout_marginTop="44dp"/>
+
+        <Button
+                android:text="@string/scan"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" android:id="@+id/button_scan"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.498"
+                app:layout_constraintTop_toBottomOf="@+id/recycler_bt_devices" android:layout_marginTop="52dp"/>
+
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
