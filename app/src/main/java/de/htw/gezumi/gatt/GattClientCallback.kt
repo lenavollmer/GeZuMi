@@ -150,13 +150,16 @@ class GattClientCallback() : BluetoothGattCallback() {
                         Utils.toHexString(deviceData.deviceId)
                     } values=${deviceData.values.contentToString()}, size=${characteristic.value.size}"
                 )
-                if (deviceData.deviceId == Constants.TARGET_SHAPE_DEVICE_ID) GameViewModel.instance.game.updateTargetShape(
-                    Vec(deviceData.values[0], deviceData.values[1])
-                )
-                else GameViewModel.instance.game.updatePlayer(
-                    deviceData.deviceId,
-                    Vec(deviceData.values[0], deviceData.values[1])
-                )
+                if (deviceData.deviceId contentEquals Constants.TARGET_SHAPE_DEVICE_ID) {
+                    GameViewModel.instance.game.updateTargetShape(
+                        Vec(deviceData.values[0], deviceData.values[1])
+                    )
+                } else {
+                    GameViewModel.instance.game.updatePlayer(
+                        deviceData.deviceId,
+                        Vec(deviceData.values[0], deviceData.values[1])
+                    )
+                }
             }
         }
     }

@@ -85,6 +85,7 @@ class GameFragment : Fragment() {
         mainHandler = Handler(Looper.getMainLooper())
     }
 
+    @kotlin.ExperimentalUnsignedTypes
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -110,6 +111,7 @@ class GameFragment : Fragment() {
         return _binding.root
     }
 
+    @kotlin.ExperimentalUnsignedTypes
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding.lifecycleOwner = viewLifecycleOwner

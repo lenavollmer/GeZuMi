@@ -14,6 +14,7 @@ import de.htw.gezumi.canvas.Paints
 import de.htw.gezumi.canvas.getColorFromAttr
 import de.htw.gezumi.model.Player
 import de.htw.gezumi.viewmodel.GameViewModel
+import java.util.*
 
 
 private const val TAG = "SurfaceCallback"
@@ -87,7 +88,7 @@ class SurfaceCallback(
 
         // translate player location to target shape
 
-        var targetShape = _gameViewModel.game.targetShape.value!!
+        var targetShape = Collections.unmodifiableList(_gameViewModel.game.targetShape.value!!)
         Log.d(TAG, "targetShape: $targetShape")
         var players = playerLocations
         players = players.map { it + targetShape[0] - players[0] }

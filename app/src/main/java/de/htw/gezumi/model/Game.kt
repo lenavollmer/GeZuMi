@@ -130,12 +130,9 @@ class Game(private val hostId: ByteArray?) {
     }
 
     /**
-     * Add vectors to the target shape - called by clients
+     * Add vectors to the target shape - called by clients.
      */
     fun updateTargetShape(vec: Vec) {
-        !_targetShape.value!!.contains(vec)
-        // if line 139 doesn't work use this instead:
-        // _targetShape.value!!.find { it.x == vec.x && it.y == vec.y } == null
         if(!_targetShape.value!!.contains(vec)) {
             val currentTarget = _targetShape.value!!
             currentTarget.add(vec)
