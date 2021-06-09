@@ -19,16 +19,16 @@
             android:name="de.htw.gezumi.MainMenuFragment"
             android:label="@string/main_label"
             tools:layout="@layout/fragment_permission">
-        <action android:id="@+id/action_MainMenuFragment_to_Host" app:destination="@id/Host" />
-        <action android:id="@+id/action_MainMenuFragment_to_Client" app:destination="@id/Client" />
-        <action android:id="@+id/action_MainMenuFragment_to_Game" app:destination="@id/Game"/>
+        <action android:id="@+id/action_MainMenuFragment_to_Host" app:destination="@id/Host"/>
+        <action android:id="@+id/action_MainMenuFragment_to_Client" app:destination="@id/Client"/>
+        <action android:id="@+id/action_MainMenuFragment_to_MockedGame" app:destination="@id/MockedGame"/>
     </fragment>
     <fragment
             android:id="@+id/Host"
             android:name="de.htw.gezumi.HostFragment"
             android:label="@string/host_label"
             tools:layout="@layout/fragment_host">
-        <action android:id="@+id/action_HostFragment_to_Game" app:destination="@id/Game" />
+        <action android:id="@+id/action_HostFragment_to_Game" app:destination="@id/Game"/>
     </fragment>
 
     <fragment
@@ -36,8 +36,9 @@
             android:name="de.htw.gezumi.ClientFragment"
             android:label="@string/client_label"
             tools:layout="@layout/fragment_client">
-        <action android:id="@+id/action_ClientFragment_to_Game" app:destination="@id/Game" />
-        <action android:id="@+id/action_Client_to_MainMenuFragment" app:destination="@id/MainMenuFragment"  app:popUpTo="@id/MainFragment" app:popUpToInclusive="true"/>
+        <action android:id="@+id/action_ClientFragment_to_Game" app:destination="@id/Game"/>
+        <action android:id="@+id/action_Client_to_MainMenuFragment" app:destination="@id/MainMenuFragment"
+                app:popUpTo="@id/MainFragment" app:popUpToInclusive="true"/>
     </fragment>
 
     <fragment
@@ -45,6 +46,13 @@
             android:name="de.htw.gezumi.GameFragment"
             android:label="@string/game_label"
             tools:layout="@layout/fragment_game">
-        <action android:id="@+id/action_Game_to_MainMenuFragment" app:destination="@id/MainMenuFragment"  app:popUpTo="@id/MainFragment" app:popUpToInclusive="true"/>
+        <action android:id="@+id/action_Game_to_MainMenuFragment" app:destination="@id/MainMenuFragment"
+                app:popUpTo="@id/MainFragment" app:popUpToInclusive="true"/>
+    </fragment>
+    <fragment
+            android:id="@+id/MockedGame"
+            android:name="de.htw.gezumi.MockedGameFragment"
+            android:label="@string/game_label"
+            tools:layout="@layout/fragment_game">
     </fragment>
 </navigation>

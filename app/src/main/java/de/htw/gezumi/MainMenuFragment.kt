@@ -31,7 +31,7 @@ class MainMenuFragment : Fragment() {
             findNavController().navigate(R.id.action_MainMenuFragment_to_Client)
         }
         view.findViewById<Button>(R.id.button_game).setOnClickListener {
-            findNavController().navigate(R.id.action_MainMenuFragment_to_Game)
+            findNavController().navigate(R.id.action_MainMenuFragment_to_MockedGame)
         }
 
     }
