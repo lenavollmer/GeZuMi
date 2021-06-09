@@ -32,6 +32,7 @@ import de.htw.gezumi.gatt.GattClientCallback
 import de.htw.gezumi.model.Device
 import de.htw.gezumi.viewmodel.GAME_NAME_LENGTH
 import de.htw.gezumi.viewmodel.GameViewModel
+import java.util.stream.IntStream
 
 
 private const val TAG = "ClientFragment"
@@ -87,6 +88,9 @@ class ClientFragment : Fragment() {
                 _popupWindow.dismiss()
                 _popupBinding.joinText.text = getString(R.string.join_approved)
                 _popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0)
+
+                _hostDeviceListAdapter.setItemsEnabled(false)
+                _binding.buttonScan.isEnabled = false
 
                 _availableHostDevices.clear()
                 updateBtDeviceListAdapter()

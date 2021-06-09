@@ -23,8 +23,8 @@ import de.htw.gezumi.controller.HOST_SCAN_KEY
 import de.htw.gezumi.gatt.GameService
 import de.htw.gezumi.gatt.GattClient
 import de.htw.gezumi.gatt.GattServer
-import de.htw.gezumi.model.Device
 import de.htw.gezumi.model.BluetoothData
+import de.htw.gezumi.model.Device
 import de.htw.gezumi.model.Game
 import de.htw.gezumi.util.Constants.TARGET_SHAPE_ID
 import de.htw.gezumi.util.FileStorage
@@ -158,7 +158,6 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         gameJoinUICallback.gameJoined()
         // waiting for game start is not necessary
         bluetoothController.startAdvertising(gameId, if (playerName != null) playerName!!.toByteArray(Charsets.UTF_8) else ByteArray(0))
-        bluetoothController.stopScan(HOST_SCAN_KEY)
         bluetoothController.startScan(gameScanCallback, gameId)
     }
 
@@ -170,7 +169,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     fun onGameStart() {
         Log.d(TAG, "I'm in onGameStart: $game")
-
+        bluetoothController.stopScan(HOST_SCAN_KEY)
         gameJoinUICallback.gameStarted()
     }
 

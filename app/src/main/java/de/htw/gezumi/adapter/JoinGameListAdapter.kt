@@ -7,32 +7,36 @@ import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.RecyclerView
 import de.htw.gezumi.databinding.ItemJoinBinding
 import de.htw.gezumi.model.Device
+import java.util.stream.IntStream
 
 class JoinGameListAdapter(private val _hostDevices: List<Device>, private val listener: (position: Int) -> Unit) : RecyclerView.Adapter<JoinGameListAdapter.ItemViewHolder>() {
+    private lateinit var _recyclerView: RecyclerView
     lateinit var lifecycleOwner: LifecycleOwner
+    private var _itemsEnabled = true
 
-    inner class ItemViewHolder(private val _binding: ItemJoinBinding): RecyclerView.ViewHolder(_binding.root) {
+    inner class ItemViewHolder(val binding: ItemJoinBinding): RecyclerView.ViewHolder(binding.root) {
 
         fun bind(device: Device) {
             // Create the observer which updates the UI.
             val nameObserver = Observer<String> { newName ->
                 // Update the UI, in this case, a TextView.
-                _binding.textGameName.text = newName
+                binding.textGameName.text = newName
             }
 
             // Observe the LiveData, passing in this activity as the LifecycleOwner and the observer.
             device.gameName.observe(lifecycleOwner, nameObserver)
 
-            _binding.textGameName.text = device.gameName.value // TODO XXXXX
+            binding.textGameName.text = device.gameName.value
 
-            val joinButton = _binding.buttonJoin
+            val joinButton = binding.buttonJoin
             joinButton.setOnClickListener {
                 listener.invoke(adapterPosition)
             }
+            joinButton.isEnabled = _itemsEnabled
 
             // make sure to include this so your view will be updated
-            _binding.invalidateAll()
-            _binding.executePendingBindings()
+            binding.invalidateAll()
+            binding.executePendingBindings()
         }
     }
 
@@ -54,5 +58,21 @@ class JoinGameListAdapter(private val _hostDevices: List<Device>, private val li
     // Returns the total count of items in the list
     override fun getItemCount(): Int {
         return _hostDevices.size
+    }
+
+    override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
+        super.onAttachedToRecyclerView(recyclerView)
+        _recyclerView = recyclerView
+    }
+
+    /**
+     * Disable all items and add new items disabled if false
+     */
+    fun setItemsEnabled(enabled: Boolean) {
+        _itemsEnabled = enabled
+        IntStream.range(0, itemCount).forEach {
+            (_recyclerView.findViewHolderForLayoutPosition(it) as JoinGameListAdapter.ItemViewHolder).binding.buttonJoin.isEnabled = enabled
+        }
+
     }
 }
