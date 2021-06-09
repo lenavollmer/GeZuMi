@@ -45,11 +45,16 @@ class SurfaceCallback(
         }
 
         val animationObserver = Observer<List<Vec>> { animationLocation ->
-            if(!_gameViewModel.game.running) tryDrawing(holder, animationLocation, true)
+            if (!_gameViewModel.game.running) tryDrawing(holder, animationLocation, true)
         }
 
+        // TODO hier die Player direkt und nicht die Positionen übergeben
         val playerObserver = Observer<List<Player>> { players ->
-            if(_gameViewModel.game.running) tryDrawing(holder, players.filter{it.position != null}.map{it.position!!}, false)
+            if (_gameViewModel.game.running) tryDrawing(
+                holder,
+                players.filter { it.position != null }.map { it.position!! },
+                false
+            )
         }
 
 
@@ -71,6 +76,7 @@ class SurfaceCallback(
             Log.e(TAG, "Cannot draw onto the canvas as it's null")
         } else {
             if (gameWon) drawWinningShape(canvas, locations)
+            // TODO hier die Player direkt und nicht die Positionen übergeben
             else drawMyStuff(canvas, locations)
             holder.unlockCanvasAndPost(canvas)
         }
@@ -81,6 +87,8 @@ class SurfaceCallback(
         var targetShape = Collections.unmodifiableList(_gameViewModel.game.targetShape.value!!)
         Log.d(TAG, "targetShape: $targetShape")
         Log.i(TAG, "playerLocations: $playerLocations")
+
+        // TODO: playerlocations aus players rausholen
 
         if (playerLocations.size < 3 || targetShape.size < 3) return
         val playerCount = _gameViewModel.game.numberOfPlayers
@@ -158,7 +166,10 @@ class SurfaceCallback(
             POINT_SIZE
         )
 
-        if(shapesMatch) {
+        // TODO methode drawPlayers schreiben macht das gleiche wie drawFigures
+        // TODO zusätlich sollen noch die Player namen gezeichnet werden
+
+        if (shapesMatch) {
             _gameViewModel.game.generateTargetShapeAnimationPoints()
             _gameViewModel.game.setShapeMatched(shapesMatch)
             _gameViewModel.game.setRunning(false)
