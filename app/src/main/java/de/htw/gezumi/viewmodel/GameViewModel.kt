@@ -261,7 +261,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     @kotlin.ExperimentalUnsignedTypes
-    fun sendTargetShape() {
+    fun updateTargetShape() {
         if (host == null) {
             Log.d(TAG, "generating target shapes for ${devices.size + 1} players" )
             val targetShape = Geometry.generateGeometricObject(devices.size + 1)

@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import android.view.*
 import android.widget.Button
 import androidx.databinding.DataBindingUtil
@@ -93,7 +92,7 @@ class GameFragment : Fragment() {
         _binding = DataBindingUtil.inflate(inflater, R.layout.fragment_game, container, false)
 
         _gameViewModel.game.resetState()
-        _gameViewModel.sendTargetShape()
+        _gameViewModel.updateTargetShape()
         runTimer()
 
         val matchedObserver = Observer<Boolean> { shapesMatch ->
@@ -131,7 +130,7 @@ class GameFragment : Fragment() {
         view.findViewById<Button>(R.id.start_new_game).setOnClickListener {
             _binding.shapesMatched.visibility = View.INVISIBLE
             _binding.startNewGame.visibility = View.INVISIBLE
-            _gameViewModel.sendTargetShape()
+            _gameViewModel.updateTargetShape()
             _gameViewModel.game.resetState()
             _gameViewModel.game.setRunning(true)
         }
