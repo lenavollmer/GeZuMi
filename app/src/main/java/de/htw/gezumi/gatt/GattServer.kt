@@ -71,6 +71,20 @@ class GattServer(private val _context: Context, private val _bluetoothController
         }
     }
 
+    fun notifyGameEnding(){
+        Log.d(TAG, "notify game ending")
+        if (subscribedDevices.isEmpty()) {
+            Log.i(TAG, "No subscribers registered")
+            return
+        }
+
+        val gameEndCharacteristic = bluetoothGattServer?.getService(GameService.HOST_UUID)?.getCharacteristic(GameService.GAME_EVENT_UUID)
+        gameEndCharacteristic?.value = ByteBuffer.allocate(4).putInt(GameService.GAME_END_EVENT).array()
+        for (device in subscribedDevices) {
+            bluetoothGattServer?.notifyCharacteristicChanged(device, gameEndCharacteristic, false)
+        }
+    }
+
     @kotlin.ExperimentalUnsignedTypes
     @SuppressLint("DefaultLocale")
     fun notifyHostUpdate(deviceData: DeviceData) {
