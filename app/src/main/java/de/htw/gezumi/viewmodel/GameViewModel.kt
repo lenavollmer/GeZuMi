@@ -47,6 +47,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     val myDeviceId = ByteArray(3)
+    var playerName: String? = null
 
     lateinit var gameJoinUICallback: GameJoinUICallback
     var gameLeaveUICallback: GameLeaveUICallback? = null
@@ -82,7 +83,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             when (callbackType) {
                 ScanSettings.CALLBACK_TYPE_ALL_MATCHES -> {
                     val deviceId = GameService.extractDeviceId(result)
-                    val playerName = GameService.extractGameName(result)
+                    val playerName = GameService.extractName(result)
                     onGameScanResult(deviceId, playerName, result.rssi, result.txPower)
                 }
                 ScanSettings.CALLBACK_TYPE_MATCH_LOST -> {
@@ -156,7 +157,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         Log.d(TAG, "on game join")
         gameJoinUICallback.gameJoined()
         // waiting for game start is not necessary
-        bluetoothController.startAdvertising(gameId, "gustav".toByteArray(Charsets.UTF_8))
+        bluetoothController.startAdvertising(gameId, if (playerName != null) playerName!!.toByteArray(Charsets.UTF_8) else ByteArray(0))
         bluetoothController.stopScan(HOST_SCAN_KEY)
         bluetoothController.startScan(gameScanCallback, gameId)
     }
@@ -188,6 +189,17 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         // TODO: differentiate between game left and game terminated by host (terminated by host does not work)
         // Handler(Looper.getMainLooper()).post{}
         clearModel()
+    }
+
+    @kotlin.ExperimentalUnsignedTypes
+    fun onPlayerNameChanged(newName: String) {
+        require(newName.length <= GAME_NAME_LENGTH) { "Player name too long" }
+        playerName = newName
+        // restart advertisement with new name if client
+        if (!isHost()) {
+            bluetoothController.stopAdvertising()
+            bluetoothController.startAdvertising(gameId, if (playerName != null) playerName!!.toByteArray(Charsets.UTF_8) else ByteArray(0))
+        }
     }
 
     fun clearModel() {
@@ -238,7 +250,10 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             device.txPower = txPower
 
         // update player name
-        game.getPlayer(deviceId)!!.setName(playerName)
+        if (playerName.isNotBlank())
+            game.getPlayer(deviceId)!!.setName(playerName)
+        else // set back to device id if player deletes name
+            game.getPlayer(deviceId)!!.setName(Utils.toHexString(deviceId))
 
         // store rssi and send player update
         val millisPassed = getLastRssiMillis(device)

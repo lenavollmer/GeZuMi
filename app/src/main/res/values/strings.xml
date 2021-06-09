@@ -35,6 +35,7 @@
     </string>
     <string name="shapes_match">Shapes Matched!</string>
     <string name="start_new_game">Start new Game</string>
+    <string name="player_name">Your name</string>
     <string name="game_closed">This Game was closed.</string>
 
 </resources>

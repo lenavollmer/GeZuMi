@@ -3,12 +3,15 @@ package de.htw.gezumi
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
+import android.content.Context
 import android.os.*
 import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputMethodManager
 import android.widget.LinearLayout
 import android.widget.PopupWindow
 import androidx.core.os.bundleOf
@@ -27,6 +30,7 @@ import de.htw.gezumi.gatt.GameService
 import de.htw.gezumi.gatt.GattClient
 import de.htw.gezumi.gatt.GattClientCallback
 import de.htw.gezumi.model.Device
+import de.htw.gezumi.viewmodel.GAME_NAME_LENGTH
 import de.htw.gezumi.viewmodel.GameViewModel
 
 
@@ -130,7 +134,7 @@ class ClientFragment : Fragment() {
 
                         val device = Utils.findDevice(_availableHostDevices, deviceId)!!
                         // check for new game name
-                        val newGameName = GameService.extractGameName(result)
+                        val newGameName = GameService.extractName(result)
                         if (!device.gameName.equals(newGameName))
                             device.gameName.postValue(newGameName)
                         // refresh bt device: if game name changed, host uses a new bt device
@@ -172,6 +176,19 @@ class ClientFragment : Fragment() {
             _gameViewModel.bluetoothController.startHostScan(_gameViewModel.hostScanCallback)// ParcelUuid(GameService.getGameId()), true) <- doesn't work, why???
         }
 
+        // player name listener
+        _binding.editTextPlayerName.setOnEditorActionListener { textView, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_GO) {
+                Log.d(TAG, "player name changed")
+                _gameViewModel.onPlayerNameChanged(textView.text.toString())
+                val imm: InputMethodManager = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                imm.hideSoftInputFromWindow(_binding.editTextPlayerName.windowToken, 0)
+                _binding.editTextPlayerName.clearFocus()
+                return@setOnEditorActionListener true
+            }
+            return@setOnEditorActionListener false
+        }
+
         _popupWindow = PopupWindow(
             _popupBinding.root,
             LinearLayout.LayoutParams.WRAP_CONTENT,
@@ -184,13 +201,15 @@ class ClientFragment : Fragment() {
 
         _gattClient = GattClient(requireContext())
     }
-
+    
+    @kotlin.ExperimentalUnsignedTypes
     override fun onPause() {
         super.onPause()
         _popupWindow.dismiss()
         if (!_gameStarted) {
             _gattClient.disconnect()
         }
+        //_gameViewModel.onGameLeave()
         _availableHostDevices.clear()
         updateBtDeviceListAdapter()
     }
