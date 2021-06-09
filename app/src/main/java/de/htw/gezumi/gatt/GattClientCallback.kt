@@ -22,10 +22,6 @@ class GattClientCallback() : BluetoothGattCallback() {
             Log.d(TAG, "callback: connected")
             Log.d(TAG, "discover services")
             gatt?.discoverServices()
-
-        } else if (newState == BluetoothProfile.STATE_DISCONNECTED) { // TODO: this is not called
-            Log.d(TAG, "callback: disconnected")
-            GameViewModel.instance.onGameLeave() // game was terminated
         }
     }
 
@@ -139,6 +135,9 @@ class GattClientCallback() : BluetoothGattCallback() {
                 val event = ByteBuffer.wrap(characteristic.value).int
                 if (event == GameService.GAME_START_EVENT) {
                     GameViewModel.instance.onGameStart()
+                }
+                if(event == GameService.GAME_END_EVENT){
+                    GameViewModel.instance.onGameLeave()
                 }
             }
             GameService.HOST_UPDATE_UUID -> {

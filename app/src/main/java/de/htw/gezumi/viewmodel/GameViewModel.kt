@@ -49,10 +49,12 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     val myDeviceId = ByteArray(3)
 
     lateinit var gameJoinUICallback: GameJoinUICallback
-    private var gameLeaveUICallback: GameLeaveUICallback? = null
+    var gameLeaveUICallback: GameLeaveUICallback? = null
     lateinit var hostScanCallback: ScanCallback
     lateinit var gattClient: GattClient
     lateinit var gattServer: GattServer
+    fun isGattServerInitialized() = this::gattServer.isInitialized
+    fun isGattClientInitialized() = this::gattClient.isInitialized
 
     val bluetoothController: BluetoothController = BluetoothController()
     val devices = mutableListOf<Device>()
@@ -177,7 +179,9 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         Log.d(TAG, "on game leave")
         bluetoothController.stopAdvertising()
         bluetoothController.stopScan(GAME_SCAN_KEY)
-        game.resetState()
+        Handler(Looper.getMainLooper()).post{
+            game.resetState()
+        }
         if (gameLeaveUICallback != null) gameLeaveUICallback?.gameLeft() // it crashes otherwise
         // TODO: test game leave and join new game
         // TODO: go back to join activity if game already started

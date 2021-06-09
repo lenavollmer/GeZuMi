@@ -13,6 +13,7 @@ private const val TAG = "GattServerCallback"
 
 class GattServerCallback(private val _gattServer: GattServer, private val _connectCallback : HostFragment.GattConnectCallback) : BluetoothGattServerCallback() {
 
+    @kotlin.ExperimentalUnsignedTypes
     override fun onConnectionStateChange(bluetoothDevice: BluetoothDevice, status: Int, newState: Int) {
         if (newState == BluetoothProfile.STATE_CONNECTED) {
             Log.d(TAG, "bluetoothDevice CONNECTED: $bluetoothDevice")
@@ -20,6 +21,8 @@ class GattServerCallback(private val _gattServer: GattServer, private val _conne
         } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
             Log.d(TAG, "bluetoothDevice DISCONNECTED: $bluetoothDevice")
             _connectCallback.onGattDisconnect(bluetoothDevice)
+            _gattServer.notifyGameEnding()
+            GameViewModel.instance.onGameLeave()
         }
     }
 
