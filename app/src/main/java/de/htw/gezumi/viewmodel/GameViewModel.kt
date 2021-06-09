@@ -152,7 +152,6 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         gameJoinUICallback.gameJoined()
         // waiting for game start is not necessary
         bluetoothController.startAdvertising(gameId, "gustav".toByteArray(Charsets.UTF_8))
-        bluetoothController.stopScan(HOST_SCAN_KEY)
         bluetoothController.startScan(gameScanCallback, gameId)
     }
 
@@ -164,6 +163,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     fun onGameStart() {
         Log.d(TAG, "I'm in onGameStart: $game")
+        bluetoothController.stopScan(HOST_SCAN_KEY)
         gameJoinUICallback.gameStarted()
     }
 
