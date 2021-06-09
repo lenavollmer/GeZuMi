@@ -6,7 +6,6 @@ import kotlin.math.cos
 import kotlin.math.pow
 import kotlin.math.sin
 import kotlin.math.abs
-import kotlin.math.min
 
 
 class Conversions {
@@ -51,8 +50,8 @@ class Conversions {
                 var favor1 = 0
                 var favor2 = 0
                 for (i2 in points.indices.drop(2)) {
-                    val difference1 = getDist(possiblePoints.first, points[i2]) - dists[i2][i]
-                    val difference2 = getDist(possiblePoints.second, points[i2]) - dists[i2][i]
+                    val difference1 = possiblePoints.first.getDist(points[i2]) - dists[i2][i]
+                    val difference2 = possiblePoints.second.getDist(points[i2]) - dists[i2][i]
                     if (abs(difference1) < abs(difference2)) favor1++
                     else favor2++
                 }
@@ -99,19 +98,19 @@ class Conversions {
             val cValid = clipSide(c, aValid, bValid)
 
             val angle =
-                acos(
-                    clipToRange(
-                        (aValid.pow(2) + bValid.pow(2) - cValid.pow(2)) / (2 * aValid * bValid),
-                        0.99999f,
-                        -0.99999f
+                    acos(
+                            clipToRange(
+                                    (aValid.pow(2) + bValid.pow(2) - cValid.pow(2)) / (2 * aValid * bValid),
+                                    0.99999f,
+                                    -0.99999f
+                            )
                     )
-                )
 
             val x = (basePoint.x - bValid * cos(angle))
             val yAnglePos = (bValid * sin(angle))
             return Pair(
-                Vec(x, basePoint.y - yAnglePos), // point is below basePoint and A
-                Vec(x, basePoint.y + yAnglePos)  // point is above basePoint and A
+                    Vec(x, basePoint.y - yAnglePos), // point is below basePoint and A
+                    Vec(x, basePoint.y + yAnglePos)  // point is above basePoint and A
             )
         }
 
@@ -123,13 +122,8 @@ class Conversions {
 
         private fun clipSide(a: Float, b: Float, c: Float) = if (a > (b + c)) b + c else a
 
-        /**
-         * Get the euclidean distance between point [a] and point [b].
-         */
-        private fun getDist(a: Vec, b: Vec) = (a - b).length()
-
         private fun matrixToString(mat: Array<FloatArray>) =
-            mat.joinToString(separator = "\n") { row -> row.joinToString(prefix = "[", postfix = "]", separator = ",") }
+                mat.joinToString(separator = "\n") { row -> row.joinToString(prefix = "[", postfix = "]", separator = ",") }
 
     }
 }

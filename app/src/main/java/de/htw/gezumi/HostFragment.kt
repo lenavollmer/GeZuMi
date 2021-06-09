@@ -34,14 +34,14 @@ class HostFragment : Fragment() {
 
     private val _gameViewModel: GameViewModel by activityViewModels()
     private val _minimumPlayers = 2
-    private var _currentPlayers = 0 // use variable to not use threaded methods for device calcuation
+    private var _currentPlayers = 0 // use variable to not use threaded methods for device calculation
 
     private lateinit var _binding: FragmentHostBinding
     private lateinit var _bottomSheetBehavior: BottomSheetBehavior<ConstraintLayout>
-
     private lateinit var _gattServer: GattServer
 
     private var _gameStarted = false
+    private var wasOnPause = false
 
     private val _connectedDevices: ArrayList<BluetoothDevice> =
         ArrayList() // devices that are connected, but neither approved nor declined
@@ -88,7 +88,7 @@ class HostFragment : Fragment() {
 
             // remove device TODO: remove player
             val device = GameViewModel.instance.devices.find { it.bluetoothDevice == bluetoothDevice }
-            Log.d(TAG, "REMOVEEEEEEEEEEEEEEE DEVICE: $device")
+            Log.d(TAG, "Remove device: $device")
             GameViewModel.instance.devices.remove(device)
             // update UI
             Handler(Looper.getMainLooper()).post {
@@ -223,6 +223,11 @@ class HostFragment : Fragment() {
         _gattServer.stopServer()
     }
 
+    override fun onStop() {
+        super.onStop()
+        if (!_gameStarted) _gattServer.notifyGameEnding()
+    }
+
     override fun onPause() {
         super.onPause()
         wasOnPause = true
@@ -231,8 +236,6 @@ class HostFragment : Fragment() {
         //_gameViewModel.bluetoothController.stopAdvertising()
         //_gameViewModel.bluetoothController.stopScan(GAME_SCAN_KEY) // why just stop scan?? TODO: klären!
     }
-
-    var wasOnPause = false
 
     @kotlin.ExperimentalUnsignedTypes
     override fun onResume() {

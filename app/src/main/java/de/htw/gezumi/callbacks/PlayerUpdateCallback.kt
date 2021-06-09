@@ -1,8 +1,8 @@
 package de.htw.gezumi.callbacks
 
-import de.htw.gezumi.model.DeviceData
+import de.htw.gezumi.model.BluetoothData
 
 interface PlayerUpdateCallback {
 
-    fun onPlayerUpdate(deviceData: DeviceData)
+    fun onPlayerUpdate(bluetoothData: BluetoothData)
 }
