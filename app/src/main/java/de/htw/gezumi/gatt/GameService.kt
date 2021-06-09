@@ -15,6 +15,7 @@ private const val TAG = "GameService"
 object GameService {
 
     const val GAME_START_EVENT = 0
+    const val GAME_END_EVENT = -1
 
     val HOST_UUID: UUID = UUID.fromString("4a92d33c-0000-1000-8000-00805f9b34fc")
     val GAME_ID_UUID: UUID = UUID.fromString("4a92d33c-0000-1000-8000-00805f9b34fb")
@@ -24,6 +25,7 @@ object GameService {
     val HOST_UPDATE_UUID: UUID = UUID.fromString("4a92d33c-0000-1000-8000-00805f9b34fa") // all game_event subscribed devices also get host updates
     val JOIN_APPROVED_UUID: UUID = UUID.fromString("4a92d33c-0000-1000-8000-00805f9b34aa")
     val GAME_EVENT_UUID: UUID = UUID.fromString("4a92d33c-0000-1000-8000-00805f9b34ab")
+
     val CLIENT_CONFIG: UUID = UUID.fromString("4a92d33c-0000-1000-8000-00805f9b34fb")
 
     val GAME_ID_PREFIX = Utils.decodeHex("4a92d31a") // any active players are not found in host scans
@@ -63,9 +65,10 @@ object GameService {
         return service
     }
 
-    fun extractGameName(result: ScanResult): String = result.scanRecord!!
+    fun extractName(result: ScanResult): String = result.scanRecord!!
         .getManufacturerSpecificData(76)!!
         .sliceArray(GAME_ID_LENGTH until GAME_ID_LENGTH + GAME_NAME_LENGTH)
+        .filter{ byte -> byte != 0.toByte() }.toByteArray()
         .toString(Charsets.UTF_8)
 
     fun extractDeviceId(result: ScanResult): ByteArray = result.scanRecord!!

@@ -24,6 +24,7 @@ import de.htw.gezumi.controller.GAME_SCAN_KEY
 import de.htw.gezumi.databinding.FragmentHostBinding
 import de.htw.gezumi.gatt.GameService
 import de.htw.gezumi.gatt.GattServer
+import de.htw.gezumi.viewmodel.GAME_NAME_LENGTH
 import de.htw.gezumi.viewmodel.GameViewModel
 
 
@@ -33,14 +34,14 @@ class HostFragment : Fragment() {
 
     private val _gameViewModel: GameViewModel by activityViewModels()
     private val _minimumPlayers = 2
-    private var _currentPlayers = 0 // use variable to not use threaded methods for device calcuation
+    private var _currentPlayers = 0 // use variable to not use threaded methods for device calculation
 
     private lateinit var _binding: FragmentHostBinding
     private lateinit var _bottomSheetBehavior: BottomSheetBehavior<ConstraintLayout>
-
     private lateinit var _gattServer: GattServer
 
     private var _gameStarted = false
+    private var wasOnPause = false
 
     private val _connectedDevices: ArrayList<BluetoothDevice> =
         ArrayList() // devices that are connected, but neither approved nor declined
@@ -87,7 +88,7 @@ class HostFragment : Fragment() {
 
             // remove device TODO: remove player
             val device = GameViewModel.instance.devices.find { it.bluetoothDevice == bluetoothDevice }
-            Log.d(TAG, "REMOVEEEEEEEEEEEEEEE DEVICE: $device")
+            Log.d(TAG, "Remove device: $device")
             GameViewModel.instance.devices.remove(device)
             // update UI
             Handler(Looper.getMainLooper()).post {
@@ -152,6 +153,13 @@ class HostFragment : Fragment() {
             _gattServer.notifyGameStart()
             _gameStarted = true
             findNavController().navigate(R.id.action_HostFragment_to_Game)
+            // start advertising with player name
+            _gameViewModel.bluetoothController.stopAdvertising()
+            _gameViewModel.bluetoothController.startAdvertising(
+                _gameViewModel.gameId,
+                if (_gameViewModel.playerName != null)
+                    _gameViewModel.playerName!!.toByteArray(Charsets.UTF_8)
+                else ByteArray(0))
         }
         _binding.startGame.isEnabled = false
 
@@ -171,11 +179,24 @@ class HostFragment : Fragment() {
             return@setOnEditorActionListener false
         }
 
+        // player name listener
+        _binding.editTextPlayerName.setOnEditorActionListener { textView, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_GO) {
+                Log.d(TAG, "player name changed")
+                _gameViewModel.onPlayerNameChanged(textView.text.toString())
+                val imm: InputMethodManager = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                imm.hideSoftInputFromWindow(_binding.editTextPlayerName.windowToken, 0)
+                _binding.editTextPlayerName.clearFocus()
+                return@setOnEditorActionListener true
+            }
+            return@setOnEditorActionListener false
+        }
+
     }
 
     @kotlin.ExperimentalUnsignedTypes
     private fun onGameNameChanged(gameName: String) {
-        require(gameName.length <= 8) { "Game name too long" }
+        require(gameName.length <= GAME_NAME_LENGTH) { "Game name too long" }
         GameService.gameName = gameName // must be in game service so gattServerCallback can access it
         // restart advertisement with new name
         scanAndAdvertise()
@@ -202,6 +223,11 @@ class HostFragment : Fragment() {
         _gattServer.stopServer()
     }
 
+    override fun onStop() {
+        super.onStop()
+        if (!_gameStarted) _gattServer.notifyGameEnding()
+    }
+
     override fun onPause() {
         super.onPause()
         wasOnPause = true
@@ -210,8 +236,6 @@ class HostFragment : Fragment() {
         //_gameViewModel.bluetoothController.stopAdvertising()
         //_gameViewModel.bluetoothController.stopScan(GAME_SCAN_KEY) // why just stop scan?? TODO: klären!
     }
-
-    var wasOnPause = false
 
     @kotlin.ExperimentalUnsignedTypes
     override fun onResume() {

@@ -5,7 +5,7 @@ import android.util.Log
 import de.htw.gezumi.HostFragment
 import de.htw.gezumi.Utils
 import de.htw.gezumi.model.Device
-import de.htw.gezumi.model.DeviceData
+import de.htw.gezumi.model.BluetoothData
 import de.htw.gezumi.viewmodel.GameViewModel
 import java.util.*
 
@@ -13,6 +13,7 @@ private const val TAG = "GattServerCallback"
 
 class GattServerCallback(private val _gattServer: GattServer, private val _connectCallback : HostFragment.GattConnectCallback) : BluetoothGattServerCallback() {
 
+    @kotlin.ExperimentalUnsignedTypes
     override fun onConnectionStateChange(bluetoothDevice: BluetoothDevice, status: Int, newState: Int) {
         if (newState == BluetoothProfile.STATE_CONNECTED) {
             Log.d(TAG, "bluetoothDevice CONNECTED: $bluetoothDevice")
@@ -20,6 +21,8 @@ class GattServerCallback(private val _gattServer: GattServer, private val _conne
         } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
             Log.d(TAG, "bluetoothDevice DISCONNECTED: $bluetoothDevice")
             _connectCallback.onGattDisconnect(bluetoothDevice)
+            _gattServer.notifyGameEnding()
+            GameViewModel.instance.onGameLeave()
         }
     }
 
@@ -66,8 +69,8 @@ class GattServerCallback(private val _gattServer: GattServer, private val _conne
             offset, value)
         when (characteristic?.uuid) {
             GameService.PLAYER_UPDATE_UUID -> {
-                val deviceData = DeviceData.fromBytes(value!!)
-                Log.d(TAG, "received player update from: ${Utils.toHexString(deviceData.senderId)} device: ${Utils.toHexString(deviceData.deviceId)} values=${deviceData.values.contentToString()}, size=${value.size}")
+                val deviceData = BluetoothData.fromBytes(value!!)
+                Log.d(TAG, "received player update from: ${Utils.toHexString(deviceData.senderId)} device: ${Utils.toHexString(deviceData.id)} values=${deviceData.values.contentToString()}, size=${value.size}")
                 GameViewModel.instance.playerUpdateCallback.onPlayerUpdate(deviceData)
             }
             GameService.PLAYER_IDENTIFICATION_UUID -> {
