@@ -10,7 +10,10 @@ import de.htw.gezumi.filter.MedianFilter
 
 private const val TAG = "Device"
 
-class Device(val deviceId: ByteArray, var txPower: Int, var bluetoothDevice: BluetoothDevice?) { // bluetoothDevice changes unfortunately
+/**
+ * txPower is a device specific value that has to be applied to the txpower value of the iPhone
+ */
+class Device(val deviceId: ByteArray, var txPower: Short, var bluetoothDevice: BluetoothDevice?) { // bluetoothDevice changes unfortunately
 
     val gameName = MutableLiveData("")
 
@@ -25,8 +28,7 @@ class Device(val deviceId: ByteArray, var txPower: Int, var bluetoothDevice: Blu
 
     fun addRssi(rssi: Int) {
         rssiHistory.add(rssi)
-        // TODO get real txPower values, 127 means there is no txPower value
-        val unfilteredDistance = Conversions.rssiToDistance(rssi.toFloat(), if(txPower != 127) txPower else 70)
+        val unfilteredDistance = Conversions.rssiToDistance(rssi.toFloat(), txPower)
         _distance.postValue(_filter.applyFilter(unfilteredDistance))
         Log.d(TAG, "unfilteredDistance: $unfilteredDistance, rssi: $rssi, txPower: $txPower")
         // TODO we don't know how often the device is discovered by the scan, so it might be good to limit the execution of the distance calculation

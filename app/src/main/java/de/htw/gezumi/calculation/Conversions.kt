@@ -12,7 +12,7 @@ class Conversions {
          * [txPower] is the RSSI value with which the distance is 1 meter.
          * @return the distance in meters
          */
-        fun rssiToDistance(rssi: Float, txPower: Int): Float {
+        fun rssiToDistance(rssi: Float, txPower: Short): Float {
             val envFactor = 3f
             val attenuation = txPower - rssi
             val distance = 10f.pow((56 - attenuation) / (10f * envFactor))

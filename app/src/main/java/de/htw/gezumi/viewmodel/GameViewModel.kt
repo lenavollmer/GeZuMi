@@ -32,13 +32,16 @@ import java.util.*
 
 private const val TAG = "GameViewModel"
 const val RSSI_READ_INTERVAL = 500
+// total of 21 (24 without standard txPowerLevel?) bytes available for custom data in advertise packet
 const val GAME_ID_LENGTH = 8 // 8 bytes for game id (4 prefix, 4 random)
 const val RANDOM_GAME_ID_PART_LENGTH = 4
 
 // remaining 13 bytes of advertise package for name and device id
 const val GAME_NAME_LENGTH = 8 // don't forget to change edit_text limitation
 const val DEVICE_ID_LENGTH = 3
+const val TXPOWER_LENGTH = 2 // txpower is a short
 const val DEVICE_ID_OFFSET = GAME_ID_LENGTH + GAME_NAME_LENGTH
+const val TXPOWER_OFFSET = DEVICE_ID_OFFSET + DEVICE_ID_LENGTH
 
 class GameViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -48,6 +51,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     val myDeviceId = ByteArray(3)
     var playerName: String? = null
+    var txPower: Short? = null
 
     lateinit var gameJoinUICallback: GameJoinUICallback
     var gameLeaveUICallback: GameLeaveUICallback? = null
@@ -59,8 +63,6 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     val bluetoothController: BluetoothController = BluetoothController()
     val devices = mutableListOf<Device>()
-
-    var txPower: Float? = null
 
     private lateinit var _distances: Array<FloatArray>
     private var _positions: List<Vec> = listOf()
@@ -86,7 +88,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 ScanSettings.CALLBACK_TYPE_ALL_MATCHES -> {
                     val deviceId = GameService.extractDeviceId(result)
                     val playerName = GameService.extractName(result)
-                    onGameScanResult(deviceId, playerName, result.rssi, result.txPower)
+                    val txPower = GameService.extractTxPower(result)
+                    onGameScanResult(deviceId, playerName, result.rssi, txPower)
                 }
                 ScanSettings.CALLBACK_TYPE_MATCH_LOST -> {
                     Log.d(TAG, "lost " + result.device.name)
@@ -241,14 +244,16 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
      */
     @kotlin.ExperimentalUnsignedTypes
     @SuppressLint("DefaultLocale")
-    fun onGameScanResult(deviceId: ByteArray, playerName: String, rssi: Int, txPower: Int) {
+    fun onGameScanResult(deviceId: ByteArray, playerName: String, rssi: Int, txPower: Short) {
         var device = Utils.findDevice(devices, deviceId)
         // add device if not present yet
         if (device == null) {
             addDevice(Device(deviceId, txPower, null))
             device = Utils.findDevice(devices, deviceId)!!
-        } else if (device.txPower == 0) // if devices was added at identification, then fill txpower
+        } else if (device.txPower == 0.toShort()) { // if devices was added at identification, then fill txpower
             device.txPower = txPower
+            Log.d(TAG, "game scan: set txPower for device: $txPower")
+        }
 
         // update player name
         if (playerName.isNotBlank())

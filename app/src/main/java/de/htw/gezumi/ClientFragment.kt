@@ -134,10 +134,11 @@ class ClientFragment : Fragment() {
             override fun onScanResult(callbackType: Int, result: ScanResult) {
                 super.onScanResult(callbackType, result)
                 val deviceId = GameService.extractDeviceId(result)
+                val txPower = GameService.extractTxPower(result)
                 when (callbackType) {
                     ScanSettings.CALLBACK_TYPE_ALL_MATCHES -> {
                         if (!Utils.contains(_availableHostDevices, deviceId)) {
-                            _availableHostDevices.add(Device(deviceId, result.txPower, result.device))
+                            _availableHostDevices.add(Device(deviceId, txPower, result.device))
                             return
                         }
 
