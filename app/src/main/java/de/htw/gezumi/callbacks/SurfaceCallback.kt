@@ -78,8 +78,11 @@ class SurfaceCallback(
 
 
     private fun drawMyStuff(canvas: Canvas, playerLocations: List<Vec>) {
+        var targetShape = Collections.unmodifiableList(_gameViewModel.game.targetShape.value!!)
+        Log.d(TAG, "targetShape: $targetShape")
         Log.i(TAG, "playerLocations: $playerLocations")
-        if (playerLocations.size < 3) return
+
+        if (playerLocations.size < 3 || targetShape.size < 3) return
         val playerCount = _gameViewModel.game.numberOfPlayers
 
         // clear screen.
@@ -88,8 +91,6 @@ class SurfaceCallback(
 
         // translate player location to target shape
 
-        var targetShape = Collections.unmodifiableList(_gameViewModel.game.targetShape.value!!)
-        Log.d(TAG, "targetShape: $targetShape")
         var players = playerLocations
         players = players.map { it + targetShape[0] - players[0] }
         val base = targetShape[0]

@@ -7,13 +7,16 @@ data class Vec(val x: Float = 0f, val y: Float = 0f) {
 
     constructor(x: Int, y: Int) : this(x.toFloat(), y.toFloat())
 
-    constructor(point: Point) : this(point.x, point.y)
-
     fun toPoint(): Point = Point(x.toInt(), y.toInt())
 
     fun dot(b: Vec) = x * b.x + y * b.y
 
     fun length() = sqrt((x * x) + (y * y))
+
+    /**
+     * Get the euclidean distance between this vector and vector [b].
+     */
+    fun getDist(b: Vec) = (this - b).length()
 
     operator fun unaryMinus() = Vec(-x, -y)
 
