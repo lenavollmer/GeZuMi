@@ -21,7 +21,7 @@
             tools:layout="@layout/fragment_permission">
         <action android:id="@+id/action_MainMenuFragment_to_Host" app:destination="@id/Host"/>
         <action android:id="@+id/action_MainMenuFragment_to_Client" app:destination="@id/Client"/>
-        <action android:id="@+id/action_MainMenuFragment_to_Game" app:destination="@id/MockedGame"/>
+        <action android:id="@+id/action_MainMenuFragment_to_MockedGame" app:destination="@id/MockedGame"/>
     </fragment>
     <fragment
             android:id="@+id/Host"
