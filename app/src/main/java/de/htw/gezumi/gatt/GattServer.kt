@@ -78,10 +78,10 @@ class GattServer(private val _context: Context, private val _bluetoothController
             return
         }
 
-        val gameStartCharacteristic = bluetoothGattServer?.getService(GameService.HOST_UUID)?.getCharacteristic(GameService.GAME_EVENT_UUID)
-        gameStartCharacteristic?.value = ByteBuffer.allocate(4).putInt(GameService.GAME_END_EVENT).array()
+        val gameEndCharacteristic = bluetoothGattServer?.getService(GameService.HOST_UUID)?.getCharacteristic(GameService.GAME_EVENT_UUID)
+        gameEndCharacteristic?.value = ByteBuffer.allocate(4).putInt(GameService.GAME_END_EVENT).array()
         for (device in subscribedDevices) {
-            bluetoothGattServer?.notifyCharacteristicChanged(device, gameStartCharacteristic, false)
+            bluetoothGattServer?.notifyCharacteristicChanged(device, gameEndCharacteristic, false)
         }
     }
 
