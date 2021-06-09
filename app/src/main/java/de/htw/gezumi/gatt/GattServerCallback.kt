@@ -5,7 +5,7 @@ import android.util.Log
 import de.htw.gezumi.HostFragment
 import de.htw.gezumi.Utils
 import de.htw.gezumi.model.Device
-import de.htw.gezumi.model.DeviceData
+import de.htw.gezumi.model.BluetoothData
 import de.htw.gezumi.viewmodel.GameViewModel
 import java.util.*
 
@@ -66,8 +66,8 @@ class GattServerCallback(private val _gattServer: GattServer, private val _conne
             offset, value)
         when (characteristic?.uuid) {
             GameService.PLAYER_UPDATE_UUID -> {
-                val deviceData = DeviceData.fromBytes(value!!)
-                Log.d(TAG, "received player update from: ${Utils.toHexString(deviceData.senderId)} device: ${Utils.toHexString(deviceData.deviceId)} values=${deviceData.values.contentToString()}, size=${value.size}")
+                val deviceData = BluetoothData.fromBytes(value!!)
+                Log.d(TAG, "received player update from: ${Utils.toHexString(deviceData.senderId)} device: ${Utils.toHexString(deviceData.id)} values=${deviceData.values.contentToString()}, size=${value.size}")
                 GameViewModel.instance.playerUpdateCallback.onPlayerUpdate(deviceData)
             }
             GameService.PLAYER_IDENTIFICATION_UUID -> {

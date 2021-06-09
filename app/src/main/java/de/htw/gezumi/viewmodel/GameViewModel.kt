@@ -24,9 +24,9 @@ import de.htw.gezumi.gatt.GameService
 import de.htw.gezumi.gatt.GattClient
 import de.htw.gezumi.gatt.GattServer
 import de.htw.gezumi.model.Device
-import de.htw.gezumi.model.DeviceData
+import de.htw.gezumi.model.BluetoothData
 import de.htw.gezumi.model.Game
-import de.htw.gezumi.util.Constants.TARGET_SHAPE_DEVICE_ID
+import de.htw.gezumi.util.Constants.TARGET_SHAPE_ID
 import de.htw.gezumi.util.FileStorage
 import java.util.*
 
@@ -99,19 +99,19 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
          * Fill distance matrix, calculate positions, send host updates with changed positions.
          * Only called on the host device.
          */
-        override fun onPlayerUpdate(deviceData: DeviceData) {
-            var senderDeviceIdx = Utils.findDeviceIndex(devices, deviceData.senderId)
-            var deviceDistanceToIdx = Utils.findDeviceIndex(devices, deviceData.deviceId)
-            if (deviceData.deviceId contentEquals myDeviceId) {
+        override fun onPlayerUpdate(bluetoothData: BluetoothData) {
+            var senderDeviceIdx = Utils.findDeviceIndex(devices, bluetoothData.senderId)
+            var deviceDistanceToIdx = Utils.findDeviceIndex(devices, bluetoothData.id)
+            if (bluetoothData.id contentEquals myDeviceId) {
                 deviceDistanceToIdx = devices.size // another device measured distance to myself
-            } else if (deviceData.senderId contentEquals myDeviceId) {
+            } else if (bluetoothData.senderId contentEquals myDeviceId) {
                 senderDeviceIdx = devices.size // the measurement is by myself (the host)
             }
 
             // device not present yet
             if (senderDeviceIdx == -1 || deviceDistanceToIdx == -1) return
 
-            _distances[senderDeviceIdx][deviceDistanceToIdx] = deviceData.values[0]
+            _distances[senderDeviceIdx][deviceDistanceToIdx] = bluetoothData.values[0]
 
             val newPositions = Conversions.distancesToPoints(_distances)
 
@@ -124,7 +124,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             changedPositionsIndices.forEach {
                 val deviceId = if (it == devices.size) myDeviceId else devices[it].deviceId
                 gattServer.notifyHostUpdate(
-                    DeviceData(
+                    BluetoothData(
                         deviceId,
                         myDeviceId,
                         floatArrayOf(newPositions[it].x, newPositions[it].y)
@@ -242,7 +242,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         if (millisPassed > RSSI_READ_INTERVAL) {
             Log.d(TAG, "game scan: read rssi of ${Utils.toHexString(deviceId)}, last read: $millisPassed")
             device.addRssi(rssi)
-            val deviceData = DeviceData.fromDevice(device, myDeviceId)
+            val deviceData = BluetoothData.fromDevice(device, myDeviceId)
             if (!isHost())
                 gattClient.sendPlayerUpdate(deviceData)
             else // also take own data in account
@@ -268,8 +268,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             game.setTargetShape(targetShape as MutableList<Vec>)
             targetShape.forEach {
                 gattServer.notifyHostUpdate(
-                    DeviceData(
-                        TARGET_SHAPE_DEVICE_ID,
+                    BluetoothData(
+                        TARGET_SHAPE_ID,
                         myDeviceId,
                         floatArrayOf(it.x, it.y)
                     )

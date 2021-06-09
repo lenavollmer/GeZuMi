@@ -20,12 +20,10 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import de.htw.gezumi.adapter.ApprovedDevicesAdapter
 import de.htw.gezumi.adapter.ConnectedPlayerDeviceAdapter
-import de.htw.gezumi.calculation.Geometry
 import de.htw.gezumi.controller.GAME_SCAN_KEY
 import de.htw.gezumi.databinding.FragmentHostBinding
 import de.htw.gezumi.gatt.GameService
 import de.htw.gezumi.gatt.GattServer
-import de.htw.gezumi.model.DeviceData
 import de.htw.gezumi.viewmodel.GameViewModel
 
 

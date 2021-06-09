@@ -5,8 +5,7 @@ import android.bluetooth.*
 import android.util.Log
 import de.htw.gezumi.Utils
 import de.htw.gezumi.calculation.Vec
-import de.htw.gezumi.model.DeviceData
-import de.htw.gezumi.model.Game
+import de.htw.gezumi.model.BluetoothData
 import de.htw.gezumi.util.Constants
 import de.htw.gezumi.viewmodel.GameViewModel
 import de.htw.gezumi.viewmodel.RANDOM_GAME_ID_PART_LENGTH
@@ -143,21 +142,21 @@ class GattClientCallback() : BluetoothGattCallback() {
                 }
             }
             GameService.HOST_UPDATE_UUID -> {
-                val deviceData = DeviceData.fromBytes(characteristic.value)
+                val bluetoothData = BluetoothData.fromBytes(characteristic.value)
                 Log.d(
                     TAG,
-                    "received host update from: ${Utils.toHexString(deviceData.senderId)} to device: ${
-                        Utils.toHexString(deviceData.deviceId)
-                    } values=${deviceData.values.contentToString()}, size=${characteristic.value.size}"
+                    "received host update from: ${Utils.toHexString(bluetoothData.senderId)} to device: ${
+                        Utils.toHexString(bluetoothData.id)
+                    } values=${bluetoothData.values.contentToString()}, size=${characteristic.value.size}"
                 )
-                if (deviceData.deviceId contentEquals Constants.TARGET_SHAPE_DEVICE_ID) {
+                if (bluetoothData.id contentEquals Constants.TARGET_SHAPE_ID) {
                     GameViewModel.instance.game.updateTargetShape(
-                        Vec(deviceData.values[0], deviceData.values[1])
+                        Vec(bluetoothData.values[0], bluetoothData.values[1])
                     )
                 } else {
                     GameViewModel.instance.game.updatePlayer(
-                        deviceData.deviceId,
-                        Vec(deviceData.values[0], deviceData.values[1])
+                        bluetoothData.id,
+                        Vec(bluetoothData.values[0], bluetoothData.values[1])
                     )
                 }
             }
