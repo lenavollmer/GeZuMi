@@ -183,10 +183,7 @@ class ClientFragment : Fragment() {
 
         _gattClient = GattClient(requireContext())
     }
-
-    /**
-     * On pause leave game.
-     */
+    
     @kotlin.ExperimentalUnsignedTypes
     override fun onPause() {
         super.onPause()
@@ -194,7 +191,7 @@ class ClientFragment : Fragment() {
         if(!_gameStarted){
             _gattClient.disconnect()
         }
-        _gameViewModel.onGameLeave();
+        //_gameViewModel.onGameLeave()
         _availableHostDevices.clear()
         updateBtDeviceListAdapter()
     }
