@@ -87,7 +87,7 @@ class HostFragment : Fragment() {
 
             // remove device TODO: remove player
             val device = GameViewModel.instance.devices.find { it.bluetoothDevice == bluetoothDevice }
-            Log.d(TAG, "REMOVEEEEEEEEEEEEEEE DEVICE: $device")
+            Log.d(TAG, "Remove device: $device")
             GameViewModel.instance.devices.remove(device)
             // update UI
             Handler(Looper.getMainLooper()).post {

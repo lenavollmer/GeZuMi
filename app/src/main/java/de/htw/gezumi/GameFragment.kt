@@ -86,7 +86,7 @@ class GameFragment : Fragment() {
         }
     }
 
-
+    @kotlin.ExperimentalUnsignedTypes
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 //        val hostDevice = Device(_hostDevice.address, -70, _hostDevice)
@@ -100,10 +100,10 @@ class GameFragment : Fragment() {
 //
 //        // connect
 //        _gattClient.connect(_hostDevice, gattClientCallback)
-
         mainHandler = Handler(Looper.getMainLooper())
     }
 
+    @kotlin.ExperimentalUnsignedTypes
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -111,6 +111,7 @@ class GameFragment : Fragment() {
         _binding = DataBindingUtil.inflate(inflater, R.layout.fragment_game, container, false)
 
         _gameViewModel.game.resetState()
+        _gameViewModel.updateTargetShape()
         runTimer()
 
         val matchedObserver = Observer<Boolean> { shapesMatch ->
@@ -128,6 +129,7 @@ class GameFragment : Fragment() {
         return _binding.root
     }
 
+    @kotlin.ExperimentalUnsignedTypes
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding.lifecycleOwner = viewLifecycleOwner
@@ -149,6 +151,7 @@ class GameFragment : Fragment() {
         view.findViewById<Button>(R.id.start_new_game).setOnClickListener {
             _binding.shapesMatched.visibility = View.INVISIBLE
             _binding.startNewGame.visibility = View.INVISIBLE
+            _gameViewModel.updateTargetShape()
             _gameViewModel.game.resetState()
             _gameViewModel.game.setRunning(true)
         }

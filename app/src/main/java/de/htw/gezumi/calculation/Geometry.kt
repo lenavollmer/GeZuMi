@@ -47,8 +47,8 @@ class Geometry {
             val maxY = translatedPoints.map { it.y }.maxOrNull() ?: 0
             return translatedPoints.map {
                 Vec(
-                    it.x + (width - maxX.toFloat()) / 2,
-                    it.y + (height - maxY.toFloat()) / 2
+                        it.x + (width - maxX.toFloat()) / 2,
+                        it.y + (height - maxY.toFloat()) / 2
                 )
             }
         }
@@ -90,7 +90,7 @@ class Geometry {
          * Rotates the [points] around the point [o] for the given [angle].
          */
         fun rotatePoints(points: List<Vec>, o: Vec, angle: Float): List<Vec> =
-            points.map { rotatePoint(it, o, angle) }
+                points.map { rotatePoint(it, o, angle) }
 
 
         fun determineMatch(points: List<Vec>, targetShape: List<Vec>): Boolean {
@@ -109,8 +109,13 @@ class Geometry {
          */
         fun generateGeometricObject(edges: Int): List<Vec> {
             val generatedPoints = mutableListOf<Vec>()
-            for (i in 1..edges) {
-                generatedPoints.add(Vec((0..250).random() / 100, (0..300).random() / 100))
+            repeat(edges) {
+                var newPoint = Vec((0..250).random() / 100f, (0..300).random() / 100f)
+                // make sure the new point is at least one meter away from all other already generated points
+                while (generatedPoints.any { it.getDist(newPoint) < 1f }) {
+                    newPoint = Vec((0..250).random() / 100f, (0..300).random() / 100f)
+                }
+                generatedPoints.add(newPoint)
             }
             return generatedPoints
         }
