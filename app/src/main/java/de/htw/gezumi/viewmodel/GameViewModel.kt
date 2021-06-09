@@ -60,6 +60,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     val bluetoothController: BluetoothController = BluetoothController()
     val devices = mutableListOf<Device>()
 
+    var txPower: Float? = null
+
     private lateinit var _distances: Array<FloatArray>
     private var _positions: List<Vec> = listOf()
 

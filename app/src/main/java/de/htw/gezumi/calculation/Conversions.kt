@@ -1,11 +1,7 @@
 package de.htw.gezumi.calculation
 
 import android.util.Log
-import kotlin.math.acos
-import kotlin.math.cos
-import kotlin.math.pow
-import kotlin.math.sin
-import kotlin.math.abs
+import kotlin.math.*
 
 
 class Conversions {
@@ -18,7 +14,8 @@ class Conversions {
          */
         fun rssiToDistance(rssi: Float, txPower: Int): Float {
             val envFactor = 3f
-            val distance = 10f.pow((-txPower.toFloat() - rssi) / (10f * envFactor))
+            val attenuation = txPower - rssi
+            val distance = 10f.pow((56 - attenuation) / (10f * envFactor))
             Log.d("Distance Calculation", "unfilteredDistance: $distance, rssi: $rssi, txPower: $txPower")
             return distance
         }
