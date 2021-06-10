@@ -29,7 +29,7 @@ class MainActivity : AppCompatActivity() {
                 Toast.LENGTH_LONG
             ).show()
             setContentView(R.layout.activity_main)
-            exitProcess(0)
+            exitProcess(0) // Close app if bluetooth will not be enabled
         }
     }
 
@@ -48,7 +48,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        if (BluetoothAdapter.getDefaultAdapter().state == BluetoothAdapter.STATE_OFF) {
+        if (BluetoothAdapter.getDefaultAdapter().state == BluetoothAdapter.STATE_OFF) { // Used for checking when starting the app
             _resultLauncher.launch(Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE))
         }
     }
