@@ -276,7 +276,6 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    // TODO currently broken
     fun writeRSSILog() {
         FileStorage.writeFile(
             getApplication<Application>().applicationContext,

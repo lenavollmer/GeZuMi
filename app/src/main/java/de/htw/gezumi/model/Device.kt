@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothDevice
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import de.htw.gezumi.Utils
 import de.htw.gezumi.calculation.Conversions
 import de.htw.gezumi.filter.Filter
 import de.htw.gezumi.filter.MedianFilter
@@ -28,9 +29,10 @@ class Device(val deviceId: ByteArray, var txPower: Short, var bluetoothDevice: B
 
     fun addRssi(rssi: Int) {
         rssiHistory.add(rssi)
+        Log.d(TAG, "Adding RSSI for device: ${Utils.logDeviceId(deviceId)}")
         val unfilteredDistance = Conversions.rssiToDistance(rssi.toFloat(), txPower)
         _distance.postValue(_filter.applyFilter(unfilteredDistance))
-        Log.d(TAG, "unfilteredDistance: $unfilteredDistance, rssi: $rssi, txPower: $txPower")
+
         // TODO we don't know how often the device is discovered by the scan, so it might be good to limit the execution of the distance calculation
     }
     /*

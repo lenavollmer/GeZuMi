@@ -16,7 +16,7 @@ class Conversions {
             val envFactor = 3f
             val attenuation = txPower - rssi
             val distance = 10f.pow((56 - attenuation) / (10f * envFactor))
-            Log.d("Distance Calculation", "unfilteredDistance: $distance, rssi: $rssi, txPower: $txPower")
+            Log.d("Distance Calculation", "unfilteredDistance: $distance, rssi: $rssi, attenuation: $attenuation, txPower: $txPower")
             return distance
         }
 
