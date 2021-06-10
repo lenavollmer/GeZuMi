@@ -21,7 +21,7 @@ class MainActivity : AppCompatActivity() {
         this.registerReceiver(_btReceiver, IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED))
     }
 
-    var resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+    private val _resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode != Activity.RESULT_OK) {
             Toast.makeText(
                 this,
@@ -40,7 +40,7 @@ class MainActivity : AppCompatActivity() {
             // It means the user has changed his bluetooth state.
             if (action == BluetoothAdapter.ACTION_STATE_CHANGED) {
                 if (BluetoothAdapter.getDefaultAdapter().state == BluetoothAdapter.STATE_OFF) {
-                    resultLauncher.launch(Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE))
+                    _resultLauncher.launch(Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE))
                 }
             }
         }
@@ -49,7 +49,7 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         if (BluetoothAdapter.getDefaultAdapter().state == BluetoothAdapter.STATE_OFF) {
-            resultLauncher.launch(Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE))
+            _resultLauncher.launch(Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE))
         }
     }
 }
