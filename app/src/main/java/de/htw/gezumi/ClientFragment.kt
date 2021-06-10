@@ -4,7 +4,10 @@ import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
 import android.content.Context
-import android.os.*
+import android.os.Build
+import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -30,9 +33,8 @@ import de.htw.gezumi.gatt.GameService
 import de.htw.gezumi.gatt.GattClient
 import de.htw.gezumi.gatt.GattClientCallback
 import de.htw.gezumi.model.Device
-import de.htw.gezumi.viewmodel.GAME_NAME_LENGTH
+import de.htw.gezumi.util.CSVReader
 import de.htw.gezumi.viewmodel.GameViewModel
-import java.util.stream.IntStream
 
 
 private const val TAG = "ClientFragment"
@@ -125,14 +127,18 @@ class ClientFragment : Fragment() {
         super.onCreate(savedInstanceState)
         _gameViewModel.gameId = GameService.GAME_ID_PREFIX
 
+        if (_gameViewModel.txPower == null)
+            _gameViewModel.txPower = CSVReader.getTxPower(Build.DEVICE, requireContext())
+
         _gameViewModel.hostScanCallback = object : ScanCallback() {
             override fun onScanResult(callbackType: Int, result: ScanResult) {
                 super.onScanResult(callbackType, result)
                 val deviceId = GameService.extractDeviceId(result)
+                val txPower = GameService.extractTxPower(result)
                 when (callbackType) {
                     ScanSettings.CALLBACK_TYPE_ALL_MATCHES -> {
                         if (!Utils.contains(_availableHostDevices, deviceId)) {
-                            _availableHostDevices.add(Device(deviceId, result.txPower, result.device))
+                            _availableHostDevices.add(Device(deviceId, txPower, result.device))
                             return
                         }
 

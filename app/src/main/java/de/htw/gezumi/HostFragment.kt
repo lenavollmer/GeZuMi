@@ -2,6 +2,7 @@ package de.htw.gezumi
 
 import android.bluetooth.BluetoothDevice
 import android.content.Context
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -24,6 +25,7 @@ import de.htw.gezumi.controller.GAME_SCAN_KEY
 import de.htw.gezumi.databinding.FragmentHostBinding
 import de.htw.gezumi.gatt.GameService
 import de.htw.gezumi.gatt.GattServer
+import de.htw.gezumi.util.CSVReader
 import de.htw.gezumi.viewmodel.GAME_NAME_LENGTH
 import de.htw.gezumi.viewmodel.GameViewModel
 
@@ -55,7 +57,7 @@ class HostFragment : Fragment() {
         if (status == ConnectedPlayerDeviceAdapter.STATUS.APPROVED) {
             //_approvedDevices.add(_connectedDevices[position])
             _gattServer.notifyJoinApproved(_connectedDevices[position], true)
-            if((++_currentPlayers) >= (_minimumPlayers-1)){
+            if ((++_currentPlayers) >= (_minimumPlayers - 1)) {
                 _binding.startGame.isEnabled = true
             }
         } else {
@@ -92,7 +94,7 @@ class HostFragment : Fragment() {
             GameViewModel.instance.devices.remove(device)
             // update UI
             Handler(Looper.getMainLooper()).post {
-                if((--_currentPlayers) <= (_minimumPlayers-1)){
+                if ((--_currentPlayers) <= (_minimumPlayers - 1)) {
                     _binding.startGame.isEnabled = false
                 }
                 if (_gameViewModel.devices.size == 0)
@@ -109,6 +111,8 @@ class HostFragment : Fragment() {
         _playerListAdapter = ApprovedDevicesAdapter(_gameViewModel.devices)
         _gameViewModel.setPlayerListAdapter(_playerListAdapter)
 
+        if (_gameViewModel.txPower == null)
+            _gameViewModel.txPower = CSVReader.getTxPower(Build.DEVICE, requireContext())
 
         val gameService = GameService.createHostService()
 
@@ -159,7 +163,8 @@ class HostFragment : Fragment() {
                 _gameViewModel.gameId,
                 if (_gameViewModel.playerName != null)
                     _gameViewModel.playerName!!.toByteArray(Charsets.UTF_8)
-                else ByteArray(0))
+                else ByteArray(0)
+            )
         }
         _binding.startGame.isEnabled = false
 
@@ -184,7 +189,8 @@ class HostFragment : Fragment() {
             if (actionId == EditorInfo.IME_ACTION_GO) {
                 Log.d(TAG, "player name changed")
                 _gameViewModel.onPlayerNameChanged(textView.text.toString())
-                val imm: InputMethodManager = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                val imm: InputMethodManager =
+                    requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
                 imm.hideSoftInputFromWindow(_binding.editTextPlayerName.windowToken, 0)
                 _binding.editTextPlayerName.clearFocus()
                 return@setOnEditorActionListener true
