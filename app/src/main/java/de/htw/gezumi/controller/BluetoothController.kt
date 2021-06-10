@@ -10,10 +10,8 @@ import android.content.Context
 import android.util.Log
 import de.htw.gezumi.Utils
 import de.htw.gezumi.gatt.GameService
-import de.htw.gezumi.viewmodel.DEVICE_ID_LENGTH
-import de.htw.gezumi.viewmodel.GAME_ID_LENGTH
-import de.htw.gezumi.viewmodel.GAME_NAME_LENGTH
-import de.htw.gezumi.viewmodel.RANDOM_GAME_ID_PART_LENGTH
+import de.htw.gezumi.viewmodel.*
+import java.nio.ByteBuffer
 
 private const val TAG = "BTController"
 const val HOST_SCAN_KEY = "host"
@@ -54,7 +52,7 @@ class BluetoothController {
     fun startHostScan(leScanCallback: ScanCallback) {
         stopScan(HOST_SCAN_KEY)
         // just scan for host prefix
-        val ignore = ByteArray(RANDOM_GAME_ID_PART_LENGTH + GAME_NAME_LENGTH + DEVICE_ID_LENGTH)
+        val ignore = ByteArray(RANDOM_GAME_ID_PART_LENGTH + GAME_NAME_LENGTH + DEVICE_ID_LENGTH + TXPOWER_LENGTH)
         val mask = byteArrayOf(1, 1, 1, 1) + ignore
         val filterBytes = GameService.HOST_ID_PREFIX + ignore
 
@@ -72,7 +70,7 @@ class BluetoothController {
     fun startScan(leScanCallback: ScanCallback, gameId: ByteArray) {
         stopScan(GAME_SCAN_KEY)
         // scan for specific game with prefix and random part
-        val ignore = ByteArray(GAME_NAME_LENGTH + DEVICE_ID_LENGTH) // mask device address and game name
+        val ignore = ByteArray(GAME_NAME_LENGTH + DEVICE_ID_LENGTH + TXPOWER_LENGTH) // mask device address and game name
         val filterBytes = gameId + ignore
         val mask = ByteArray(GAME_ID_LENGTH) { 1 } + ignore
         mask[3] = 0 // ignore 4th byte to see host too
@@ -111,14 +109,14 @@ class BluetoothController {
         val fullGameNameBytes = ByteArray(GAME_NAME_LENGTH)
         System.arraycopy(name, 0, fullGameNameBytes, 0, name.size)
 
+        val manufacturerData = gameId + fullGameNameBytes + myDeviceId + ByteBuffer.allocate(2).putShort(GameViewModel.instance.txPower!!).array()
         val advertiseData = AdvertiseData.Builder()
             .setIncludeDeviceName(false)
-            .setIncludeTxPowerLevel(true)
-            .addManufacturerData(76, gameId + fullGameNameBytes + myDeviceId)
+            .setIncludeTxPowerLevel(false)
+            .addManufacturerData(76, manufacturerData)
             .build()
 
-        val size = (gameId + fullGameNameBytes + myDeviceId).size
-        Log.d(TAG, "starting advertisement: ${Utils.toHexString(gameId + fullGameNameBytes + myDeviceId)} size: $size")
+        Log.d(TAG, "starting advertisement: ${Utils.toHexString(manufacturerData)} size: ${manufacturerData.size}")
         bluetoothLeAdvertiser?.startAdvertising(_advertiseSettings, advertiseData, advertiseCallback)
         ?: Log.d(TAG, "advertise failed")
     }
