@@ -21,7 +21,7 @@ class BluetoothController {
 
     private lateinit var _context: Context
     private lateinit var _bluetoothManager: BluetoothManager
-    private val _bluetoothAdapter: BluetoothAdapter = BluetoothAdapter.getDefaultAdapter() // TODO clean up nullables and do proper bt support checking
+    private val _bluetoothAdapter: BluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
     private val _bluetoothLeScanner: BluetoothLeScanner? = _bluetoothAdapter.bluetoothLeScanner
 
     private val _scanSettings = ScanSettings.Builder().setCallbackType(ScanSettings.CALLBACK_TYPE_ALL_MATCHES).build()

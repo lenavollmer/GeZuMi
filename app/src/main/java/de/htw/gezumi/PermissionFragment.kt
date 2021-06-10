@@ -8,7 +8,6 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -32,7 +31,6 @@ class PermissionFragment : Fragment() {
     private val requestMultiplePermissions =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
             if (permissions.all { it.value == true }) {
-                BluetoothAdapter.getDefaultAdapter().enable()
                 findNavController().navigate(R.id.action_MainFragment_to_MainMenuFragment)
             } else {
                 _binding.mainText.text = getString(R.string.permission_denied)
@@ -50,7 +48,6 @@ class PermissionFragment : Fragment() {
         _binding = DataBindingUtil.inflate(inflater, R.layout.fragment_permission, container, false)
         return _binding.root
     }
-
 
     private fun Context.openAppSystemSettings() {
         startActivity(Intent().apply {
@@ -89,8 +86,11 @@ class PermissionFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            Log.d("test", "Test")
+        if (ActivityCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
             findNavController().navigate(R.id.action_MainFragment_to_MainMenuFragment)
         }
     }
