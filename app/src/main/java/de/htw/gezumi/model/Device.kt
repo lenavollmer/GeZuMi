@@ -12,7 +12,7 @@ import de.htw.gezumi.filter.MedianFilter
 private const val TAG = "Device"
 
 /**
- * txPower is a device specific value that has to be applied to the txpower value of the iPhone
+ * [txPower] is a device specific value which allows to calculate a device agnostic rssi value (attenuation).
  */
 class Device(val deviceId: ByteArray, var txPower: Short, var bluetoothDevice: BluetoothDevice?) { // bluetoothDevice changes unfortunately
 

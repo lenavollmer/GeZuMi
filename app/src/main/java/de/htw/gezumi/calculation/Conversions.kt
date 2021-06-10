@@ -8,8 +8,11 @@ class Conversions {
     companion object {
 
         /**
-         * Calculates the distance for the given [rssi] (BLE signal strength).
-         * [txPower] is the RSSI value with which the distance is 1 meter.
+         * Calculates the distance for the given [rssi] (BLE signal strength) for a device with the given [txPower].
+         * [txPower] allows to calculate a device agnostic rssi value (attenuation). Attenuation is calculated as follows:
+         * attenuation = txPower - rssi
+         * After attenuating the rssi it is similar to the rssi of an Iphone.
+         *
          * @return the distance in meters
          */
         fun rssiToDistance(rssi: Float, txPower: Short): Float {
