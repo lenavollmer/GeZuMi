@@ -15,7 +15,7 @@ class CSVReader {
             val device = csvReader().readAll(inputStream).find { row -> row[1] == deviceId }
             if (device == null) {
                 Log.d(TAG, "------ NO TXPOWER AVAILABLE ------")
-                return -20
+                return -23
             }
             Log.d(TAG, "txPower for ${device[1]} is ${device[4]}")
             return device[4].toShort()
