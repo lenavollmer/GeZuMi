@@ -1,6 +1,5 @@
 <resources>
     <string name="app_name">GeZuMi</string>
-    <string name="action_settings">Settings</string>
     <!-- Strings used for fragments for navigation -->
     <string name="host">Host</string>
     <string name="join">Join</string>
