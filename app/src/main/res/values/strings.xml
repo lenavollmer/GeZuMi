@@ -29,6 +29,8 @@
     <string name="game_name">Game Name</string>
 
     <string name="bluetooth_not_supported">Your device does not support bluetooth, so you are sadly not able to use this app</string>
+    <string name="bluetooth_not_enabled">This game needs bluetooth to be turned on. Please restart the app</string>
+
     <string name="re_request_permissions">Re-request permissions</string>
     <string name="permission_denied">You can not use this app without the necessary permissions. Please click the
         button below to grant the necessary permissions.
