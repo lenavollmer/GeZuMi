@@ -257,7 +257,6 @@ class HostFragment : Fragment() {
     override fun onPause() {
         super.onPause()
         wasOnPause = true
-        updateAdapters()
         if (!_gameStarted) stopScanAndAdvertise() // how can that ever happen? when game is started, then we are in game fragment
     }
 
