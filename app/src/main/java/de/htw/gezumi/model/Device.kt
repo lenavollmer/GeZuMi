@@ -27,6 +27,7 @@ class Device(val deviceId: ByteArray, var txPower: Short, var bluetoothDevice: B
 
     val rssiHistory = mutableListOf<Int>()
 
+    @kotlin.ExperimentalUnsignedTypes
     fun addRssi(rssi: Int) {
         rssiHistory.add(rssi)
         Log.d(TAG, "Adding RSSI for device: ${Utils.logDeviceId(deviceId)}")

@@ -35,6 +35,7 @@ class Utils {
             return list.indexOfFirst { d -> d.deviceId.contentEquals(id) }
         }
 
-        fun logDeviceId(arr: ByteArray) = "${arr[0]},${arr[1]},${arr[2]}"
+        @kotlin.ExperimentalUnsignedTypes
+        fun logDeviceId(arr: ByteArray) = toHexString(arr)
     }
 }

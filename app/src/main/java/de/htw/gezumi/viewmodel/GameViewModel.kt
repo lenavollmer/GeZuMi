@@ -202,6 +202,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             // restart advertising on a new game id
             makeGameId()
             bluetoothController.startAdvertising(gameId, GameService.gameName.toByteArray(Charsets.UTF_8))
+            bluetoothController.startScan(gameScanCallback, gameId)
         }
     }
 
@@ -220,6 +221,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         // TODO lifecycle: add stuff here
         devices.clear()
         game.clear()
+        playerName = null
     }
 
     fun isJoined(): Boolean = gameId.isNotEmpty()
