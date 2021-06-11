@@ -70,18 +70,19 @@ class HostFragment : Fragment() {
     }
 
     interface GattConnectCallback {
-        fun onGattConnect(bluetoothDevice: BluetoothDevice)
+        fun onJoinRequest(bluetoothDevice: BluetoothDevice, joinName: String?)
         fun onGattDisconnect(bluetoothDevice: BluetoothDevice)
     }
 
     // TODO refactor GattConnectCallback
     private val connectCallback = object : GattConnectCallback {
-        override fun onGattConnect(bluetoothDevice: BluetoothDevice) {
+        override fun onJoinRequest(bluetoothDevice: BluetoothDevice, joinName: String?) {
+            val joinString = joinName ?: "An unknown player"dsadasd
             Handler(Looper.getMainLooper()).postDelayed({
                 _connectedDevices.add(bluetoothDevice)
                 _bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
                 updateAdapters()
-            }, 1000) //Give the Gatt time to connect properly
+            }, 0) //Give the Gatt time to connect properly
         }
 
         override fun onGattDisconnect(bluetoothDevice: BluetoothDevice) {

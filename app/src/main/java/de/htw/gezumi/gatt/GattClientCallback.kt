@@ -28,10 +28,13 @@ class GattClientCallback() : BluetoothGattCallback() {
     override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
         super.onServicesDiscovered(gatt, status)
         Log.d(TAG, "services discovered")
-        gatt?.setCharacteristicNotification(
+        gatt!!.setCharacteristicNotification(
             gatt.getService(GameService.HOST_UUID)
                 ?.getCharacteristic(GameService.JOIN_APPROVED_UUID), true
         )
+        val joinName = gatt.getService(GameService.HOST_UUID).getCharacteristic(GameService.JOIN_NAME_UUID)
+        joinName.value = GameViewModel.instance.playerName?.toByteArray(Charsets.UTF_8)
+        gatt.writeCharacteristic(joinName)
     }
 
     @kotlin.ExperimentalUnsignedTypes

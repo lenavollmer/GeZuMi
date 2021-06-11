@@ -4,7 +4,6 @@ import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
 import android.bluetooth.BluetoothGattService
 import android.bluetooth.le.ScanResult
-import android.util.Log
 import de.htw.gezumi.Utils
 import de.htw.gezumi.viewmodel.*
 import java.nio.ByteBuffer
@@ -22,6 +21,7 @@ object GameService {
     val GAME_ID_UUID: UUID = UUID.fromString("4a92d33c-0000-1000-8000-00805f9b34fb")
     val PLAYER_UPDATE_UUID: UUID = UUID.fromString("4a92d33c-0000-1000-8000-00805f9b51ab")
     val PLAYER_IDENTIFICATION_UUID: UUID = UUID.fromString("4a92d33c-0000-1000-8000-00805f9b128c")
+    val JOIN_NAME_UUID: UUID = UUID.fromString("4a92d33c-0000-1000-8000-00805f9b12aa")
     val HOST_UPDATE_UUID: UUID = UUID.fromString("4a92d33c-0000-1000-8000-00805f9b34fa") // all game_event subscribed devices also get host updates
     val JOIN_APPROVED_UUID: UUID = UUID.fromString("4a92d33c-0000-1000-8000-00805f9b34aa")
     val GAME_EVENT_UUID: UUID = UUID.fromString("4a92d33c-0000-1000-8000-00805f9b34ab")
@@ -47,6 +47,7 @@ object GameService {
 
         val gameIdCharacteristic = BluetoothGattCharacteristic(GAME_ID_UUID, BluetoothGattCharacteristic.PROPERTY_READ, BluetoothGattCharacteristic.PERMISSION_READ)
         val identification = BluetoothGattCharacteristic(PLAYER_IDENTIFICATION_UUID, BluetoothGattCharacteristic.PROPERTY_WRITE, BluetoothGattCharacteristic.PERMISSION_WRITE)
+        val joinName = BluetoothGattCharacteristic(JOIN_NAME_UUID, BluetoothGattCharacteristic.PROPERTY_WRITE, BluetoothGattCharacteristic.PERMISSION_WRITE)
 
         val joinApproved = BluetoothGattCharacteristic(JOIN_APPROVED_UUID, BluetoothGattCharacteristic.PROPERTY_INDICATE, BluetoothGattCharacteristic.PERMISSION_READ)
         val gameEvent = BluetoothGattCharacteristic(GAME_EVENT_UUID, BluetoothGattCharacteristic.PROPERTY_INDICATE, BluetoothGattCharacteristic.PERMISSION_READ)
@@ -59,6 +60,7 @@ object GameService {
 
         service.addCharacteristic(gameIdCharacteristic)
         service.addCharacteristic(identification)
+        service.addCharacteristic(joinName)
         service.addCharacteristic(joinApproved)
         service.addCharacteristic(gameEvent)
         service.addCharacteristic(playerUpdate)

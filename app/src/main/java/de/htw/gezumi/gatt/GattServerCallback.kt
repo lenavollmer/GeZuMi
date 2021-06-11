@@ -17,7 +17,7 @@ class GattServerCallback(private val _gattServer: GattServer, private val _conne
     override fun onConnectionStateChange(bluetoothDevice: BluetoothDevice, status: Int, newState: Int) {
         if (newState == BluetoothProfile.STATE_CONNECTED) {
             Log.d(TAG, "bluetoothDevice CONNECTED: $bluetoothDevice")
-            _connectCallback.onGattConnect(bluetoothDevice)
+            // do nothing -> wait for join name
         } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
             Log.d(TAG, "bluetoothDevice DISCONNECTED: $bluetoothDevice")
             _connectCallback.onGattDisconnect(bluetoothDevice)
@@ -68,6 +68,11 @@ class GattServerCallback(private val _gattServer: GattServer, private val _conne
         super.onCharacteristicWriteRequest(device, requestId, characteristic, preparedWrite, responseNeeded,
             offset, value)
         when (characteristic?.uuid) {
+            GameService.JOIN_NAME_UUID -> {
+                // called when a player wants to join
+                val joinName: String? = value?.toString(Charsets.UTF_8)
+                _connectCallback.onJoinRequest(device!!, joinName)
+            }
             GameService.PLAYER_UPDATE_UUID -> {
                 val deviceData = BluetoothData.fromBytes(value!!)
                 Log.d(TAG, "received player update from: ${Utils.toHexString(deviceData.senderId)} device: ${Utils.toHexString(deviceData.id)} values=${deviceData.values.contentToString()}, size=${value.size}")
