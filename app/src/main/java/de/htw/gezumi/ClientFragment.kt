@@ -107,7 +107,6 @@ class ClientFragment : Fragment() {
 
                 _gameViewModel.bluetoothController.stopScan(HOST_SCAN_KEY)
                 _gattClient.disconnect() // functionality should not be in UI callback
-
                 _availableHostDevices.clear()
                 updateBtDeviceListAdapter()
             }

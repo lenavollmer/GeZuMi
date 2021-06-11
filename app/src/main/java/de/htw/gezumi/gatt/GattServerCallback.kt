@@ -21,8 +21,6 @@ class GattServerCallback(private val _gattServer: GattServer, private val _conne
         } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
             Log.d(TAG, "bluetoothDevice DISCONNECTED: $bluetoothDevice")
             _connectCallback.onGattDisconnect(bluetoothDevice)
-            _gattServer.notifyGameEnding()
-            GameViewModel.instance.onGameLeave()
         }
     }
 

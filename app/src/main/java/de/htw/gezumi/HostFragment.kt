@@ -101,8 +101,16 @@ class HostFragment : Fragment() {
 
             // remove device TODO: remove player
             val device = GameViewModel.instance.devices.find { it.bluetoothDevice == bluetoothDevice }
-            Log.d(TAG, "remove device: $device")
-            GameViewModel.instance.devices.remove(device)
+            if (device != null) {
+                // device was already a player of the game
+                Log.d(TAG, "remove device: $device")
+                GameViewModel.instance.devices.remove(device)
+                if (_gameStarted) {
+                    // could come here (HostFragment) even if game is running
+                    _gattServer.notifyGameEnding()
+                    _gameViewModel.onGameLeave()
+                }
+            }
             // update UI
             Handler(Looper.getMainLooper()).post {
                 if ((--_currentPlayers) <= (_minimumPlayers - 1)) {
