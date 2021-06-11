@@ -264,6 +264,7 @@ class HostFragment : Fragment() {
     @kotlin.ExperimentalUnsignedTypes
     override fun onResume() {
         super.onResume()
+        updateAdapters()
         if (wasOnPause) {
             wasOnPause = false
             scanAndAdvertise()
