@@ -57,7 +57,8 @@ class HostFragment : Fragment() {
         if (status == ConnectedPlayerDeviceAdapter.STATUS.APPROVED) {
             //_approvedDevices.add(_connectedDevices[position])
             _gattServer.notifyJoinApproved(_connectedDevices[position], true)
-            if ((++_currentPlayers) >= (_minimumPlayers - 1)) {
+            _currentPlayers++
+            if (_currentPlayers >= (_minimumPlayers - 1)) {
                 _binding.startGame.isEnabled = true
             }
         } else {
@@ -105,6 +106,7 @@ class HostFragment : Fragment() {
                 // device was already a player of the game
                 Log.d(TAG, "remove device: $device")
                 GameViewModel.instance.devices.remove(device)
+                _currentPlayers--
                 if (_gameStarted) {
                     // could come here (HostFragment) even if game is running
                     _gattServer.notifyGameEnding()
@@ -113,7 +115,7 @@ class HostFragment : Fragment() {
             }
             // update UI
             Handler(Looper.getMainLooper()).post {
-                if ((--_currentPlayers) <= (_minimumPlayers - 1)) {
+                if (_currentPlayers <= (_minimumPlayers - 1)) {
                     _binding.startGame.isEnabled = false
                 }
                 if (_gameViewModel.devices.size == 0)
