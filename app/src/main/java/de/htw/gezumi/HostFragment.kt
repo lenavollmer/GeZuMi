@@ -115,8 +115,7 @@ class HostFragment : Fragment() {
             _gameViewModel.txPower = CSVReader.getTxPower(Build.DEVICE, requireContext())
 
         val gameService = GameService.createHostService()
-
-        _gameViewModel.gameId = GameService.HOST_ID_PREFIX + GameService.randomIdPart
+        _gameViewModel.makeGameId()
 
         Log.d(TAG, "start gatt server and game service")
         _gattServer = GattServer(requireContext(), _gameViewModel.bluetoothController, connectCallback)

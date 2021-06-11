@@ -70,6 +70,7 @@ class GattClientCallback() : BluetoothGattCallback() {
     ) {
         super.onDescriptorWrite(gatt, descriptor, status)
         when (descriptor?.uuid) {
+            // subscribe to game events and host updates
             GameService.CLIENT_CONFIG -> {
                 if (status == BluetoothGatt.GATT_SUCCESS) {
                     if (Arrays.equals(

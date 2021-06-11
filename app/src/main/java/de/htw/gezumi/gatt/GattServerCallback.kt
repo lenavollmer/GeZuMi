@@ -84,9 +84,14 @@ class GattServerCallback(private val _gattServer: GattServer, private val _conne
                 else // otherwise set bluetooth device to the one, that is connected over the gatt
                     mDevice.bluetoothDevice = device
             }
-            GameService.PLAYER_NAME_UUID -> {
-                // TODO DELETE
-            }
+        }
+        if (responseNeeded) {
+            _gattServer.bluetoothGattServer?.sendResponse(
+                device,
+                requestId,
+                BluetoothGatt.GATT_SUCCESS,
+                0,
+                ByteArray(0))
         }
     }
 
