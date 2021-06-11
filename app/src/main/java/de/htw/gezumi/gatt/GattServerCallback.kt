@@ -95,6 +95,13 @@ class GattServerCallback(private val _gattServer: GattServer, private val _conne
         }
     }
 
+    override fun onNotificationSent(device: BluetoothDevice?, status: Int) {
+        super.onNotificationSent(device, status)
+        if (status == BluetoothGatt.GATT_SUCCESS) {
+            Log.d(TAG, "indication sent")
+        }
+    }
+
     override fun onDescriptorWriteRequest(
         device: BluetoothDevice, requestId: Int,
         descriptor: BluetoothGattDescriptor,
@@ -103,11 +110,11 @@ class GattServerCallback(private val _gattServer: GattServer, private val _conne
     ) {
         when (descriptor.uuid) {
             GameService.CLIENT_CONFIG -> {
-                if (Arrays.equals(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE, value)) {
-                    Log.d(TAG, "subscribe device to notifications: $device")
+                if (Arrays.equals(BluetoothGattDescriptor.ENABLE_INDICATION_VALUE, value)) {
+                    Log.d(TAG, "subscribe device to indications: $device")
                         _gattServer.subscribedDevices.add(device)
                 } else if (Arrays.equals(BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE, value)) {
-                    Log.d(TAG, "unsubscribe device from notifications: $device")
+                    Log.d(TAG, "unsubscribe device from indi-/notifications: $device")
                     _gattServer.subscribedDevices.remove(device)
                 }
                 if (responseNeeded) {
@@ -115,7 +122,7 @@ class GattServerCallback(private val _gattServer: GattServer, private val _conne
                         device,
                         requestId,
                         BluetoothGatt.GATT_SUCCESS,
-                        0, BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
+                        0, BluetoothGattDescriptor.ENABLE_INDICATION_VALUE
                     )
                 }
             }
