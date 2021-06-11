@@ -33,7 +33,7 @@ class GattClientCallback() : BluetoothGattCallback() {
                 ?.getCharacteristic(GameService.JOIN_APPROVED_UUID), true
         )
         val joinName = gatt.getService(GameService.HOST_UUID).getCharacteristic(GameService.JOIN_NAME_UUID)
-        joinName.value = GameViewModel.instance.playerName?.toByteArray(Charsets.UTF_8)
+        joinName.value = GameViewModel.instance.playerName?.toByteArray(Charsets.UTF_8) ?: ByteArray(0)
         gatt.writeCharacteristic(joinName)
     }
 

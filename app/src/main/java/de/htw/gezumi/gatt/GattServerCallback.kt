@@ -70,7 +70,7 @@ class GattServerCallback(private val _gattServer: GattServer, private val _conne
         when (characteristic?.uuid) {
             GameService.JOIN_NAME_UUID -> {
                 // called when a player wants to join
-                val joinName: String? = value?.toString(Charsets.UTF_8)
+                val joinName: String? = if (value!!.isNotEmpty()) value.toString(Charsets.UTF_8) else null
                 _connectCallback.onJoinRequest(device!!, joinName)
             }
             GameService.PLAYER_UPDATE_UUID -> {
