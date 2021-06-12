@@ -1,4 +1,5 @@
 manufacturer,device, model,rssi correction,tx,calibration confidence
+samsung,gta4lwifi,T500,3,-29,1
 asus,K015,AST21,3,-22,1
 asus,terra_cheets,ASUS Chromebook C202SA,3,-22,1
 asus,minnie_cheets,ASUS Chromebook Flip C100PA,3,-22,1
