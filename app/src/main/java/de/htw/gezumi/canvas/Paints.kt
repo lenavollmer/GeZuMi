@@ -80,4 +80,10 @@ class Paints(
         color = _targetSuccessColor
         style = Paint.Style.FILL
     }
+
+    val textPaintPlayerName = Paint().apply {
+        isAntiAlias = true
+        textAlign = Paint.Align.CENTER
+        textSize = 45f
+    }
 }
