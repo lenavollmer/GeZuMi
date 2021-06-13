@@ -136,6 +136,7 @@ class GameFragment : Fragment() {
     @SuppressLint("DefaultLocale")
     override fun onStop() {
         super.onStop()
+
         _gameViewModel.game.setRunning(false)
         _gameViewModel.game.setShapeMatched(false)
         _gameViewModel.game.resetCurrentIdx()

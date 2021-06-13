@@ -43,7 +43,7 @@ class MockedGameFragment : Fragment() {
         val player1 = byteArrayOf(0, 0, 0)
         val player2 = byteArrayOf(1, 1, 1)
         val player3 = byteArrayOf(2, 2, 2)
-        val playerNames = arrayOf("Gers", "Targo", "Kaenu")
+        val playerNames = arrayOf("", "Targo", "Kaenu")
 
         override fun run() {
             if (_gameViewModel.game.time < 5) {

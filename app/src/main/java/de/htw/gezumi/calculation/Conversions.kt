@@ -1,25 +1,25 @@
 package de.htw.gezumi.calculation
 
 import android.util.Log
-import kotlin.math.acos
-import kotlin.math.cos
-import kotlin.math.pow
-import kotlin.math.sin
-import kotlin.math.abs
+import kotlin.math.*
 
 
 class Conversions {
     companion object {
 
         /**
-         * Calculates the distance for the given [rssi] (BLE signal strength).
-         * [txPower] is the RSSI value with which the distance is 1 meter.
+         * Calculates the distance for the given [rssi] (BLE signal strength) for a device with the given [txPower].
+         * [txPower] allows to calculate a device agnostic rssi value (attenuation). Attenuation is calculated as follows:
+         * attenuation = txPower - rssi
+         * After attenuating the rssi it is similar to the rssi of an Iphone.
+         *
          * @return the distance in meters
          */
-        fun rssiToDistance(rssi: Float, txPower: Int): Float {
+        fun rssiToDistance(rssi: Float, txPower: Short): Float {
             val envFactor = 3f
-            val distance = 10f.pow((-txPower.toFloat() - rssi) / (10f * envFactor))
-            Log.d("Distance Calculation", "unfilteredDistance: $distance, rssi: $rssi, txPower: $txPower")
+            val attenuation = txPower - rssi
+            val distance = 10f.pow((-56 + attenuation) / (10f * envFactor))
+            Log.d("Distance Calculation", "unfilteredDistance: $distance, rssi: $rssi, attenuation: $attenuation, txPower: $txPower")
             return distance
         }
 
