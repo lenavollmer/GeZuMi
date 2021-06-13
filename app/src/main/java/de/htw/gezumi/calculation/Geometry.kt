@@ -1,7 +1,8 @@
 package de.htw.gezumi.calculation
 
-import android.graphics.Point
-import kotlin.math.*
+import kotlin.math.atan2
+import kotlin.math.cos
+import kotlin.math.sin
 
 
 class Geometry {
@@ -64,12 +65,13 @@ class Geometry {
         }
 
         /**
-         * The [points] are two position vectors that span an angle.
-         * Returns the vector that comes later in clockwise direction and its index.
+         * [points] are three positions. The first one is the angle's origin and the other two span the angle.
+         * Returns the points that is further clock wise.
          */
-        fun getClockwisePoint(points: Pair<Vec, Vec>): Pair<Vec, Int> {
-            val angle = getAngleSigned(points.first, points.second)
-            return if (angle < 0) Pair(points.first, 0) else Pair(points.second, 1)
+        fun getClockwisePoint(points: List<Vec>): Vec {
+            val angle = getAngleSigned(points[1] - points[0], points[2] - points[0])
+            val index = if (angle < 0) 0 else 1
+            return points[1 + index]
         }
 
         /**

@@ -3,7 +3,6 @@ package de.htw.gezumi.callbacks
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
-import android.graphics.Point
 import android.util.Log
 import android.view.SurfaceHolder
 import androidx.lifecycle.LifecycleOwner
@@ -40,18 +39,23 @@ class SurfaceCallback(
         Log.d(TAG, "surfaceCreated")
 
         // Create the observer which updates the UI.
+
+        // TODO why do we need this observer? we already set game running false after the shapes matched
         val matchedObserver = Observer<Boolean> { shapesMatch ->
             if (shapesMatch) _gameViewModel.game.setRunning(false)
         }
 
         val animationObserver = Observer<List<Vec>> { animationLocation ->
-            if(!_gameViewModel.game.running) tryDrawing(holder, animationLocation, true)
+            if (!_gameViewModel.game.running) tryDrawing(
+                holder
+            ) { canvas -> drawWinningShape(canvas, animationLocation) }
         }
 
-        val playerObserver = Observer<List<Player>> { players ->
-            if(_gameViewModel.game.running) tryDrawing(holder, players.filter{it.position != null}.map{it.position!!}, false)
+        val playerObserver = Observer<List<Player>> {
+            if (_gameViewModel.game.running) tryDrawing(
+                holder
+            ) { canvas -> drawInGame(canvas, it) }
         }
-
 
         // Observe the LiveData, passing in this activity as the LifecycleOwner and the observer.
         _gameViewModel.game.shapeMatched.observe(_viewLifecycleOwner, matchedObserver)
@@ -60,79 +64,62 @@ class SurfaceCallback(
     }
 
     override fun surfaceDestroyed(holder: SurfaceHolder) {
-        // and here you need to stop it
+        // and here you need to stop it <-- whats does that mean?
     }
 
-    private fun tryDrawing(holder: SurfaceHolder, locations: List<Vec>, gameWon: Boolean) {
+    private fun tryDrawing(holder: SurfaceHolder, drawFunction: (canvas: Canvas) -> Unit) {
         Log.i(TAG, "Trying to draw... ${holder.isCreating}")
-
         val canvas = holder.lockCanvas()
         if (canvas == null) {
             Log.e(TAG, "Cannot draw onto the canvas as it's null")
         } else {
-            if (gameWon) drawWinningShape(canvas, locations)
-            else drawMyStuff(canvas, locations)
+            drawFunction(canvas)
             holder.unlockCanvasAndPost(canvas)
         }
     }
 
-
-    private fun drawMyStuff(canvas: Canvas, playerLocations: List<Vec>) {
+    private fun drawInGame(canvas: Canvas, players: List<Player>) {
         var targetShape = Collections.unmodifiableList(_gameViewModel.game.targetShape.value!!)
+        var playerPositions =
+            Collections.unmodifiableList(players.filter { it.position != null }
+                .map { it.position!! })
+
         Log.d(TAG, "targetShape: $targetShape")
-        Log.i(TAG, "playerLocations: $playerLocations")
+        Log.i(TAG, "playerLocations: $playerPositions")
 
-        if (playerLocations.size < 3 || targetShape.size < 3) return
+        if (playerPositions.size < 3 || targetShape.size < 3) return
         val playerCount = _gameViewModel.game.numberOfPlayers
-
-        // clear screen.
-        val backgroundColor = _context.getColorFromAttr(android.R.attr.windowBackground)
-        canvas.drawColor(backgroundColor)
+        clearCanvas(canvas)
 
         // translate player location to target shape
-
-        var players = playerLocations
-        players = players.map { it + targetShape[0] - players[0] }
+        playerPositions = playerPositions.map { it + targetShape[0] - playerPositions[0] }
         val base = targetShape[0]
 
         // rotate player locations to fit target shape
-        val (_, indexLoc) = Geometry.getClockwisePoint(
-            Pair(
-                players[1] - base,
-                players[2] - base
-            )
-        )
-        val playersRightPoint = players[1 + indexLoc]
-        val (_, indexObj) = Geometry.getClockwisePoint(
-            Pair(
-                targetShape[1] - base,
-                targetShape[2] - base
-            )
-        )
-        val targetRightPoint = targetShape[1 + indexObj]
+        val playersRightPoint = Geometry.getClockwisePoint(playerPositions)
+        val targetRightPoint = Geometry.getClockwisePoint(targetShape)
 
         val angleToRotate = Geometry.getAngleSigned(
             playersRightPoint - base,
             targetRightPoint - base
         )
-
-        players = Geometry.rotatePoints(
-            players, base, angleToRotate
+        playerPositions = Geometry.rotatePoints(
+            playerPositions, base, angleToRotate
         )
 
         // center players and target shape independently
-        players = Geometry.center(players)
+        playerPositions = Geometry.center(playerPositions)
         targetShape = Geometry.center(targetShape)
 
         val shapesMatch = Geometry.determineMatch(
-            players,
+            playerPositions,
             targetShape
         )
         Log.d(TAG, "isMatch: $shapesMatch")
 
         // scale all points to fit canvas
         val allPoints = Geometry.scaleToCanvas(
-            players + targetShape,
+            playerPositions + targetShape,
             canvas.height,
             canvas.width,
             (POINT_SIZE * 2).toInt()
@@ -141,24 +128,26 @@ class SurfaceCallback(
         // draw target shape
         drawFigure(
             canvas,
-            allPoints.subList(playerCount, playerCount * 2).map { it.toPoint() },
+            allPoints.subList(playerCount, playerCount * 2),
             _paints.lineStrokeTargetShape,
             _paints.circleStrokeTargetShape,
             _paints.fillPaintTargetShape,
             POINT_SIZE * 1.2f
         )
 
-        // draw player locations
+        // draw players
+        playerPositions = allPoints.subList(0, playerCount)
         drawFigure(
             canvas,
-            allPoints.subList(0, playerCount).map { it.toPoint() },
+            playerPositions,
             _paints.lineStroke,
             _paints.circleStroke,
             _paints.fillPaint,
             POINT_SIZE
         )
+        drawPlayerNames(canvas, players, playerPositions, POINT_SIZE)
 
-        if(shapesMatch) {
+        if (shapesMatch) {
             _gameViewModel.game.generateTargetShapeAnimationPoints()
             _gameViewModel.game.setShapeMatched(shapesMatch)
             _gameViewModel.game.setRunning(false)
@@ -170,10 +159,7 @@ class SurfaceCallback(
     private fun drawWinningShape(canvas: Canvas, currentTargetShape: List<Vec>) {
         Log.d(TAG, "In drawWinningShape")
 
-        // clear screen
-        val backgroundColor = _context.getColorFromAttr(android.R.attr.windowBackground)
-        canvas.drawColor(backgroundColor)
-
+        clearCanvas(canvas)
         // translate player location to target shape
         val allAnimationPoints = _gameViewModel.game.animationPointsArray.flatMap { it }
 
@@ -192,7 +178,7 @@ class SurfaceCallback(
         // draw and animate target shape
         drawFigure(
             canvas,
-            allPoints.subList(0, _gameViewModel.game.numberOfPlayers).map { it.toPoint() },
+            allPoints.subList(0, _gameViewModel.game.numberOfPlayers),
             _paints.lineStrokeTargetShapeSuccess,
             _paints.circleStrokeTargetShapeSuccess,
             _paints.fillPaintTargetShapeSuccess,
@@ -200,43 +186,43 @@ class SurfaceCallback(
         )
     }
 
-
     private fun drawFigure(
         canvas: Canvas,
-        points: List<Point>,
+        points: List<Vec>,
         lineStroke: Paint,
         circleStroke: Paint,
         fillPaint: Paint,
         pointSize: Float
     ) {
-        for (i in points.indices) {
-            val current = points[i]
-            val x = current.x.toFloat()
-            val y = current.y.toFloat()
-
-            // Draw line with next point (if it exists)
-            if (i + 1 < points.size) {
-                val next = points[i + 1]
-                canvas.drawLine(x, y, next.x.toFloat(), next.y.toFloat(), lineStroke)
-            }
+        points.forEachIndexed { i, point ->
+            val next = if (i < points.size - 1) points[i + 1] else points[0]
+            canvas.drawLine(point.x, point.y, next.x, next.y, lineStroke)
         }
 
-        canvas.drawLine(
-            points[0].x.toFloat(),
-            points[0].y.toFloat(),
-            points[points.size - 1].x.toFloat(),
-            points[points.size - 1].y.toFloat(),
-            lineStroke
-        )
-
-        for (i in points.indices) {
-            val current = points[i]
-            val x = current.x.toFloat()
-            val y = current.y.toFloat()
-
-            // Draw points
-            canvas.drawCircle(x, y, pointSize, circleStroke)
-            canvas.drawCircle(x, y, pointSize, fillPaint)
+        points.forEach {
+            canvas.drawCircle(it.x, it.y, pointSize, circleStroke)
+            canvas.drawCircle(it.x, it.y, pointSize, fillPaint)
         }
+    }
+
+    private fun drawPlayerNames(
+        canvas: Canvas,
+        players: List<Player>,
+        playerScaledPositions: List<Vec>,
+        pointSize: Float
+    ) {
+        playerScaledPositions.forEachIndexed { i, position ->
+            canvas.drawText(
+                players[i].name.value!!,
+                position.x,
+                position.y - pointSize - 10f,
+                _paints.textPaintPlayerName
+            )
+        }
+    }
+
+    private fun clearCanvas(canvas: Canvas) {
+        val backgroundColor = _context.getColorFromAttr(android.R.attr.windowBackground)
+        canvas.drawColor(backgroundColor)
     }
 }
