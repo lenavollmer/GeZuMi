@@ -1,5 +1,6 @@
 package de.htw.gezumi.calculation
 
+import de.htw.gezumi.Utils
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
@@ -48,8 +49,8 @@ class Geometry {
             val maxY = translatedPoints.map { it.y }.maxOrNull() ?: 0
             return translatedPoints.map {
                 Vec(
-                        it.x + (width - maxX.toFloat()) / 2,
-                        it.y + (height - maxY.toFloat()) / 2
+                    it.x + (width - maxX.toFloat()) / 2,
+                    it.y + (height - maxY.toFloat()) / 2
                 )
             }
         }
@@ -58,7 +59,7 @@ class Geometry {
          * Calculate the angle between two vectors ([u],[v]).
          * The angle is positive if it is the inner angle and negative if it is the outer angle.
          */
-        fun getAngleSigned(u: Vec, v: Vec): Float {
+        private fun getAngleSigned(u: Vec, v: Vec): Float {
             val dot = u.dot(v)
             val det = u.x * v.y - u.y * v.x
             return atan2(det, dot)
@@ -68,7 +69,7 @@ class Geometry {
          * [points] are three positions. The first one is the angle's origin and the other two span the angle.
          * Returns the points that is further clock wise.
          */
-        fun getClockwisePoint(points: List<Vec>): Vec {
+        private fun getClockwisePoint(points: List<Vec>): Vec {
             val angle = getAngleSigned(points[1] - points[0], points[2] - points[0])
             val index = if (angle < 0) 0 else 1
             return points[1 + index]
@@ -91,8 +92,8 @@ class Geometry {
         /**
          * Rotates the [points] around the point [o] for the given [angle].
          */
-        fun rotatePoints(points: List<Vec>, o: Vec, angle: Float): List<Vec> =
-                points.map { rotatePoint(it, o, angle) }
+        private fun rotatePoints(points: List<Vec>, o: Vec, angle: Float): List<Vec> =
+            points.map { rotatePoint(it, o, angle) }
 
 
         fun determineMatch(points: List<Vec>, targetShape: List<Vec>): Boolean {
@@ -121,5 +122,59 @@ class Geometry {
             }
             return generatedPoints
         }
+
+        /**
+         * Arranges [playerPositions] and [targetPositions] on a canvas with the given [height] and [width].
+         */
+        fun arrangeGamePositions(
+            playerPositions: List<Vec>,
+            targetPositions: List<Vec>,
+            height: Int,
+            width: Int,
+            margin: Int
+        ): GamePositions {
+            // use closest point to host of target shape as base point of the target shape
+            val hostPosition = playerPositions[0]
+            val closestIdx = targetPositions.withIndex()
+                .minByOrNull { (_, p) -> p.getDist(hostPosition) }!!
+                .index
+
+            var targets = Utils.swap(targetPositions, closestIdx, 0);
+
+            // translate player positions to target shape
+            var players = playerPositions.map { it + targets[0] - hostPosition }
+            val base = players[0]
+
+            // rotate player positions to fit target shape
+            val playersRightPoint = getClockwisePoint(players)
+            val targetRightPoint = getClockwisePoint(targets)
+
+            val angleToRotate = getAngleSigned(
+                playersRightPoint - base,
+                targetRightPoint - base
+            )
+            players = rotatePoints(
+                players, base, angleToRotate
+            )
+
+            // center players and target shape independently
+            players = center(players)
+            targets = center(targets)
+
+            // scale all positions to fit canvas
+            val allPoints = scaleToCanvas(
+                players + targets,
+                height,
+                width,
+                margin
+            )
+
+            return GamePositions(
+                allPoints.subList(0, players.size),
+                allPoints.subList(players.size, allPoints.size)
+            )
+        }
     }
 }
+
+data class GamePositions(val playerPositions: List<Vec>, val targetPositions: List<Vec>)

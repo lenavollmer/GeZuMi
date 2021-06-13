@@ -2,6 +2,7 @@ package de.htw.gezumi
 
 import android.annotation.SuppressLint
 import de.htw.gezumi.model.Device
+import java.util.*
 
 class Utils {
     companion object {
@@ -23,6 +24,7 @@ class Utils {
         fun contains(list: List<Device>, device: Device): Boolean {
             return contains(list, device.deviceId)
         }
+
         fun contains(list: List<Device>, id: ByteArray): Boolean {
             return list.any { d -> d.deviceId.contentEquals(id) }
         }
@@ -36,5 +38,11 @@ class Utils {
         }
 
         fun logDeviceId(arr: ByteArray) = "${arr[0]},${arr[1]},${arr[2]}"
+
+        fun <T> swap(list: List<T>, i: Int, j: Int): List<T> {
+            val mutList = list.toMutableList()
+            Collections.swap(mutList, i, j);
+            return mutList.toList()
+        }
     }
 }

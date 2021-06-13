@@ -13,7 +13,6 @@ import de.htw.gezumi.canvas.Paints
 import de.htw.gezumi.canvas.getColorFromAttr
 import de.htw.gezumi.model.Player
 import de.htw.gezumi.viewmodel.GameViewModel
-import java.util.*
 
 
 private const val TAG = "SurfaceCallback"
@@ -46,15 +45,15 @@ class SurfaceCallback(
         }
 
         val animationObserver = Observer<List<Vec>> { animationLocation ->
-            if (!_gameViewModel.game.running) tryDrawing(
-                holder
-            ) { canvas -> drawWinningShape(canvas, animationLocation) }
+            if (!_gameViewModel.game.running) {
+                tryDrawing(holder) { canvas -> drawWinningShape(canvas, animationLocation) }
+            }
         }
 
         val playerObserver = Observer<List<Player>> {
-            if (_gameViewModel.game.running) tryDrawing(
-                holder
-            ) { canvas -> drawInGame(canvas, it) }
+            if (_gameViewModel.game.running) {
+                tryDrawing(holder) { canvas -> drawInGame(canvas, it) }
+            }
         }
 
         // Observe the LiveData, passing in this activity as the LifecycleOwner and the observer.
@@ -79,56 +78,39 @@ class SurfaceCallback(
     }
 
     private fun drawInGame(canvas: Canvas, players: List<Player>) {
-        var targetShape = Collections.unmodifiableList(_gameViewModel.game.targetShape.value!!)
+        var targetPositions = _gameViewModel.game.targetShape.value!!.toList()
         var playerPositions =
-            Collections.unmodifiableList(players.filter { it.position != null }
-                .map { it.position!! })
+            players.filter { it.position != null }
+                .map { it.position!! }.toList()
 
-        Log.d(TAG, "targetShape: $targetShape")
-        Log.i(TAG, "playerLocations: $playerPositions")
+        Log.d(TAG, "targetPositions: $targetPositions")
+        Log.i(TAG, "playerPositions: $playerPositions")
 
-        if (playerPositions.size < 3 || targetShape.size < 3) return
-        val playerCount = _gameViewModel.game.numberOfPlayers
-        clearCanvas(canvas)
+        if (playerPositions.size < 3 || targetPositions.size < 3) return
 
-        // translate player location to target shape
-        playerPositions = playerPositions.map { it + targetShape[0] - playerPositions[0] }
-        val base = targetShape[0]
-
-        // rotate player locations to fit target shape
-        val playersRightPoint = Geometry.getClockwisePoint(playerPositions)
-        val targetRightPoint = Geometry.getClockwisePoint(targetShape)
-
-        val angleToRotate = Geometry.getAngleSigned(
-            playersRightPoint - base,
-            targetRightPoint - base
-        )
-        playerPositions = Geometry.rotatePoints(
-            playerPositions, base, angleToRotate
-        )
-
-        // center players and target shape independently
-        playerPositions = Geometry.center(playerPositions)
-        targetShape = Geometry.center(targetShape)
-
-        val shapesMatch = Geometry.determineMatch(
+        val gamePositions = Geometry.arrangeGamePositions(
             playerPositions,
-            targetShape
-        )
-        Log.d(TAG, "isMatch: $shapesMatch")
-
-        // scale all points to fit canvas
-        val allPoints = Geometry.scaleToCanvas(
-            playerPositions + targetShape,
+            targetPositions,
             canvas.height,
             canvas.width,
             (POINT_SIZE * 2).toInt()
         )
+        playerPositions = gamePositions.playerPositions
+        targetPositions = gamePositions.targetPositions
+
+
+        val shapesMatch = Geometry.determineMatch(
+            playerPositions,
+            targetPositions
+        )
+        Log.d(TAG, "isMatch: $shapesMatch")
+
+        clearCanvas(canvas)
 
         // draw target shape
         drawFigure(
             canvas,
-            allPoints.subList(playerCount, playerCount * 2),
+            targetPositions,
             _paints.lineStrokeTargetShape,
             _paints.circleStrokeTargetShape,
             _paints.fillPaintTargetShape,
@@ -136,7 +118,6 @@ class SurfaceCallback(
         )
 
         // draw players
-        playerPositions = allPoints.subList(0, playerCount)
         drawFigure(
             canvas,
             playerPositions,
