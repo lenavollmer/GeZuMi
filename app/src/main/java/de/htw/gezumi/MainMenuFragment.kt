@@ -2,7 +2,6 @@ package de.htw.gezumi
 
 import android.content.Context
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -23,7 +22,7 @@ class MainMenuFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
 
         _binding = DataBindingUtil.inflate(inflater, R.layout.fragment_main_menu, container, false)
 
@@ -61,7 +60,7 @@ class MainMenuFragment : Fragment() {
     }
 
     private fun getInputText() : String{
-        var text = _binding.inputName.text.toString()
+        val text = _binding.inputName.text.toString()
 
         if(text == "") return "Gustav"
         return text
