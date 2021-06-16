@@ -43,7 +43,7 @@ class GameFragment : Fragment() {
         override fun gameLeft() {
             Handler(Looper.getMainLooper()).post {
                 Log.d(TAG, "game ended by host")
-                if(_firstLeave){
+                if (_firstLeave) {
                     val bundle = bundleOf("gameEnded" to true)
                     findNavController().navigate(R.id.action_Game_to_MainMenuFragment, bundle)
                 }
@@ -75,7 +75,6 @@ class GameFragment : Fragment() {
 
         _gameViewModel.game.resetState()
         _gameViewModel.updateTargetShape()
-        runTimer()
 
         val matchedObserver = Observer<Boolean> { shapesMatch ->
             if (shapesMatch) {
@@ -86,7 +85,14 @@ class GameFragment : Fragment() {
             }
         }
         val playerObserver = Observer<List<Player>> { players ->
-            if (players.size > 2 && _gameViewModel.game.targetShape.value!!.size > 2 ) {
+            var playersWithPosition = players.filter { it.position != null && !it.position!!.isNan() }
+            if (
+                playersWithPosition.size > 2 &&
+                _gameViewModel.game.targetShape.value!!.size > 2 &&
+                !_gameViewModel.game.running
+            ) {
+                _gameViewModel.game.setRunning(true)
+                runTimer()
                 _binding.progressBar.visibility = View.INVISIBLE
                 _binding.surfaceView.visibility = View.VISIBLE
             }
@@ -114,7 +120,6 @@ class GameFragment : Fragment() {
                 viewLifecycleOwner
             )
         )
-        _gameViewModel.game.setRunning(true)
 
         view.findViewById<Button>(R.id.start_new_game).setOnClickListener {
             _binding.shapesMatched.visibility = View.INVISIBLE
@@ -135,7 +140,6 @@ class GameFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         mainHandler.post(changeTargetLocations)
-        _gameViewModel.game.setRunning(true)
     }
 
     @kotlin.ExperimentalUnsignedTypes
@@ -148,11 +152,11 @@ class GameFragment : Fragment() {
         _gameViewModel.game.resetCurrentIdx()
         mainHandler.removeCallbacks(changeTargetLocations)
         // stop scan and advertise
-        if(_gameViewModel.isGattServerInitialized()){
+        if (_gameViewModel.isGattServerInitialized()) {
             _gameViewModel.gattServer.notifyGameEnding()
             _gameViewModel.gattServer.stopServer()
         }
-        if(_gameViewModel.isGattClientInitialized()) _gameViewModel.gattClient.disconnect()
+        if (_gameViewModel.isGattClientInitialized()) _gameViewModel.gattClient.disconnect()
     }
 
     private fun runTimer() {
