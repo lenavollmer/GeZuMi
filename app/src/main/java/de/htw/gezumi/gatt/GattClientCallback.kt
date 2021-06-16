@@ -28,10 +28,13 @@ class GattClientCallback() : BluetoothGattCallback() {
     override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
         super.onServicesDiscovered(gatt, status)
         Log.d(TAG, "services discovered")
-        gatt?.setCharacteristicNotification(
+        gatt!!.setCharacteristicNotification(
             gatt.getService(GameService.HOST_UUID)
                 ?.getCharacteristic(GameService.JOIN_APPROVED_UUID), true
         )
+        val joinName = gatt.getService(GameService.HOST_UUID).getCharacteristic(GameService.JOIN_NAME_UUID)
+        joinName.value = GameViewModel.instance.playerName?.toByteArray(Charsets.UTF_8) ?: ByteArray(0)
+        gatt.writeCharacteristic(joinName)
     }
 
     @kotlin.ExperimentalUnsignedTypes
@@ -57,7 +60,7 @@ class GattClientCallback() : BluetoothGattCallback() {
                 val subscribeDescriptor = gatt?.getService(GameService.HOST_UUID)
                     ?.getCharacteristic(GameService.GAME_EVENT_UUID)
                     ?.getDescriptor(GameService.CLIENT_CONFIG)
-                subscribeDescriptor?.value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
+                subscribeDescriptor?.value = BluetoothGattDescriptor.ENABLE_INDICATION_VALUE
                 gatt?.writeDescriptor(subscribeDescriptor)
             }
         }
@@ -70,11 +73,12 @@ class GattClientCallback() : BluetoothGattCallback() {
     ) {
         super.onDescriptorWrite(gatt, descriptor, status)
         when (descriptor?.uuid) {
+            // subscribe to game events and host updates
             GameService.CLIENT_CONFIG -> {
                 if (status == BluetoothGatt.GATT_SUCCESS) {
                     if (Arrays.equals(
                             descriptor.value,
-                            BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
+                            BluetoothGattDescriptor.ENABLE_INDICATION_VALUE
                         )
                     ) {
                         Log.d(TAG, "game event and host update subscribe successful")
@@ -85,6 +89,10 @@ class GattClientCallback() : BluetoothGattCallback() {
                         gatt?.setCharacteristicNotification(
                             gatt.getService(GameService.HOST_UUID)
                                 ?.getCharacteristic(GameService.HOST_UPDATE_UUID), true
+                        )
+                        gatt?.setCharacteristicNotification(
+                            gatt.getService(GameService.HOST_UUID)
+                                ?.getCharacteristic(GameService.RESPONSE_HOST_UPDATE_UUID), true
                         )
                         Log.d(TAG, "send identification to host")
                         val identificationCharacteristic = gatt?.getService(GameService.HOST_UUID)
@@ -105,6 +113,10 @@ class GattClientCallback() : BluetoothGattCallback() {
                             gatt.getService(GameService.HOST_UUID)
                                 ?.getCharacteristic(GameService.HOST_UPDATE_UUID), false
                         )
+                        gatt?.setCharacteristicNotification(
+                            gatt.getService(GameService.HOST_UUID)
+                                ?.getCharacteristic(GameService.RESPONSE_HOST_UPDATE_UUID), false
+                        )
                     }
                 }
             }
@@ -120,7 +132,6 @@ class GattClientCallback() : BluetoothGattCallback() {
         super.onCharacteristicChanged(gatt, characteristic)
         when (characteristic?.uuid) {
             GameService.JOIN_APPROVED_UUID -> {
-                Log.d(TAG, "callback")
                 val approved = ByteBuffer.wrap(characteristic.value).int
                 if (approved == 1) {
                     Log.d(TAG, "approved, read game id")
@@ -136,10 +147,11 @@ class GattClientCallback() : BluetoothGattCallback() {
                 if (event == GameService.GAME_START_EVENT) {
                     GameViewModel.instance.onGameStart()
                 }
-                if(event == GameService.GAME_END_EVENT){
+                if (event == GameService.GAME_END_EVENT) {
                     GameViewModel.instance.onGameLeave()
                 }
             }
+            GameService.RESPONSE_HOST_UPDATE_UUID,
             GameService.HOST_UPDATE_UUID -> {
                 val bluetoothData = BluetoothData.fromBytes(characteristic.value)
                 Log.d(

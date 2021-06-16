@@ -12,6 +12,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
+import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
@@ -28,6 +29,8 @@ import de.htw.gezumi.gatt.GattServer
 import de.htw.gezumi.util.CSVReader
 import de.htw.gezumi.viewmodel.GAME_NAME_LENGTH
 import de.htw.gezumi.viewmodel.GameViewModel
+import java.util.*
+import kotlin.random.Random
 
 
 private const val TAG = "HostFragment"
@@ -45,56 +48,83 @@ class HostFragment : Fragment() {
     private var _gameStarted = false
     private var wasOnPause = false
 
-    private val _connectedDevices: ArrayList<BluetoothDevice> =
-        ArrayList() // devices that are connected, but neither approved nor declined
+    private val _connectedDevices: MutableList<BluetoothDevice> = mutableListOf() // devices that are connected, but neither approved nor declined
+    private val _joinNames: MutableList<String> = mutableListOf() // depends on connectedDevices
 
     //private val _approvedDevices: ArrayList<Device> = ArrayList()
     // for displayed list
     private lateinit var _playerListAdapter: ApprovedDevicesAdapter
 
     // for bottom sheet
-    private val _connectedListAdapter = ConnectedPlayerDeviceAdapter(_connectedDevices) { position, status ->
+    private val _connectedListAdapter = ConnectedPlayerDeviceAdapter(_joinNames) { position, status ->
         if (status == ConnectedPlayerDeviceAdapter.STATUS.APPROVED) {
             //_approvedDevices.add(_connectedDevices[position])
             _gattServer.notifyJoinApproved(_connectedDevices[position], true)
-            if ((++_currentPlayers) >= (_minimumPlayers - 1)) {
+            _currentPlayers++
+            _binding.noPlayers.visibility = View.GONE
+            _binding.recyclerPlayers.visibility = View.VISIBLE
+            if (_currentPlayers >= (_minimumPlayers - 1)) {
                 _binding.startGame.isEnabled = true
             }
         } else {
             _gattServer.notifyJoinApproved(_connectedDevices[position], false)
         }
         _connectedDevices.removeAt(position)
+        _joinNames.removeAt(position)
         if (_connectedDevices.size == 0)
             _bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
         updateAdapters()
     }
 
     interface GattConnectCallback {
-        fun onGattConnect(bluetoothDevice: BluetoothDevice)
+        fun onJoinRequest(bluetoothDevice: BluetoothDevice, joinName: String?)
         fun onGattDisconnect(bluetoothDevice: BluetoothDevice)
     }
 
     // TODO refactor GattConnectCallback
+    @kotlin.ExperimentalUnsignedTypes
     private val connectCallback = object : GattConnectCallback {
-        override fun onGattConnect(bluetoothDevice: BluetoothDevice) {
-            Handler(Looper.getMainLooper()).postDelayed({
-                _connectedDevices.add(bluetoothDevice)
+        override fun onJoinRequest(bluetoothDevice: BluetoothDevice, joinName: String?) {
+            val joinString = joinName ?: "An unknown player"
+            _connectedDevices.add(bluetoothDevice)
+            _joinNames.add(joinString)
+            Handler(Looper.getMainLooper()).post {
                 _bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
                 updateAdapters()
-            }, 1000) //Give the Gatt time to connect properly
+            }
         }
 
+        @kotlin.ExperimentalUnsignedTypes
         override fun onGattDisconnect(bluetoothDevice: BluetoothDevice) {
-            _connectedDevices.remove(bluetoothDevice) // is only present if currently neither approved nor declined
+            val isContained = _connectedDevices.contains(bluetoothDevice)
+            if (isContained) {
+                // if is contained, also remove name
+                val idx = _connectedDevices.indexOf(bluetoothDevice)
+                _joinNames.removeAt(idx)
+                _connectedDevices.remove(bluetoothDevice) // is only present if currently neither approved nor declined
+            }
             _gattServer.subscribedDevices.remove(bluetoothDevice)
 
             // remove device TODO: remove player
             val device = GameViewModel.instance.devices.find { it.bluetoothDevice == bluetoothDevice }
-            Log.d(TAG, "Remove device: $device")
-            GameViewModel.instance.devices.remove(device)
+            if (device != null) {
+                // device was already a player of the game
+                Log.d(TAG, "remove device: $device")
+                GameViewModel.instance.devices.remove(device)
+                _currentPlayers--
+                if(_currentPlayers == 0){
+                    _binding.noPlayers.visibility = View.VISIBLE
+                    _binding.recyclerPlayers.visibility = View.GONE
+                }
+                if (_gameStarted) {
+                    // could come here (HostFragment) even if game is running
+                    _gattServer.notifyGameEnding()
+                    _gameViewModel.onGameLeave()
+                }
+            }
             // update UI
             Handler(Looper.getMainLooper()).post {
-                if ((--_currentPlayers) <= (_minimumPlayers - 1)) {
+                if (_currentPlayers <= (_minimumPlayers - 1)) {
                     _binding.startGame.isEnabled = false
                 }
                 if (_gameViewModel.devices.size == 0)
@@ -115,8 +145,7 @@ class HostFragment : Fragment() {
             _gameViewModel.txPower = CSVReader.getTxPower(Build.DEVICE, requireContext())
 
         val gameService = GameService.createHostService()
-
-        _gameViewModel.gameId = GameService.HOST_ID_PREFIX + GameService.randomIdPart
+        _gameViewModel.makeGameId()
 
         Log.d(TAG, "start gatt server and game service")
         _gattServer = GattServer(requireContext(), _gameViewModel.bluetoothController, connectCallback)
@@ -130,6 +159,13 @@ class HostFragment : Fragment() {
     ): View {
         _binding = DataBindingUtil.inflate(inflater, R.layout.fragment_host, container, false)
         _playerListAdapter.lifecycleOwner = viewLifecycleOwner
+
+        _binding.noPlayers.visibility = View.VISIBLE
+        _binding.recyclerPlayers.visibility = View.GONE
+
+        (activity as AppCompatActivity?)!!.supportActionBar?.show() // Enable Bar
+        (activity as AppCompatActivity?)!!.supportActionBar?.setTitle(R.string.host)
+
         return _binding.root
     }
 
@@ -168,7 +204,8 @@ class HostFragment : Fragment() {
         }
         _binding.startGame.isEnabled = false
 
-        _binding.editTextGameName.setText(R.string.default_game_name)
+        val possibleGameNames = resources.getStringArray(R.array.game_names).toList()
+        _binding.editTextGameName.setText(possibleGameNames[Random.nextInt(possibleGameNames.size)])
         onGameNameChanged(_binding.editTextGameName.text.toString())
 
         _binding.editTextGameName.setOnEditorActionListener { textView, actionId, _ ->
@@ -184,20 +221,10 @@ class HostFragment : Fragment() {
             return@setOnEditorActionListener false
         }
 
-        // player name listener
-        _binding.editTextPlayerName.setOnEditorActionListener { textView, actionId, _ ->
-            if (actionId == EditorInfo.IME_ACTION_GO) {
-                Log.d(TAG, "player name changed")
-                _gameViewModel.onPlayerNameChanged(textView.text.toString())
-                val imm: InputMethodManager =
-                    requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                imm.hideSoftInputFromWindow(_binding.editTextPlayerName.windowToken, 0)
-                _binding.editTextPlayerName.clearFocus()
-                return@setOnEditorActionListener true
-            }
-            return@setOnEditorActionListener false
+        if(arguments?.getString("playerName") != null){
+            val playerName = arguments?.getString("playerName")!!
+            _gameViewModel.onPlayerNameChanged(playerName)
         }
-
     }
 
     @kotlin.ExperimentalUnsignedTypes
@@ -231,21 +258,19 @@ class HostFragment : Fragment() {
 
     override fun onStop() {
         super.onStop()
-        if (!_gameStarted) _gattServer.notifyGameEnding()
+        if (!_gameStarted) _gattServer.notifyGameEnding() // how can that ever happen? when game is started, then we are in game fragment
     }
 
     override fun onPause() {
         super.onPause()
         wasOnPause = true
-        updateAdapters()
-        if (!_gameStarted) stopScanAndAdvertise()
-        //_gameViewModel.bluetoothController.stopAdvertising()
-        //_gameViewModel.bluetoothController.stopScan(GAME_SCAN_KEY) // why just stop scan?? TODO: klären!
+        if (!_gameStarted) stopScanAndAdvertise() // how can that ever happen? when game is started, then we are in game fragment
     }
 
     @kotlin.ExperimentalUnsignedTypes
     override fun onResume() {
         super.onResume()
+        updateAdapters()
         if (wasOnPause) {
             wasOnPause = false
             scanAndAdvertise()

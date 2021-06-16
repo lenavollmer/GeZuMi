@@ -54,7 +54,7 @@ class GattServer(private val _context: Context, private val _bluetoothController
         val joinApprovedCharacteristic = bluetoothGattServer?.getService(GameService.HOST_UUID)?.getCharacteristic(GameService.JOIN_APPROVED_UUID)
         joinApprovedCharacteristic?.value = ByteBuffer.allocate(4).putInt(if (approved) 1 else 0).array()
         Log.d(TAG, "notify join approve: $approved")
-        bluetoothGattServer?.notifyCharacteristicChanged(device, joinApprovedCharacteristic, false)
+        bluetoothGattServer?.notifyCharacteristicChanged(device, joinApprovedCharacteristic, true)
     }
 
     fun notifyGameStart() {
@@ -67,7 +67,7 @@ class GattServer(private val _context: Context, private val _bluetoothController
         val gameStartCharacteristic = bluetoothGattServer?.getService(GameService.HOST_UUID)?.getCharacteristic(GameService.GAME_EVENT_UUID)
         gameStartCharacteristic?.value = ByteBuffer.allocate(4).putInt(GameService.GAME_START_EVENT).array()
         for (device in subscribedDevices) {
-            bluetoothGattServer?.notifyCharacteristicChanged(device, gameStartCharacteristic, false)
+            bluetoothGattServer?.notifyCharacteristicChanged(device, gameStartCharacteristic, true)
         }
     }
 
@@ -81,7 +81,7 @@ class GattServer(private val _context: Context, private val _bluetoothController
         val gameEndCharacteristic = bluetoothGattServer?.getService(GameService.HOST_UUID)?.getCharacteristic(GameService.GAME_EVENT_UUID)
         gameEndCharacteristic?.value = ByteBuffer.allocate(4).putInt(GameService.GAME_END_EVENT).array()
         for (device in subscribedDevices) {
-            bluetoothGattServer?.notifyCharacteristicChanged(device, gameEndCharacteristic, false)
+            bluetoothGattServer?.notifyCharacteristicChanged(device, gameEndCharacteristic, true)
         }
     }
 
@@ -93,6 +93,16 @@ class GattServer(private val _context: Context, private val _bluetoothController
         hostUpdateCharacteristic?.value = bluetoothData.toByteArray()
         for (device in subscribedDevices) {
             bluetoothGattServer?.notifyCharacteristicChanged(device, hostUpdateCharacteristic, false)
+        }
+    }
+
+    @kotlin.ExperimentalUnsignedTypes
+    fun indicateHostUpdate(bluetoothData: BluetoothData) {
+        Log.d(TAG, "índicate host update sender: ${Utils.toHexString(bluetoothData.senderId)}")
+        val responseHostUpdateCharacteristic = bluetoothGattServer?.getService(GameService.HOST_UUID)?.getCharacteristic(GameService.RESPONSE_HOST_UPDATE_UUID)
+        responseHostUpdateCharacteristic?.value = bluetoothData.toByteArray()
+        for (device in subscribedDevices) {
+            bluetoothGattServer?.notifyCharacteristicChanged(device, responseHostUpdateCharacteristic, true)
         }
     }
 }

@@ -1,9 +1,7 @@
 package de.htw.gezumi.canvas
 
 import android.content.Context
-import android.graphics.Color
 import android.graphics.Paint
-import android.graphics.Typeface
 import android.util.TypedValue
 import androidx.annotation.AttrRes
 import androidx.annotation.ColorInt
@@ -24,23 +22,31 @@ class Paints(
     private val _pointSize: Float,
 
     ) {
-    private val _colorAccent = _context.getColorFromAttr(R.attr.colorAccent)
+    private val _colorPrimary = _context.getColorFromAttr(R.attr.colorPrimary)
     private val _backgroundColor = _context.getColorFromAttr(android.R.attr.windowBackground)
     private val _targetColor = _context.getColorFromAttr(R.attr.targetShapeColor)
     private val _textPaintPlayerName = _context.getColorFromAttr(R.attr.playerNameColor)
     private val _targetSuccessColor = _context.getColorFromAttr(R.attr.colorSecondary)
+    private val _typeface = _context.resources.getFont(R.font.roboto_mono)
+    private val _playerSelfColor = _context.getColorFromAttr(R.attr.playerSelfColor)
 
     val lineStroke = Paint().apply {
         isAntiAlias = true
-        color = _colorAccent
+        color = _colorPrimary
         style = Paint.Style.STROKE
-        strokeWidth = _pointSize * 0.2f
+        strokeWidth = _pointSize * 0.4f
     }
     val circleStroke = Paint().apply {
         isAntiAlias = true
-        color = _colorAccent
+        color = _colorPrimary
         style = Paint.Style.STROKE
-        strokeWidth = _pointSize * 0.1f
+        strokeWidth = _pointSize * 0.2f
+    }
+    val playerSelfStroke = Paint().apply {
+        isAntiAlias = true
+        color = _playerSelfColor
+        style = Paint.Style.STROKE
+        strokeWidth = _pointSize * 0.2f
     }
     val fillPaint = Paint().apply {
         isAntiAlias = true
@@ -89,6 +95,7 @@ class Paints(
         textAlign = Paint.Align.CENTER
         textSize = 45f
         color = _textPaintPlayerName
+        typeface = _typeface
     }
 
     val textPaintPlayerNameStroke = Paint().apply {
@@ -97,6 +104,7 @@ class Paints(
         textSize = 45f
         color = _backgroundColor
         style = Paint.Style.STROKE
-        strokeWidth = 20f
+        strokeWidth = 16f
+        typeface = _typeface
     }
 }

@@ -2,4 +2,9 @@
 <resources>
     <attr name="targetShapeColor" format="reference|color" />
     <attr name="playerNameColor" format="reference|color" />
+    <attr name="playerSelfColor" format="reference|color" />
+    <attr name="popUpColor" format="reference|color"/>
+    <attr name="popUpTextColor" format="reference|color"/>
+    <attr name="bottomDrawerColor" format="reference|color"/>
+    <attr name="bottomDrawerTextColor" format="reference|color"/>
 </resources>

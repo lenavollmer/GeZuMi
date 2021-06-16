@@ -29,6 +29,10 @@ class GattClient(private val _context: Context) {
         val subscribeDescriptor = _gatt?.getService(GameService.HOST_UUID)?.getCharacteristic(GameService.GAME_EVENT_UUID)?.getDescriptor(GameService.CLIENT_CONFIG)
         subscribeDescriptor?.value = BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE
         _gatt?.writeDescriptor(subscribeDescriptor)
+        _gatt?.setCharacteristicNotification(
+                _gatt?.getService(GameService.HOST_UUID)
+                    ?.getCharacteristic(GameService.JOIN_APPROVED_UUID), false
+        )
         _gatt?.setCharacteristicNotification(_gatt?.getService(GameService.HOST_UUID)?.getCharacteristic(GameService.GAME_EVENT_UUID), false)
         _gatt?.setCharacteristicNotification(_gatt?.getService(GameService.HOST_UUID)?.getCharacteristic(GameService.HOST_UPDATE_UUID), false)
         _gatt?.disconnect()

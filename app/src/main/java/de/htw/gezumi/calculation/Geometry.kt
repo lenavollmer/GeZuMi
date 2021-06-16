@@ -1,6 +1,5 @@
 package de.htw.gezumi.calculation
 
-import de.htw.gezumi.Utils
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
@@ -135,11 +134,7 @@ class Geometry {
         ): GamePositions {
             // use closest point to host of target shape as base point of the target shape
             val hostPosition = playerPositions[0]
-            val closestIdx = targetPositions.withIndex()
-                .minByOrNull { (_, p) -> p.getDist(hostPosition) }!!
-                .index
-
-            var targets = Utils.swap(targetPositions, closestIdx, 0);
+            var targets = targetPositions.toList();
 
             // translate player positions to target shape
             var players = playerPositions.map { it + targets[0] - hostPosition }

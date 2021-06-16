@@ -70,14 +70,28 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     var host: Device? =
         null // is null for host themselves // is currently not the same object as host in _devices (and has default txpower)
 
-    val game = Game(host?.deviceId)
+    val game = Game()
 
     // the game id consists of a fixed host prefix (4 bytes) and a random id part (4 bytes)
-    var gameId: ByteArray = ByteArray(0) // 21 bytes left for game attributes like game name etc.
+    var gameId: ByteArray = ByteArray(0)
         get() {
             require(field.size <= GAME_ID_LENGTH) { "Wrong game id" }
             return field + ByteArray(GAME_ID_LENGTH - field.size) // fill with zeros if
         }
+
+    init {
+        // singleton
+        instance = this
+        // generate random id
+        Random().nextBytes(myDeviceId)
+        bluetoothController.setContext(application.applicationContext)
+        bluetoothController.myDeviceId = myDeviceId
+    }
+
+    fun makeGameId() {
+        GameService.newRandomId()
+        gameId = GameService.HOST_ID_PREFIX + GameService.randomIdPart
+    }
 
     @kotlin.ExperimentalUnsignedTypes
     @SuppressLint("DefaultLocale")
@@ -139,21 +153,12 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                     )
                 )
                 // also update own game
+                if (game.hostId == null && isHost()) game.hostId = myDeviceId
                 game.updatePlayer(deviceId, Vec(newPositions[it].x, newPositions[it].y))
             }
             _positions = newPositions
         }
 
-    }
-
-
-    init {
-        // singleton
-        instance = this
-        // generate random id
-        Random().nextBytes(myDeviceId)
-        bluetoothController.setContext(application.applicationContext)
-        bluetoothController.myDeviceId = myDeviceId
     }
 
     @kotlin.ExperimentalUnsignedTypes
@@ -193,6 +198,12 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         // TODO: differentiate between game left and game terminated by host (terminated by host does not work)
         // Handler(Looper.getMainLooper()).post{}
         clearModel()
+        if (isHost()) {
+            // restart advertising on a new game id
+            makeGameId()
+            bluetoothController.startAdvertising(gameId, GameService.gameName.toByteArray(Charsets.UTF_8))
+            bluetoothController.startScan(gameScanCallback, gameId)
+        }
     }
 
     @kotlin.ExperimentalUnsignedTypes
@@ -210,6 +221,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         // TODO lifecycle: add stuff here
         devices.clear()
         game.clear()
+        playerName = null
     }
 
     fun isJoined(): Boolean = gameId.isNotEmpty()
@@ -291,7 +303,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             val targetShape = Geometry.generateGeometricObject(devices.size + 1)
             game.setTargetShape(targetShape as MutableList<Vec>)
             targetShape.forEach {
-                gattServer.notifyHostUpdate(
+                gattServer.indicateHostUpdate(
                     BluetoothData(
                         TARGET_SHAPE_ID,
                         myDeviceId,

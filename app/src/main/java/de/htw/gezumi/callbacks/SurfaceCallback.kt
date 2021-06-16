@@ -56,7 +56,6 @@ class SurfaceCallback(
             }
         }
 
-        // Observe the LiveData, passing in this activity as the LifecycleOwner and the observer.
         _gameViewModel.game.shapeMatched.observe(_viewLifecycleOwner, matchedObserver)
         _gameViewModel.game.targetShapeAnimation.observe(_viewLifecycleOwner, animationObserver)
         _gameViewModel.game.players.observe(_viewLifecycleOwner, playerObserver)
@@ -82,8 +81,8 @@ class SurfaceCallback(
         var playerPositions =
             players.filter { it.position != null }
                 .map { it.position!! }.toList()
-        Log.d(TAG, "targetPositions: $targetPositions")
-        Log.i(TAG, "playerPositions: $playerPositions")
+
+        Log.i(TAG, "player positions: $playerPositions")
 
         if (playerPositions.size < 3 || targetPositions.size < 3) return
 
@@ -126,6 +125,9 @@ class SurfaceCallback(
             POINT_SIZE
         )
         drawPlayerNames(canvas, players, playerPositions, POINT_SIZE)
+        Log.d(TAG, "players: $players")
+        val playerSelfIndex = players.indexOfFirst { it.name.value == "" }
+        drawPlayerSelf(canvas, playerPositions[playerSelfIndex], POINT_SIZE)
 
         if (shapesMatch) {
             _gameViewModel.game.generateTargetShapeAnimationPoints()
@@ -180,8 +182,8 @@ class SurfaceCallback(
         }
 
         points.forEach {
-            canvas.drawCircle(it.x, it.y, pointSize, circleStroke)
             canvas.drawCircle(it.x, it.y, pointSize, fillPaint)
+            canvas.drawCircle(it.x, it.y, pointSize, circleStroke)
         }
     }
 
@@ -207,6 +209,14 @@ class SurfaceCallback(
                 _paints.textPaintPlayerNameFill
             )
         }
+    }
+
+    private fun drawPlayerSelf(
+        canvas: Canvas,
+        playerSelfPosition: Vec,
+        pointSize: Float
+    ) {
+        canvas.drawCircle(playerSelfPosition.x, playerSelfPosition.y, pointSize, _paints.playerSelfStroke)
     }
 
     private fun clearCanvas(canvas: Canvas) {

@@ -1,17 +1,16 @@
 package de.htw.gezumi.calculation
 
-import android.graphics.Point
 import kotlin.math.sqrt
 
 data class Vec(val x: Float = 0f, val y: Float = 0f) {
 
     constructor(x: Int, y: Int) : this(x.toFloat(), y.toFloat())
 
-    fun toPoint(): Point = Point(x.toInt(), y.toInt())
-
     fun dot(b: Vec) = x * b.x + y * b.y
 
     fun length() = sqrt((x * x) + (y * y))
+
+    fun isNan() = x.isNaN() || y.isNaN()
 
     /**
      * Get the euclidean distance between this vector and vector [b].

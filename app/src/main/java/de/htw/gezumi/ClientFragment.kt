@@ -3,7 +3,6 @@ package de.htw.gezumi
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
-import android.content.Context
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -13,10 +12,9 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.inputmethod.EditorInfo
-import android.view.inputmethod.InputMethodManager
 import android.widget.LinearLayout
 import android.widget.PopupWindow
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.bundleOf
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
@@ -35,7 +33,7 @@ import de.htw.gezumi.gatt.GattClientCallback
 import de.htw.gezumi.model.Device
 import de.htw.gezumi.util.CSVReader
 import de.htw.gezumi.viewmodel.GameViewModel
-
+import de.htw.gezumi.util.dimBehind
 
 private const val TAG = "ClientFragment"
 
@@ -55,6 +53,7 @@ class ClientFragment : Fragment() {
     private val _hostDeviceListAdapter: JoinGameListAdapter = JoinGameListAdapter(_availableHostDevices) {
 
         _gameViewModel.host = _availableHostDevices[it]
+        _gameViewModel.game.hostId = _availableHostDevices[it].deviceId
 
         val gattClientCallback = GattClientCallback()
         _gattClient.connect(_availableHostDevices[it].bluetoothDevice!!, gattClientCallback)
@@ -65,6 +64,7 @@ class ClientFragment : Fragment() {
 
         _popupBinding.joinText.text = getString(R.string.join_wait)
         _popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0)
+        _popupWindow.dimBehind()
 
         _availableHostDevices.clear()
         updateBtDeviceListAdapter()
@@ -90,6 +90,7 @@ class ClientFragment : Fragment() {
                 _popupWindow.dismiss()
                 _popupBinding.joinText.text = getString(R.string.join_approved)
                 _popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0)
+                _popupWindow.dimBehind()
 
                 _hostDeviceListAdapter.setItemsEnabled(false)
                 _binding.buttonScan.isEnabled = false
@@ -104,10 +105,10 @@ class ClientFragment : Fragment() {
                 _popupWindow.dismiss()
                 _popupBinding.joinText.text = getString(R.string.join_declined)
                 _popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0)
+                _popupWindow.dimBehind()
 
                 _gameViewModel.bluetoothController.stopScan(HOST_SCAN_KEY)
                 _gattClient.disconnect() // functionality should not be in UI callback
-
                 _availableHostDevices.clear()
                 updateBtDeviceListAdapter()
             }
@@ -168,6 +169,9 @@ class ClientFragment : Fragment() {
 
         _hostDeviceListAdapter.lifecycleOwner = viewLifecycleOwner
 
+        (activity as AppCompatActivity?)!!.supportActionBar?.show() // Enable Bar
+        (activity as AppCompatActivity?)!!.supportActionBar?.setTitle(R.string.join)
+
         return _binding.root
     }
 
@@ -186,17 +190,9 @@ class ClientFragment : Fragment() {
             _gameViewModel.bluetoothController.startHostScan(_gameViewModel.hostScanCallback)// ParcelUuid(GameService.getGameId()), true) <- doesn't work, why???
         }
 
-        // player name listener
-        _binding.editTextPlayerName.setOnEditorActionListener { textView, actionId, _ ->
-            if (actionId == EditorInfo.IME_ACTION_GO) {
-                Log.d(TAG, "player name changed")
-                _gameViewModel.onPlayerNameChanged(textView.text.toString())
-                val imm: InputMethodManager = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                imm.hideSoftInputFromWindow(_binding.editTextPlayerName.windowToken, 0)
-                _binding.editTextPlayerName.clearFocus()
-                return@setOnEditorActionListener true
-            }
-            return@setOnEditorActionListener false
+        if(arguments?.getString("playerName") != null){
+            val playerName = arguments?.getString("playerName")!!
+            _gameViewModel.onPlayerNameChanged(playerName)
         }
 
         _popupWindow = PopupWindow(

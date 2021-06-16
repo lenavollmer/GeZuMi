@@ -15,33 +15,65 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginTop="112dp"/>
+            android:layout_marginTop="112dp" android:fontFamily="@font/roboto_mono" android:textSize="36sp"/>
     <Button
             android:id="@+id/button_host"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:text="@string/host"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintHorizontal_bias="0.222" app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.346"/>
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintVertical_bias="0" app:layout_constraintTop_toBottomOf="@+id/button_join"
+            android:layout_marginTop="16dp" android:layout_marginStart="10dp" android:layout_marginEnd="10dp"
+            android:fontFamily="@font/roboto_mono"/>
     <Button
             android:id="@+id/button_join"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:text="@string/join"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintHorizontal_bias="0.533" app:layout_constraintVertical_bias="0.346"
-            app:layout_constraintStart_toEndOf="@+id/button_host" app:layout_constraintTop_toTopOf="parent"/>
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginEnd="10dp" android:layout_marginStart="10dp"
+            app:layout_constraintTop_toBottomOf="@+id/input_name_wrapper"
+            app:layout_constraintVertical_bias="0" android:layout_marginTop="16dp"
+            android:fontFamily="@font/roboto_mono"/>
     <Button
             android:text="@string/direct_to_game"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content" android:id="@+id/button_game"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" app:layout_constraintTop_toBottomOf="@+id/textview_first"
-            android:layout_marginTop="252dp" app:layout_constraintHorizontal_bias="0.498"/>
-</androidx.constraintlayout.widget.ConstraintLayout>
+            app:layout_constraintEnd_toEndOf="parent" app:layout_constraintTop_toBottomOf="@+id/button_host"
+            app:layout_constraintHorizontal_bias="0" android:layout_marginTop="16dp" android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp" android:fontFamily="@font/roboto_mono"/>
 
+    <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:inputType="textPersonName"
+            android:ems="10"
+            android:id="@+id/input_name_wrapper"
+            app:layout_constraintEnd_toEndOf="parent" app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textview_first" android:layout_marginTop="76dp"
+            android:layout_marginStart="10dp" android:layout_marginEnd="10dp" android:fontFamily="@font/roboto_mono"
+            android:autofillHints="@string/player_name"
+            android:hint="@string/player_name">
+
+        <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/input_name"
+                android:maxLength="8"
+                android:singleLine="true"
+                android:imeOptions="actionGo"
+                android:inputType="text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:fontFamily="@font/roboto_mono"/>
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

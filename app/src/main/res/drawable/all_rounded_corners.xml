@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <shape xmlns:android="http://schemas.android.com/apk/res/android">
-    <solid android:color="?android:colorPrimary"/>
-    <corners android:topLeftRadius="40dp" android:topRightRadius="40dp" android:bottomLeftRadius="40dp" android:bottomRightRadius="40dp"/>
+    <solid android:color="?attr/popUpColor"/>
+    <corners android:topLeftRadius="10dp" android:topRightRadius="10dp" android:bottomLeftRadius="10dp" android:bottomRightRadius="10dp"/>
 
 </shape>
