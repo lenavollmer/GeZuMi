@@ -11,6 +11,8 @@
 
         <!-- Game colors -->
         <item name ="targetShapeColor">@color/gray_300</item>
+        <item name ="playerNameColor">@color/black</item>
+        <item name ="playerSelfColor">@color/gezumi_yellow</item>
 
         <item name="popUpColor">@color/gezumi_white</item>
         <item name="popUpTextColor">@color/gezumi_gray</item>

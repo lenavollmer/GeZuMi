@@ -30,6 +30,8 @@ class MockedGameFragment : Fragment() {
     private lateinit var _surfaceView: SurfaceView
     private lateinit var _surfaceHolder: SurfaceHolder
 
+    private var initializedPlayerNames = false
+
     private val changeTargetLocations = object : Runnable {
         override fun run() {
             _gameViewModel.game.changeTargetLocationsLogic()
@@ -37,11 +39,11 @@ class MockedGameFragment : Fragment() {
         }
     }
 
-    // TODO remove generating random player location
     private val changePlayerLocations = object : Runnable {
-        val player1 = byteArrayOf(0,0,0)
-        val player2 = byteArrayOf(1,1,1)
-        val player3 = byteArrayOf(2,2,2)
+        val player1 = byteArrayOf(0, 0, 0)
+        val player2 = byteArrayOf(1, 1, 1)
+        val player3 = byteArrayOf(2, 2, 2)
+        val playerNames = arrayOf("", "Targo", "Kaenu")
 
         override fun run() {
             if (_gameViewModel.game.time < 5) {
@@ -49,6 +51,11 @@ class MockedGameFragment : Fragment() {
                 _gameViewModel.game.updatePlayer(player1, currentObj[0])
                 _gameViewModel.game.updatePlayer(player2, currentObj[1])
                 _gameViewModel.game.updatePlayer(player3, currentObj[2])
+                if (!initializedPlayerNames) {
+                    _gameViewModel.game.players.value!!.forEachIndexed { index, player ->
+                        player.setName(playerNames[index])
+                    }
+                }
             } else {
                 _gameViewModel.game.updatePlayer(player1, _gameViewModel.game.targetShape.value!![0])
                 _gameViewModel.game.updatePlayer(player2, _gameViewModel.game.targetShape.value!![1])

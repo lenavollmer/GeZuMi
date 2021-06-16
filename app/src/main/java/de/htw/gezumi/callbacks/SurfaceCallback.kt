@@ -125,6 +125,9 @@ class SurfaceCallback(
             POINT_SIZE
         )
         drawPlayerNames(canvas, players, playerPositions, POINT_SIZE)
+        Log.d(TAG, "players: $players")
+        val playerSelfIndex = players.indexOfFirst { it.name.value == "" }
+        drawPlayerSelf(canvas, playerPositions[playerSelfIndex], POINT_SIZE)
 
         if (shapesMatch) {
             _gameViewModel.game.generateTargetShapeAnimationPoints()
@@ -179,8 +182,8 @@ class SurfaceCallback(
         }
 
         points.forEach {
-            canvas.drawCircle(it.x, it.y, pointSize, circleStroke)
             canvas.drawCircle(it.x, it.y, pointSize, fillPaint)
+            canvas.drawCircle(it.x, it.y, pointSize, circleStroke)
         }
     }
 
@@ -189,15 +192,31 @@ class SurfaceCallback(
         players: List<Player>,
         playerScaledPositions: List<Vec>,
         pointSize: Float
+
     ) {
         playerScaledPositions.forEachIndexed { i, position ->
+            val y = position.y - pointSize - 20f
             canvas.drawText(
                 players[i].name.value!!,
                 position.x,
-                position.y - pointSize - 10f,
-                _paints.textPaintPlayerName
+                y,
+                _paints.textPaintPlayerNameStroke
+            )
+            canvas.drawText(
+                players[i].name.value!!,
+                position.x,
+                y,
+                _paints.textPaintPlayerNameFill
             )
         }
+    }
+
+    private fun drawPlayerSelf(
+        canvas: Canvas,
+        playerSelfPosition: Vec,
+        pointSize: Float
+    ) {
+        canvas.drawCircle(playerSelfPosition.x, playerSelfPosition.y, pointSize, _paints.playerSelfStroke)
     }
 
     private fun clearCanvas(canvas: Canvas) {

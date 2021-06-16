@@ -13,7 +13,8 @@
 
         <!-- Game colors -->
         <item name ="targetShapeColor">@color/gray_800</item>
-
+        <item name ="playerNameColor">@color/white</item>
+        <item name ="playerSelfColor">@color/gezumi_yellow</item>
 
         <item name="popUpColor">@color/gezumi_gray</item>
         <item name="popUpTextColor">@color/gezumi_lightgray</item>
