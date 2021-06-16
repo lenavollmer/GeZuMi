@@ -1,9 +1,13 @@
 package de.htw.gezumi
 
+import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.Toast
 import androidx.core.os.bundleOf
@@ -31,6 +35,17 @@ class MainMenuFragment : Fragment() {
             Toast.makeText(context, R.string.game_closed, Toast.LENGTH_LONG).show()
         }
 
+        _binding.inputName.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_GO) {
+                val imm: InputMethodManager =
+                    requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                imm.hideSoftInputFromWindow(_binding.inputName.windowToken, 0)
+                _binding.inputName.clearFocus()
+                return@setOnEditorActionListener true
+            }
+            return@setOnEditorActionListener false
+        }
+
         view.findViewById<Button>(R.id.button_host).setOnClickListener {
             val bundle = bundleOf("playerName" to getInputText())
             findNavController().navigate(R.id.action_MainMenuFragment_to_Host, bundle)
@@ -45,7 +60,7 @@ class MainMenuFragment : Fragment() {
 
     }
 
-    fun getInputText() : String{
+    private fun getInputText() : String{
         var text = _binding.inputName.text.toString()
 
         if(text == "") return "Gustav"
