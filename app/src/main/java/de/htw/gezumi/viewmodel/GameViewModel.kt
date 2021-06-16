@@ -303,7 +303,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             val targetShape = Geometry.generateGeometricObject(devices.size + 1)
             game.setTargetShape(targetShape as MutableList<Vec>)
             targetShape.forEach {
-                gattServer.notifyHostUpdate( // DATA PACKETS COULD BE LOST! :O NOT GUD using another characteristic might be better :)
+                gattServer.indicateHostUpdate(
                     BluetoothData(
                         TARGET_SHAPE_ID,
                         myDeviceId,

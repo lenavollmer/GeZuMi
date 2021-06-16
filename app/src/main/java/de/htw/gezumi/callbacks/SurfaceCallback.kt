@@ -83,8 +83,7 @@ class SurfaceCallback(
             players.filter { it.position != null }
                 .map { it.position!! }.toList()
 
-        Log.d(TAG, "targetPositions: $targetPositions")
-        Log.i(TAG, "playerPositions: $playerPositions")
+        Log.i(TAG, "player positions: $playerPositions")
 
         if (playerPositions.size < 3 || targetPositions.size < 3) return
 

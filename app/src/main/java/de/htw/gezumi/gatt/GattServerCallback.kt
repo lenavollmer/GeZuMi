@@ -98,13 +98,6 @@ class GattServerCallback(private val _gattServer: GattServer, private val _conne
         }
     }
 
-    override fun onNotificationSent(device: BluetoothDevice?, status: Int) {
-        super.onNotificationSent(device, status)
-        if (status == BluetoothGatt.GATT_SUCCESS) {
-            Log.d(TAG, "indication sent")
-        }
-    }
-
     override fun onDescriptorWriteRequest(
         device: BluetoothDevice, requestId: Int,
         descriptor: BluetoothGattDescriptor,

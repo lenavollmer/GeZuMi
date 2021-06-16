@@ -127,6 +127,7 @@ class Game(private val hostId: ByteArray?) {
      * Add vectors to the target shape - called by clients.
      */
     fun updateTargetShape(vec: Vec) {
+        Log.d(TAG, "new target position: $vec")
         if (!_targetShape.value!!.contains(vec)) {
             val currentTarget = _targetShape.value!!
             currentTarget.add(vec)

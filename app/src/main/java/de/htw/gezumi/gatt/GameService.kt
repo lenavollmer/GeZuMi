@@ -23,6 +23,7 @@ object GameService {
     val PLAYER_IDENTIFICATION_UUID: UUID = UUID.fromString("4a92d33c-0000-1000-8000-00805f9b128c")
     val JOIN_NAME_UUID: UUID = UUID.fromString("4a92d33c-0000-1000-8000-00805f9b12aa")
     val HOST_UPDATE_UUID: UUID = UUID.fromString("4a92d33c-0000-1000-8000-00805f9b34fa") // all game_event subscribed devices also get host updates
+    val RESPONSE_HOST_UPDATE_UUID: UUID = UUID.fromString("4a92d33c-0000-1000-8000-00805f9b313a")
     val JOIN_APPROVED_UUID: UUID = UUID.fromString("4a92d33c-0000-1000-8000-00805f9b34aa")
     val GAME_EVENT_UUID: UUID = UUID.fromString("4a92d33c-0000-1000-8000-00805f9b34ab")
 
@@ -51,9 +52,10 @@ object GameService {
 
         val joinApproved = BluetoothGattCharacteristic(JOIN_APPROVED_UUID, BluetoothGattCharacteristic.PROPERTY_INDICATE, BluetoothGattCharacteristic.PERMISSION_READ)
         val gameEvent = BluetoothGattCharacteristic(GAME_EVENT_UUID, BluetoothGattCharacteristic.PROPERTY_INDICATE, BluetoothGattCharacteristic.PERMISSION_READ)
+        val responseHostUpdate = BluetoothGattCharacteristic(RESPONSE_HOST_UPDATE_UUID, BluetoothGattCharacteristic.PROPERTY_INDICATE, BluetoothGattCharacteristic.PERMISSION_READ)
+        val hostUpdate = BluetoothGattCharacteristic(HOST_UPDATE_UUID, BluetoothGattCharacteristic.PROPERTY_NOTIFY, BluetoothGattCharacteristic.PERMISSION_WRITE)
 
         val playerUpdate = BluetoothGattCharacteristic(PLAYER_UPDATE_UUID, BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE, BluetoothGattCharacteristic.PERMISSION_WRITE)
-        val hostUpdate = BluetoothGattCharacteristic(HOST_UPDATE_UUID, BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE, BluetoothGattCharacteristic.PERMISSION_WRITE)
 
         val configDescriptor = BluetoothGattDescriptor(CLIENT_CONFIG, BluetoothGattDescriptor.PERMISSION_WRITE)
         gameEvent.addDescriptor(configDescriptor)
@@ -63,8 +65,9 @@ object GameService {
         service.addCharacteristic(joinName)
         service.addCharacteristic(joinApproved)
         service.addCharacteristic(gameEvent)
-        service.addCharacteristic(playerUpdate)
+        service.addCharacteristic(responseHostUpdate)
         service.addCharacteristic(hostUpdate)
+        service.addCharacteristic(playerUpdate)
         return service
     }
 

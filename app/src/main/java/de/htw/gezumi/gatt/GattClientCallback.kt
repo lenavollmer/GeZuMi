@@ -90,6 +90,10 @@ class GattClientCallback() : BluetoothGattCallback() {
                             gatt.getService(GameService.HOST_UUID)
                                 ?.getCharacteristic(GameService.HOST_UPDATE_UUID), true
                         )
+                        gatt?.setCharacteristicNotification(
+                            gatt.getService(GameService.HOST_UUID)
+                                ?.getCharacteristic(GameService.RESPONSE_HOST_UPDATE_UUID), true
+                        )
                         Log.d(TAG, "send identification to host")
                         val identificationCharacteristic = gatt?.getService(GameService.HOST_UUID)
                             ?.getCharacteristic(GameService.PLAYER_IDENTIFICATION_UUID)
@@ -109,6 +113,10 @@ class GattClientCallback() : BluetoothGattCallback() {
                             gatt.getService(GameService.HOST_UUID)
                                 ?.getCharacteristic(GameService.HOST_UPDATE_UUID), false
                         )
+                        gatt?.setCharacteristicNotification(
+                            gatt.getService(GameService.HOST_UUID)
+                                ?.getCharacteristic(GameService.RESPONSE_HOST_UPDATE_UUID), false
+                        )
                     }
                 }
             }
@@ -124,7 +132,6 @@ class GattClientCallback() : BluetoothGattCallback() {
         super.onCharacteristicChanged(gatt, characteristic)
         when (characteristic?.uuid) {
             GameService.JOIN_APPROVED_UUID -> {
-                Log.d(TAG, "callback")
                 val approved = ByteBuffer.wrap(characteristic.value).int
                 if (approved == 1) {
                     Log.d(TAG, "approved, read game id")
@@ -144,6 +151,7 @@ class GattClientCallback() : BluetoothGattCallback() {
                     GameViewModel.instance.onGameLeave()
                 }
             }
+            GameService.RESPONSE_HOST_UPDATE_UUID,
             GameService.HOST_UPDATE_UUID -> {
                 val bluetoothData = BluetoothData.fromBytes(characteristic.value)
                 Log.d(
