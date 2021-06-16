@@ -10,10 +10,10 @@
 
         <TextView
                 android:id="@+id/device_name"
-                android:textColor="?android:textColorPrimaryInverse"
+                android:textColor="?android:textColorSecondary"
                 android:layout_width="109dp"
                 android:layout_height="33dp"
-                android:layout_weight="1" />
+                android:layout_weight="1" android:fontFamily="@font/roboto_mono"/>
         <Button
                 android:id="@+id/decline"
                 android:text="@string/decline"
@@ -27,7 +27,7 @@
                 app:layout_constraintStart_toEndOf="@+id/approve"
                 android:backgroundTint="?android:colorAccent"
                 android:textColor="?android:textColorPrimaryInverse"
-        />
+                android:fontFamily="@font/roboto_mono"/>
         <Button
                 android:id="@+id/approve"
                 android:text="@string/approve"
@@ -41,7 +41,7 @@
                 app:layout_constraintStart_toEndOf="@+id/device_name"
                 android:backgroundTint="?android:colorAccent"
                 android:textColor="?android:textColorPrimaryInverse"
-        />
+                android:fontFamily="@font/roboto_mono"/>
 
     </LinearLayout>
 </layout>

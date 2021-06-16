@@ -12,7 +12,7 @@
     <string name="connect">Connect</string>
 
     <string name="client_label">Join</string>
-    <string name="scan">Scan</string>
+    <string name="scan">Scan for games</string>
     <string name="devices_join">Devices that want to join</string>
     <string name="approve">Approve</string>
     <string name="decline">Decline</string>

@@ -12,6 +12,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
+import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
@@ -204,20 +205,10 @@ class HostFragment : Fragment() {
             return@setOnEditorActionListener false
         }
 
-        // player name listener
-        _binding.editTextPlayerName.setOnEditorActionListener { textView, actionId, _ ->
-            if (actionId == EditorInfo.IME_ACTION_GO) {
-                Log.d(TAG, "player name changed")
-                _gameViewModel.onPlayerNameChanged(textView.text.toString())
-                val imm: InputMethodManager =
-                    requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                imm.hideSoftInputFromWindow(_binding.editTextPlayerName.windowToken, 0)
-                _binding.editTextPlayerName.clearFocus()
-                return@setOnEditorActionListener true
-            }
-            return@setOnEditorActionListener false
+        if(arguments?.getString("playerName") != null){
+            val playerName = arguments?.getString("playerName")!!
+            _gameViewModel.onPlayerNameChanged(playerName)
         }
-
     }
 
     @kotlin.ExperimentalUnsignedTypes

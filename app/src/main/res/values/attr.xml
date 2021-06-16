@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <attr name="targetShapeColor" format="reference|color" />
+    <attr name="popUpColor" format="reference|color"/>
+    <attr name="popUpTextColor" format="reference|color"/>
+    <attr name="bottomDrawerColor" format="reference|color"/>
+    <attr name="bottomDrawerTextColor" format="reference|color"/>
 </resources>
