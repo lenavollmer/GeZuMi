@@ -95,6 +95,9 @@ class MockedGameFragment : Fragment() {
         _binding.lifecycleOwner = viewLifecycleOwner
         _binding.gameViewModel = _gameViewModel
 
+        _binding.progressBar.visibility = View.INVISIBLE
+        _binding.surfaceView.visibility = View.VISIBLE
+
         _surfaceView = _binding.surfaceView
         _surfaceHolder = _surfaceView.holder
         _surfaceHolder.addCallback(
