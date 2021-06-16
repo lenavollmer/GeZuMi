@@ -1,6 +1,7 @@
 package de.htw.gezumi
 
 import android.content.Context
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -15,7 +16,10 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import de.htw.gezumi.databinding.FragmentMainMenuBinding
 
+
 class MainMenuFragment : Fragment() {
+
+    private val SHARED_KEY = "SHARED_PREFS"
 
     private lateinit var _binding: FragmentMainMenuBinding
 
@@ -64,6 +68,20 @@ class MainMenuFragment : Fragment() {
 
         if(text == "") return "Gustav"
         return text
+    }
+
+    override fun onStop() {
+        super.onStop()
+        val prefs: SharedPreferences = requireActivity().getSharedPreferences(SHARED_KEY, 0)
+        val editor: SharedPreferences.Editor = prefs.edit()
+        editor.putString("playerName", _binding.inputName.text.toString())
+        editor.apply()
+    }
+
+    override fun onStart() {
+        super.onStart()
+        val prefs: SharedPreferences = requireActivity().getSharedPreferences(SHARED_KEY, 0)
+        _binding.inputName.setText(prefs.getString("playerName", ""))
     }
 
 }
