@@ -70,7 +70,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     var host: Device? =
         null // is null for host themselves // is currently not the same object as host in _devices (and has default txpower)
 
-    val game = Game(host?.deviceId)
+    val game = Game()
 
     // the game id consists of a fixed host prefix (4 bytes) and a random id part (4 bytes)
     var gameId: ByteArray = ByteArray(0)
@@ -78,6 +78,15 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             require(field.size <= GAME_ID_LENGTH) { "Wrong game id" }
             return field + ByteArray(GAME_ID_LENGTH - field.size) // fill with zeros if
         }
+
+    init {
+        // singleton
+        instance = this
+        // generate random id
+        Random().nextBytes(myDeviceId)
+        bluetoothController.setContext(application.applicationContext)
+        bluetoothController.myDeviceId = myDeviceId
+    }
 
     fun makeGameId() {
         GameService.newRandomId()
@@ -144,21 +153,12 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                     )
                 )
                 // also update own game
+                if (game.hostId == null && isHost()) game.hostId = myDeviceId
                 game.updatePlayer(deviceId, Vec(newPositions[it].x, newPositions[it].y))
             }
             _positions = newPositions
         }
 
-    }
-
-
-    init {
-        // singleton
-        instance = this
-        // generate random id
-        Random().nextBytes(myDeviceId)
-        bluetoothController.setContext(application.applicationContext)
-        bluetoothController.myDeviceId = myDeviceId
     }
 
     @kotlin.ExperimentalUnsignedTypes

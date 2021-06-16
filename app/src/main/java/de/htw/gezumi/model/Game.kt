@@ -7,13 +7,14 @@ import de.htw.gezumi.calculation.Vec
 
 private const val TAG = "Game"
 
-class Game(private val hostId: ByteArray?) {
+class Game() {
+    var hostId: ByteArray? = null
 
     val numberOfPlayers: Int get() = _players.value?.size ?: 0
 
     // contains a player for myself
     private val _players = MutableLiveData<MutableList<Player>>(
-            mutableListOf()
+        mutableListOf()
     )
     val players: LiveData<MutableList<Player>> = _players
 
@@ -105,8 +106,11 @@ class Game(private val hostId: ByteArray?) {
     fun addPlayerIfNew(deviceId: ByteArray) {
         if (players.value !== null && !_players.value!!.any { it.deviceId contentEquals deviceId }) {
             // make sure that the host is always at index 0 of players
+            Log.d(TAG, "hostid: $hostId deviceId:$deviceId")
+
             if (deviceId contentEquals hostId) {
                 (_players.value as MutableList<Player>).add(0, Player(deviceId))
+                Log.d(TAG, "Added host at beggining, hostid: $hostId first player id:${_players.value!![0].deviceId}")
             }
             (_players.value as MutableList<Player>).add(Player(deviceId))
         }
