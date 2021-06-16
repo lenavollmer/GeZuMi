@@ -17,6 +17,7 @@ import androidx.navigation.fragment.findNavController
 import de.htw.gezumi.callbacks.GameLeaveUICallback
 import de.htw.gezumi.callbacks.SurfaceCallback
 import de.htw.gezumi.databinding.FragmentGameBinding
+import de.htw.gezumi.model.Player
 import de.htw.gezumi.viewmodel.GameViewModel
 import java.util.*
 
@@ -43,7 +44,7 @@ class GameFragment : Fragment() {
         override fun gameLeft() {
             Handler(Looper.getMainLooper()).post {
                 Log.d(TAG, "game ended by host")
-                if(_firstLeave){
+                if (_firstLeave) {
                     val bundle = bundleOf("gameEnded" to true)
                     findNavController().navigate(R.id.action_Game_to_MainMenuFragment, bundle)
                 }
@@ -75,7 +76,6 @@ class GameFragment : Fragment() {
 
         _gameViewModel.game.resetState()
         _gameViewModel.updateTargetShape()
-        runTimer()
 
         val matchedObserver = Observer<Boolean> { shapesMatch ->
             if (shapesMatch) {
@@ -85,9 +85,21 @@ class GameFragment : Fragment() {
                 _binding.shapesMatched.z = 500.0F
             }
         }
-
-        // Observe the LiveData, passing in this activity as the LifecycleOwner and the observer.
+        val playerObserver = Observer<List<Player>> { players ->
+            var playersWithPosition = players.filter { it.position != null && !it.position!!.isNan() }
+            if (
+                playersWithPosition.size > 2 &&
+                _gameViewModel.game.targetShape.value!!.size > 2 &&
+                !_gameViewModel.game.running
+            ) {
+                _gameViewModel.game.setRunning(true)
+                runTimer()
+                _binding.progressBar.visibility = View.INVISIBLE
+                _binding.surfaceView.visibility = View.VISIBLE
+            }
+        }
         _gameViewModel.game.shapeMatched.observe(viewLifecycleOwner, matchedObserver)
+        _gameViewModel.game.players.observe(viewLifecycleOwner, playerObserver)
 
         return _binding.root
     }
@@ -109,7 +121,6 @@ class GameFragment : Fragment() {
                 viewLifecycleOwner
             )
         )
-        _gameViewModel.game.setRunning(true)
 
         view.findViewById<Button>(R.id.start_new_game).setOnClickListener {
             _binding.shapesMatched.visibility = View.INVISIBLE
@@ -132,7 +143,6 @@ class GameFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         mainHandler.post(changeTargetLocations)
-        _gameViewModel.game.setRunning(true)
     }
 
     @kotlin.ExperimentalUnsignedTypes
@@ -145,11 +155,11 @@ class GameFragment : Fragment() {
         _gameViewModel.game.resetCurrentIdx()
         mainHandler.removeCallbacks(changeTargetLocations)
         // stop scan and advertise
-        if(_gameViewModel.isGattServerInitialized()){
+        if (_gameViewModel.isGattServerInitialized()) {
             _gameViewModel.gattServer.notifyGameEnding()
             _gameViewModel.gattServer.stopServer()
         }
-        if(_gameViewModel.isGattClientInitialized()) _gameViewModel.gattClient.disconnect()
+        if (_gameViewModel.isGattClientInitialized()) _gameViewModel.gattClient.disconnect()
     }
 
     private fun runTimer() {

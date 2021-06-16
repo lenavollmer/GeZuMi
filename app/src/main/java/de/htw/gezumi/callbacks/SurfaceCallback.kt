@@ -56,7 +56,6 @@ class SurfaceCallback(
             }
         }
 
-        // Observe the LiveData, passing in this activity as the LifecycleOwner and the observer.
         _gameViewModel.game.shapeMatched.observe(_viewLifecycleOwner, matchedObserver)
         _gameViewModel.game.targetShapeAnimation.observe(_viewLifecycleOwner, animationObserver)
         _gameViewModel.game.players.observe(_viewLifecycleOwner, playerObserver)
