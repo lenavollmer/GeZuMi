@@ -15,22 +15,29 @@
                 tools:context=".ClientFragment" app:layout_anchorGravity="center" android:id="@+id/constraintLayout2"
                 app:layout_anchor="@+id/constraintLayout2">
 
-            <EditText
+            <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:autofillHints="@string/game_name"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:inputType="textPersonName"
-                    android:ems="6"
-                    android:id="@+id/edit_text_game_name"
-                    android:textAlignment="center"
-                    android:hint="@string/game_name" android:maxLength="8"
-                    android:imeOptions="actionGo"
-                    android:singleLine="true"
+                    android:id="@+id/wrapper_game_name"
                     app:layout_constraintTop_toTopOf="parent" android:layout_marginTop="44dp"
                     app:layout_constraintEnd_toEndOf="parent" app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintHorizontal_bias="0.501" android:layout_marginStart="10dp"
-                    android:layout_marginEnd="10dp" style="@style/Widget.AppCompat.EditText"
-                    android:fontFamily="@font/roboto_mono"/>
+                    android:layout_marginEnd="10dp"
+                    android:fontFamily="@font/roboto_mono">
+
+                <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/edit_text_game_name"
+                        android:ems="6"
+                        android:hint="@string/game_name" android:maxLength="8"
+                        android:imeOptions="actionGo"
+                        android:singleLine="true"
+                        android:inputType="textPersonName"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" android:fontFamily="@font/roboto_mono"/>
+
+            </com.google.android.material.textfield.TextInputLayout>
 
             <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/recycler_players"
@@ -40,8 +47,9 @@
                     app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                     tools:listitem="@layout/item_approved_device"
                     app:layout_constraintEnd_toEndOf="parent" app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/edit_text_game_name" android:layout_marginTop="28dp"
+                    app:layout_constraintTop_toBottomOf="@+id/wrapper_game_name" android:layout_marginTop="28dp"
                     android:layout_marginStart="10dp" android:layout_marginEnd="10dp"/>
+
             <Button
                     android:text="@string/start_game"
                     android:layout_width="0dp"
@@ -53,6 +61,13 @@
                     app:layout_constraintHorizontal_bias="0" app:layout_constraintVertical_bias="1.0"
                     android:layout_marginStart="10dp" android:layout_marginEnd="10dp"
                     android:fontFamily="@font/roboto_mono"/>
+            <TextView
+                    android:text="@string/no_players_joined"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" android:id="@+id/no_players"
+                    app:layout_constraintTop_toBottomOf="@+id/wrapper_game_name"
+                    app:layout_constraintEnd_toEndOf="parent" app:layout_constraintStart_toStartOf="parent"
+                    android:layout_marginTop="40dp" android:fontFamily="@font/roboto_mono"/>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
         <include android:id="@+id/bottom_sheet" layout="@layout/bottom_sheet_host" />

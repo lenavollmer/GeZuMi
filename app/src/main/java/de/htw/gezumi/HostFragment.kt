@@ -59,6 +59,8 @@ class HostFragment : Fragment() {
             //_approvedDevices.add(_connectedDevices[position])
             _gattServer.notifyJoinApproved(_connectedDevices[position], true)
             _currentPlayers++
+            _binding.noPlayers.visibility = View.GONE
+            _binding.recyclerPlayers.visibility = View.VISIBLE
             if (_currentPlayers >= (_minimumPlayers - 1)) {
                 _binding.startGame.isEnabled = true
             }
@@ -108,6 +110,10 @@ class HostFragment : Fragment() {
                 Log.d(TAG, "remove device: $device")
                 GameViewModel.instance.devices.remove(device)
                 _currentPlayers--
+                if(_currentPlayers == 0){
+                    _binding.noPlayers.visibility = View.VISIBLE
+                    _binding.recyclerPlayers.visibility = View.GONE
+                }
                 if (_gameStarted) {
                     // could come here (HostFragment) even if game is running
                     _gattServer.notifyGameEnding()
@@ -151,6 +157,10 @@ class HostFragment : Fragment() {
     ): View {
         _binding = DataBindingUtil.inflate(inflater, R.layout.fragment_host, container, false)
         _playerListAdapter.lifecycleOwner = viewLifecycleOwner
+
+        _binding.noPlayers.visibility = View.VISIBLE
+        _binding.recyclerPlayers.visibility = View.GONE
+
         return _binding.root
     }
 
