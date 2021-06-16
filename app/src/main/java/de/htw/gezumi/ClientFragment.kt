@@ -3,7 +3,6 @@ package de.htw.gezumi
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
-import android.content.Context
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -13,11 +12,8 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.inputmethod.EditorInfo
-import android.view.inputmethod.InputMethodManager
 import android.widget.LinearLayout
 import android.widget.PopupWindow
-import android.widget.Toast
 import androidx.core.os.bundleOf
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
@@ -36,7 +32,7 @@ import de.htw.gezumi.gatt.GattClientCallback
 import de.htw.gezumi.model.Device
 import de.htw.gezumi.util.CSVReader
 import de.htw.gezumi.viewmodel.GameViewModel
-
+import de.htw.gezumi.util.dimBehind
 
 private const val TAG = "ClientFragment"
 
@@ -66,6 +62,7 @@ class ClientFragment : Fragment() {
 
         _popupBinding.joinText.text = getString(R.string.join_wait)
         _popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0)
+        _popupWindow.dimBehind()
 
         _availableHostDevices.clear()
         updateBtDeviceListAdapter()
@@ -91,6 +88,7 @@ class ClientFragment : Fragment() {
                 _popupWindow.dismiss()
                 _popupBinding.joinText.text = getString(R.string.join_approved)
                 _popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0)
+                _popupWindow.dimBehind()
 
                 _hostDeviceListAdapter.setItemsEnabled(false)
                 _binding.buttonScan.isEnabled = false
@@ -105,6 +103,7 @@ class ClientFragment : Fragment() {
                 _popupWindow.dismiss()
                 _popupBinding.joinText.text = getString(R.string.join_declined)
                 _popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0)
+                _popupWindow.dimBehind()
 
                 _gameViewModel.bluetoothController.stopScan(HOST_SCAN_KEY)
                 _gattClient.disconnect() // functionality should not be in UI callback
