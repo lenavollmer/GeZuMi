@@ -17,12 +17,10 @@ class GattServerCallback(private val _gattServer: GattServer, private val _conne
     override fun onConnectionStateChange(bluetoothDevice: BluetoothDevice, status: Int, newState: Int) {
         if (newState == BluetoothProfile.STATE_CONNECTED) {
             Log.d(TAG, "bluetoothDevice CONNECTED: $bluetoothDevice")
-            _connectCallback.onGattConnect(bluetoothDevice)
+            // do nothing -> wait for join name
         } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
             Log.d(TAG, "bluetoothDevice DISCONNECTED: $bluetoothDevice")
             _connectCallback.onGattDisconnect(bluetoothDevice)
-            _gattServer.notifyGameEnding()
-            GameViewModel.instance.onGameLeave()
         }
     }
 
@@ -68,6 +66,11 @@ class GattServerCallback(private val _gattServer: GattServer, private val _conne
         super.onCharacteristicWriteRequest(device, requestId, characteristic, preparedWrite, responseNeeded,
             offset, value)
         when (characteristic?.uuid) {
+            GameService.JOIN_NAME_UUID -> {
+                // called when a player wants to join
+                val joinName: String? = if (value!!.isNotEmpty()) value.toString(Charsets.UTF_8) else null
+                _connectCallback.onJoinRequest(device!!, joinName)
+            }
             GameService.PLAYER_UPDATE_UUID -> {
                 val deviceData = BluetoothData.fromBytes(value!!)
                 Log.d(TAG, "received player update from: ${Utils.toHexString(deviceData.senderId)} device: ${Utils.toHexString(deviceData.id)} values=${deviceData.values.contentToString()}, size=${value.size}")
@@ -84,9 +87,21 @@ class GattServerCallback(private val _gattServer: GattServer, private val _conne
                 else // otherwise set bluetooth device to the one, that is connected over the gatt
                     mDevice.bluetoothDevice = device
             }
-            GameService.PLAYER_NAME_UUID -> {
-                // TODO DELETE
-            }
+        }
+        if (responseNeeded) {
+            _gattServer.bluetoothGattServer?.sendResponse(
+                device,
+                requestId,
+                BluetoothGatt.GATT_SUCCESS,
+                0,
+                ByteArray(0))
+        }
+    }
+
+    override fun onNotificationSent(device: BluetoothDevice?, status: Int) {
+        super.onNotificationSent(device, status)
+        if (status == BluetoothGatt.GATT_SUCCESS) {
+            Log.d(TAG, "indication sent")
         }
     }
 
@@ -98,11 +113,11 @@ class GattServerCallback(private val _gattServer: GattServer, private val _conne
     ) {
         when (descriptor.uuid) {
             GameService.CLIENT_CONFIG -> {
-                if (Arrays.equals(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE, value)) {
-                    Log.d(TAG, "subscribe device to notifications: $device")
+                if (Arrays.equals(BluetoothGattDescriptor.ENABLE_INDICATION_VALUE, value)) {
+                    Log.d(TAG, "subscribe device to indications: $device")
                         _gattServer.subscribedDevices.add(device)
                 } else if (Arrays.equals(BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE, value)) {
-                    Log.d(TAG, "unsubscribe device from notifications: $device")
+                    Log.d(TAG, "unsubscribe device from indi-/notifications: $device")
                     _gattServer.subscribedDevices.remove(device)
                 }
                 if (responseNeeded) {
@@ -110,7 +125,7 @@ class GattServerCallback(private val _gattServer: GattServer, private val _conne
                         device,
                         requestId,
                         BluetoothGatt.GATT_SUCCESS,
-                        0, BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
+                        0, BluetoothGattDescriptor.ENABLE_INDICATION_VALUE
                     )
                 }
             }

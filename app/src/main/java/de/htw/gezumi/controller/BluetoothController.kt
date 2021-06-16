@@ -27,7 +27,7 @@ class BluetoothController {
     private val _scanSettings = ScanSettings.Builder().setCallbackType(ScanSettings.CALLBACK_TYPE_ALL_MATCHES).build()
 
     // we need a map of lists because scans might be started, but fail on start. it must be ensure, that all scans are stopped if we call stop
-    val startedScans: MutableMap<String, MutableList<ScanCallback>>  = mutableMapOf(HOST_SCAN_KEY to mutableListOf(), GAME_SCAN_KEY to mutableListOf())
+    private val _startedScans: MutableMap<String, MutableList<ScanCallback>>  = mutableMapOf(HOST_SCAN_KEY to mutableListOf(), GAME_SCAN_KEY to mutableListOf())
 
     private val _advertiseSettings: AdvertiseSettings = AdvertiseSettings.Builder()
         .setAdvertiseMode(AdvertiseSettings.ADVERTISE_MODE_LOW_LATENCY)
@@ -62,7 +62,7 @@ class BluetoothController {
         val filter = filterBuilder.build()
         Log.d(TAG, "start scanning for hosts")
         _bluetoothLeScanner?.startScan(listOf(filter), _scanSettings, leScanCallback)
-        startedScans[HOST_SCAN_KEY]!!.add(leScanCallback)
+        _startedScans[HOST_SCAN_KEY]!!.add(leScanCallback)
     }
 
     @kotlin.ExperimentalUnsignedTypes
@@ -82,20 +82,20 @@ class BluetoothController {
 
         val filter = filterBuilder.build()
         _bluetoothLeScanner?.startScan(listOf(filter), _scanSettings, leScanCallback)
-        startedScans[GAME_SCAN_KEY]!!.add(leScanCallback)
+        _startedScans[GAME_SCAN_KEY]!!.add(leScanCallback)
     }
 
     /**
      * Stop the scan using the scan key constant.
      */
     fun stopScan(scanKey: String) {
-        if (startedScans[scanKey]!!.size == 0) {
+        if (_startedScans[scanKey]!!.size == 0) {
             Log.d(TAG, "scan stop: no scans started")
             return
         }
         else
-            Log.d(TAG, "scan stop: ${startedScans[scanKey]!!.size} callbacks were registered and stopped")
-        for (scanCallback in startedScans[scanKey]!!)
+            Log.d(TAG, "scan stop: ${_startedScans[scanKey]!!.size} callbacks were registered and stopped")
+        for (scanCallback in _startedScans[scanKey]!!)
             _bluetoothLeScanner?.stopScan(scanCallback)
     }
 

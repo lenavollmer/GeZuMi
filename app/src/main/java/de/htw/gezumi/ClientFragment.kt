@@ -107,7 +107,6 @@ class ClientFragment : Fragment() {
 
                 _gameViewModel.bluetoothController.stopScan(HOST_SCAN_KEY)
                 _gattClient.disconnect() // functionality should not be in UI callback
-
                 _availableHostDevices.clear()
                 updateBtDeviceListAdapter()
             }
@@ -186,6 +185,7 @@ class ClientFragment : Fragment() {
             _gameViewModel.bluetoothController.startHostScan(_gameViewModel.hostScanCallback)// ParcelUuid(GameService.getGameId()), true) <- doesn't work, why???
         }
 
+        _binding.editTextPlayerName.setText(_gameViewModel.playerName ?: "")
         // player name listener
         _binding.editTextPlayerName.setOnEditorActionListener { textView, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_GO) {

@@ -6,7 +6,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import de.htw.gezumi.databinding.BottomSheetItemBinding
 
-class ConnectedPlayerDeviceAdapter(private val _btDevices: List<BluetoothDevice>, private val listener: (position: Int, status: STATUS) -> Unit) : RecyclerView.Adapter<ConnectedPlayerDeviceAdapter.ItemViewHolder>() {
+class ConnectedPlayerDeviceAdapter(private val _playerNames: List<String>, private val listener: (position: Int, status: STATUS) -> Unit) : RecyclerView.Adapter<ConnectedPlayerDeviceAdapter.ItemViewHolder>() {
 
     enum class STATUS {
         APPROVED, DECLINED
@@ -14,8 +14,8 @@ class ConnectedPlayerDeviceAdapter(private val _btDevices: List<BluetoothDevice>
 
     inner class ItemViewHolder(private val binding: BottomSheetItemBinding): RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(device: BluetoothDevice) {
-            binding.deviceName.text = device.address
+        fun bind(playerName: String) {
+            binding.deviceName.text = playerName
 
 
             val approveButton = binding.approve
@@ -44,12 +44,11 @@ class ConnectedPlayerDeviceAdapter(private val _btDevices: List<BluetoothDevice>
     // Involves populating data into the item through holder
     override fun onBindViewHolder(viewHolder: ItemViewHolder, position: Int) {
         // Get the data model based on position
-        val device: BluetoothDevice = _btDevices[position]
-        viewHolder.bind(device)
+        viewHolder.bind(_playerNames[position])
     }
 
     // Returns the total count of items in the list
     override fun getItemCount(): Int {
-        return _btDevices.size
+        return _playerNames.size
     }
 }

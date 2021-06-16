@@ -73,11 +73,16 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     val game = Game(host?.deviceId)
 
     // the game id consists of a fixed host prefix (4 bytes) and a random id part (4 bytes)
-    var gameId: ByteArray = ByteArray(0) // 21 bytes left for game attributes like game name etc.
+    var gameId: ByteArray = ByteArray(0)
         get() {
             require(field.size <= GAME_ID_LENGTH) { "Wrong game id" }
             return field + ByteArray(GAME_ID_LENGTH - field.size) // fill with zeros if
         }
+
+    fun makeGameId() {
+        GameService.newRandomId()
+        gameId = GameService.HOST_ID_PREFIX + GameService.randomIdPart
+    }
 
     @kotlin.ExperimentalUnsignedTypes
     @SuppressLint("DefaultLocale")
@@ -193,6 +198,12 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         // TODO: differentiate between game left and game terminated by host (terminated by host does not work)
         // Handler(Looper.getMainLooper()).post{}
         clearModel()
+        if (isHost()) {
+            // restart advertising on a new game id
+            makeGameId()
+            bluetoothController.startAdvertising(gameId, GameService.gameName.toByteArray(Charsets.UTF_8))
+            bluetoothController.startScan(gameScanCallback, gameId)
+        }
     }
 
     @kotlin.ExperimentalUnsignedTypes
@@ -210,6 +221,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         // TODO lifecycle: add stuff here
         devices.clear()
         game.clear()
+        playerName = null
     }
 
     fun isJoined(): Boolean = gameId.isNotEmpty()
@@ -291,7 +303,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             val targetShape = Geometry.generateGeometricObject(devices.size + 1)
             game.setTargetShape(targetShape as MutableList<Vec>)
             targetShape.forEach {
-                gattServer.notifyHostUpdate(
+                gattServer.notifyHostUpdate( // DATA PACKETS COULD BE LOST! :O NOT GUD using another characteristic might be better :)
                     BluetoothData(
                         TARGET_SHAPE_ID,
                         myDeviceId,
