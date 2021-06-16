@@ -12,7 +12,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
-import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
@@ -29,6 +28,8 @@ import de.htw.gezumi.gatt.GattServer
 import de.htw.gezumi.util.CSVReader
 import de.htw.gezumi.viewmodel.GAME_NAME_LENGTH
 import de.htw.gezumi.viewmodel.GameViewModel
+import java.util.*
+import kotlin.random.Random
 
 
 private const val TAG = "HostFragment"
@@ -199,7 +200,8 @@ class HostFragment : Fragment() {
         }
         _binding.startGame.isEnabled = false
 
-        _binding.editTextGameName.setText(R.string.default_game_name)
+        val possibleGameNames = resources.getStringArray(R.array.game_names).toList()
+        _binding.editTextGameName.setText(possibleGameNames[Random.nextInt(possibleGameNames.size)])
         onGameNameChanged(_binding.editTextGameName.text.toString())
 
         _binding.editTextGameName.setOnEditorActionListener { textView, actionId, _ ->

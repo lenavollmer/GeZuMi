@@ -16,10 +16,9 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import de.htw.gezumi.databinding.FragmentMainMenuBinding
 
+private const val SHARED_KEY = "SHARED_PREFS"
 
 class MainMenuFragment : Fragment() {
-
-    private val SHARED_KEY = "SHARED_PREFS"
 
     private lateinit var _binding: FragmentMainMenuBinding
 
