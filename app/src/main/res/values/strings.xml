@@ -7,11 +7,12 @@
     <string name="main_label">Main-Fragment</string>
     <string name="host_label">Host-Fragment</string>
     <string name="game_label">Game-Fragment</string>
+    <string name="client_label">Join</string>
 
     <string name="main_fragment">Welcome to GeZuMi</string>
     <string name="connect">Connect</string>
 
-    <string name="client_label">Join</string>
+
     <string name="scan">Scan for games</string>
     <string name="devices_join">Players that want to join</string>
     <string name="approve">Approve</string>

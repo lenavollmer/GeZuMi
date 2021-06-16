@@ -14,6 +14,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.PopupWindow
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.bundleOf
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
@@ -166,6 +167,9 @@ class ClientFragment : Fragment() {
         _popupBinding = DataBindingUtil.inflate(inflater, R.layout.popup_join, null, false)
 
         _hostDeviceListAdapter.lifecycleOwner = viewLifecycleOwner
+
+        (activity as AppCompatActivity?)!!.supportActionBar?.show() // Enable Bar
+        (activity as AppCompatActivity?)!!.supportActionBar?.setTitle(R.string.join)
 
         return _binding.root
     }

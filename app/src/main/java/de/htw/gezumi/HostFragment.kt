@@ -12,6 +12,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
+import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
@@ -161,6 +162,9 @@ class HostFragment : Fragment() {
 
         _binding.noPlayers.visibility = View.VISIBLE
         _binding.recyclerPlayers.visibility = View.GONE
+
+        (activity as AppCompatActivity?)!!.supportActionBar?.show() // Enable Bar
+        (activity as AppCompatActivity?)!!.supportActionBar?.setTitle(R.string.host)
 
         return _binding.root
     }

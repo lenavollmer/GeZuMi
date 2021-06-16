@@ -10,11 +10,13 @@ import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.bundleOf
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import de.htw.gezumi.databinding.FragmentMainMenuBinding
+
 
 private const val SHARED_KEY = "SHARED_PREFS"
 
@@ -33,6 +35,8 @@ class MainMenuFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        (activity as AppCompatActivity?)!!.supportActionBar?.hide() // Disable Bar for Main Menu
+
         if(arguments?.getBoolean("gameEnded") != null && requireArguments().getBoolean("gameEnded")){
             Toast.makeText(context, R.string.game_closed, Toast.LENGTH_LONG).show()
         }
