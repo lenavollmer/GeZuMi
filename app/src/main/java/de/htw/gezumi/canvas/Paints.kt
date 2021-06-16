@@ -26,6 +26,7 @@ class Paints(
     private val _backgroundColor = _context.getColorFromAttr(android.R.attr.windowBackground)
     private val _targetColor = _context.getColorFromAttr(R.attr.targetShapeColor)
     private val _targetSuccessColor = _context.getColorFromAttr(R.attr.colorSecondary)
+    // TODO Farben für textPaintPlayerName aus dem theme holden
 
     val lineStroke = Paint().apply {
         isAntiAlias = true
@@ -85,5 +86,7 @@ class Paints(
         isAntiAlias = true
         textAlign = Paint.Align.CENTER
         textSize = 45f
+        // TODO Farbe für dark und light moder
+        // TODO Farbe Umrandung für dark und light mode
     }
 }
