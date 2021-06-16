@@ -32,7 +32,8 @@
                 android:textColor="?attr/bottomDrawerTextColor"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/imageView" android:layout_marginTop="16dp"/>
+                app:layout_constraintTop_toBottomOf="@+id/imageView" android:layout_marginTop="16dp"
+                android:fontFamily="@font/roboto_mono"/>
 
         <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/players_to_join"
