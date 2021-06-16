@@ -1,31 +1,8 @@
 <resources>
     <string name="app_name">GeZuMi</string>
-    <!-- Strings used for fragments for navigation -->
-    <string name="host">Create Game</string>
-    <string name="join">Join Game</string>
-
-    <string name="main_label">Main-Fragment</string>
-    <string name="host_label">Host-Fragment</string>
-    <string name="game_label">Game-Fragment</string>
-    <string name="client_label">Join</string>
-
-    <string name="main_fragment">Welcome to GeZuMi</string>
-    <string name="connect">Connect</string>
-
-
-    <string name="scan">Scan for games</string>
-    <string name="devices_join">Players that want to join</string>
-    <string name="approve">Approve</string>
-    <string name="decline">Decline</string>
     <string name="description_design_element">Design element</string>
-    <string name="direct_to_game">Direct to Game</string>
-    <string name="start_game">Start Game</string>
-    <string name="game_name">Game Name</string>
 
-    <string name="join_wait">Please wait until the host admits you</string>
-    <string name="join_approved">You have been approved. Please wait until the game starts.</string>
-    <string name="join_declined">You have been declined!</string>
-
+    <!-- Permission Fragment -->
     <string name="bluetooth_not_supported">Your device does not support bluetooth, so you are sadly not able to use this app</string>
     <string name="bluetooth_not_enabled">This game needs bluetooth to be turned on. Please restart the app</string>
 
@@ -33,11 +10,30 @@
     <string name="permission_denied">You can not use this app without the necessary permissions. Please click the
         button below to grant the necessary permissions.
     </string>
-    <string name="shapes_match">Shapes Matched!</string>
-    <string name="start_new_game">Start new Game</string>
+
+    <!-- Main Fragment-->
     <string name="player_name">Your name</string>
     <string name="game_closed">This Game was closed.</string>
+    <string name="main_fragment">Welcome to GeZuMi</string>
+    <string name="direct_to_game">Direct to Game</string>
+
+    <!-- Join Fragment -->
+    <string name="join">Join Game</string>
+    <string name="scan">Scan for games</string>
+    <string name="connect">Connect</string>
+
+    <string name="join_wait">Please wait until the host admits you</string>
+    <string name="join_approved">You have been approved. Please wait until the game starts.</string>
+    <string name="join_declined">You have been declined!</string>
+
+    <!-- Host Fragment -->
+    <string name="game_name">Game Name</string>
+    <string name="host">Create Game</string>
     <string name="no_players_joined">No players have joined yet</string>
+    <string name="devices_join">Players that want to join</string>
+    <string name="approve">Approve</string>
+    <string name="decline">Decline</string>
+    <string name="start_game">Start Game</string>
 
     <string-array name="game_names">
         <item>Triangos</item>
@@ -50,5 +46,9 @@
         <item>Falusos</item>
         <item>Energis</item>
     </string-array>
+
+    <!-- Game Fragment -->
+    <string name="shapes_match">Shapes Matched!</string>
+    <string name="start_new_game">Start new Game</string>
 
 </resources>
