@@ -16,6 +16,7 @@ import androidx.navigation.fragment.findNavController
 import de.htw.gezumi.callbacks.GameLeaveUICallback
 import de.htw.gezumi.callbacks.SurfaceCallback
 import de.htw.gezumi.databinding.FragmentGameBinding
+import de.htw.gezumi.model.Player
 import de.htw.gezumi.viewmodel.GameViewModel
 import java.util.*
 
@@ -84,9 +85,14 @@ class GameFragment : Fragment() {
                 _binding.shapesMatched.z = 500.0F
             }
         }
-
-        // Observe the LiveData, passing in this activity as the LifecycleOwner and the observer.
+        val playerObserver = Observer<List<Player>> { players ->
+            if (players.size > 2 && _gameViewModel.game.targetShape.value!!.size > 2 ) {
+                _binding.progressBar.visibility = View.INVISIBLE
+                _binding.surfaceView.visibility = View.VISIBLE
+            }
+        }
         _gameViewModel.game.shapeMatched.observe(viewLifecycleOwner, matchedObserver)
+        _gameViewModel.game.players.observe(viewLifecycleOwner, playerObserver)
 
         return _binding.root
     }
