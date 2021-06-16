@@ -12,6 +12,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
+import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
@@ -28,6 +29,8 @@ import de.htw.gezumi.gatt.GattServer
 import de.htw.gezumi.util.CSVReader
 import de.htw.gezumi.viewmodel.GAME_NAME_LENGTH
 import de.htw.gezumi.viewmodel.GameViewModel
+import java.util.*
+import kotlin.random.Random
 
 
 private const val TAG = "HostFragment"
@@ -58,6 +61,8 @@ class HostFragment : Fragment() {
             //_approvedDevices.add(_connectedDevices[position])
             _gattServer.notifyJoinApproved(_connectedDevices[position], true)
             _currentPlayers++
+            _binding.noPlayers.visibility = View.GONE
+            _binding.recyclerPlayers.visibility = View.VISIBLE
             if (_currentPlayers >= (_minimumPlayers - 1)) {
                 _binding.startGame.isEnabled = true
             }
@@ -107,6 +112,10 @@ class HostFragment : Fragment() {
                 Log.d(TAG, "remove device: $device")
                 GameViewModel.instance.devices.remove(device)
                 _currentPlayers--
+                if(_currentPlayers == 0){
+                    _binding.noPlayers.visibility = View.VISIBLE
+                    _binding.recyclerPlayers.visibility = View.GONE
+                }
                 if (_gameStarted) {
                     // could come here (HostFragment) even if game is running
                     _gattServer.notifyGameEnding()
@@ -150,6 +159,13 @@ class HostFragment : Fragment() {
     ): View {
         _binding = DataBindingUtil.inflate(inflater, R.layout.fragment_host, container, false)
         _playerListAdapter.lifecycleOwner = viewLifecycleOwner
+
+        _binding.noPlayers.visibility = View.VISIBLE
+        _binding.recyclerPlayers.visibility = View.GONE
+
+        (activity as AppCompatActivity?)!!.supportActionBar?.show() // Enable Bar
+        (activity as AppCompatActivity?)!!.supportActionBar?.setTitle(R.string.host)
+
         return _binding.root
     }
 
@@ -188,7 +204,8 @@ class HostFragment : Fragment() {
         }
         _binding.startGame.isEnabled = false
 
-        _binding.editTextGameName.setText(R.string.default_game_name)
+        val possibleGameNames = resources.getStringArray(R.array.game_names).toList()
+        _binding.editTextGameName.setText(possibleGameNames[Random.nextInt(possibleGameNames.size)])
         onGameNameChanged(_binding.editTextGameName.text.toString())
 
         _binding.editTextGameName.setOnEditorActionListener { textView, actionId, _ ->
@@ -204,20 +221,10 @@ class HostFragment : Fragment() {
             return@setOnEditorActionListener false
         }
 
-        // player name listener
-        _binding.editTextPlayerName.setOnEditorActionListener { textView, actionId, _ ->
-            if (actionId == EditorInfo.IME_ACTION_GO) {
-                Log.d(TAG, "player name changed")
-                _gameViewModel.onPlayerNameChanged(textView.text.toString())
-                val imm: InputMethodManager =
-                    requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                imm.hideSoftInputFromWindow(_binding.editTextPlayerName.windowToken, 0)
-                _binding.editTextPlayerName.clearFocus()
-                return@setOnEditorActionListener true
-            }
-            return@setOnEditorActionListener false
+        if(arguments?.getString("playerName") != null){
+            val playerName = arguments?.getString("playerName")!!
+            _gameViewModel.onPlayerNameChanged(playerName)
         }
-
     }
 
     @kotlin.ExperimentalUnsignedTypes

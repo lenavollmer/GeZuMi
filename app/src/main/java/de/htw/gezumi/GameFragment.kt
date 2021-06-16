@@ -7,6 +7,7 @@ import android.os.Looper
 import android.util.Log
 import android.view.*
 import android.widget.Button
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.bundleOf
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
@@ -117,6 +118,8 @@ class GameFragment : Fragment() {
             _gameViewModel.game.resetState()
             _gameViewModel.game.setRunning(true)
         }
+
+        (activity as AppCompatActivity?)!!.supportActionBar?.hide() // Hide Bar
 
     }
 
