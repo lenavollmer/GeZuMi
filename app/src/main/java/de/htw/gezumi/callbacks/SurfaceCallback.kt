@@ -190,13 +190,21 @@ class SurfaceCallback(
         players: List<Player>,
         playerScaledPositions: List<Vec>,
         pointSize: Float
+
     ) {
         playerScaledPositions.forEachIndexed { i, position ->
+            val y = position.y - pointSize - 20f
             canvas.drawText(
                 players[i].name.value!!,
                 position.x,
-                position.y - pointSize - 10f,
-                _paints.textPaintPlayerName
+                y,
+                _paints.textPaintPlayerNameStroke
+            )
+            canvas.drawText(
+                players[i].name.value!!,
+                position.x,
+                y,
+                _paints.textPaintPlayerNameFill
             )
         }
     }

@@ -17,5 +17,6 @@
 
         <!-- Game colors -->
         <item name ="targetShapeColor">@color/gray_800</item>
+        <item name ="playerNameColor">@color/white</item>
     </style>
 </resources>

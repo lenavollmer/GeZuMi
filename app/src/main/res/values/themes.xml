@@ -15,6 +15,7 @@
 
         <!-- Game colors -->
         <item name ="targetShapeColor">@color/gray_300</item>
+        <item name ="playerNameColor">@color/black</item>
     </style>
     <style name="Theme.GeZuMi.NoActionBar">
         <item name="windowActionBar">false</item>

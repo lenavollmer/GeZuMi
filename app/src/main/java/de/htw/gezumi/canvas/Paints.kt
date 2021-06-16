@@ -1,7 +1,9 @@
 package de.htw.gezumi.canvas
 
 import android.content.Context
+import android.graphics.Color
 import android.graphics.Paint
+import android.graphics.Typeface
 import android.util.TypedValue
 import androidx.annotation.AttrRes
 import androidx.annotation.ColorInt
@@ -25,8 +27,8 @@ class Paints(
     private val _colorAccent = _context.getColorFromAttr(R.attr.colorAccent)
     private val _backgroundColor = _context.getColorFromAttr(android.R.attr.windowBackground)
     private val _targetColor = _context.getColorFromAttr(R.attr.targetShapeColor)
+    private val _textPaintPlayerName = _context.getColorFromAttr(R.attr.playerNameColor)
     private val _targetSuccessColor = _context.getColorFromAttr(R.attr.colorSecondary)
-    // TODO Farben für textPaintPlayerName aus dem theme holden
 
     val lineStroke = Paint().apply {
         isAntiAlias = true
@@ -82,11 +84,19 @@ class Paints(
         style = Paint.Style.FILL
     }
 
-    val textPaintPlayerName = Paint().apply {
+    val textPaintPlayerNameFill = Paint().apply {
         isAntiAlias = true
         textAlign = Paint.Align.CENTER
         textSize = 45f
-        // TODO Farbe für dark und light moder
-        // TODO Farbe Umrandung für dark und light mode
+        color = _textPaintPlayerName
+    }
+
+    val textPaintPlayerNameStroke = Paint().apply {
+        isAntiAlias = true
+        textAlign = Paint.Align.CENTER
+        textSize = 45f
+        color = _backgroundColor
+        style = Paint.Style.STROKE
+        strokeWidth = 20f
     }
 }
