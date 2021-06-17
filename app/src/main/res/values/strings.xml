@@ -50,5 +50,6 @@
     <!-- Game Fragment -->
     <string name="shapes_match">Shapes Matched!</string>
     <string name="start_new_game">Start new Game</string>
+    <string name="logo">Logo</string>
 
 </resources>
