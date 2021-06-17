@@ -7,4 +7,7 @@
     <attr name="popUpTextColor" format="reference|color"/>
     <attr name="bottomDrawerColor" format="reference|color"/>
     <attr name="bottomDrawerTextColor" format="reference|color"/>
+
+    <attr name="logoTextColor" format="reference|color"/>
+    <attr name="logoTextOutlineColor" format="reference|color"/>
 </resources>
