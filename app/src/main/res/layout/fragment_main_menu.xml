@@ -9,15 +9,15 @@
 
     <ImageView
             android:id="@+id/logo"
-            android:layout_width="406dp"
+            android:layout_width="0dp"
             android:layout_height="272dp"
-            android:text="@string/main_fragment"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginTop="48dp" android:fontFamily="@font/roboto_mono" android:textSize="36sp"
+            android:layout_marginTop="48dp"
             app:srcCompat="@drawable/ic_logo" android:contentDescription="@string/logo"
             app:layout_constraintHorizontal_bias="0.4"/>
+
     <Button
             android:id="@+id/button_host"
             android:layout_width="0dp"
