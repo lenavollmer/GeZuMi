@@ -1,5 +1,6 @@
 package de.htw.gezumi.callbacks
 
+import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
@@ -9,6 +10,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.Observer
 import de.htw.gezumi.calculation.Geometry
 import de.htw.gezumi.calculation.Vec
+import de.htw.gezumi.canvas.Animator
 import de.htw.gezumi.canvas.Paints
 import de.htw.gezumi.canvas.getColorFromAttr
 import de.htw.gezumi.model.Player
@@ -26,6 +28,13 @@ class SurfaceCallback(
     SurfaceHolder.Callback {
 
     private val _paints = Paints(_context, POINT_SIZE)
+    private var _canvasHeight: Int = 0
+    private var _canvasWidth: Int = 0
+
+    private var _oldPlayerPos: List<Vec>? = null
+    private var _oldTargetPos: List<Vec>? = null
+
+    private var _animator: ValueAnimator? = null
 
     override fun surfaceChanged(
         holder: SurfaceHolder, format: Int,
@@ -37,7 +46,10 @@ class SurfaceCallback(
     override fun surfaceCreated(holder: SurfaceHolder) {
         Log.d(TAG, "surfaceCreated")
 
-        // Create the observer which updates the UI.
+        tryDrawing(holder) { canvas ->
+            _canvasHeight = canvas.height
+            _canvasWidth = canvas.width
+        }
 
         // TODO why do we need this observer? we already set game running false after the shapes matched
         val matchedObserver = Observer<Boolean> { shapesMatch ->
@@ -52,7 +64,7 @@ class SurfaceCallback(
 
         val playerObserver = Observer<List<Player>> {
             if (_gameViewModel.game.running) {
-                tryDrawing(holder) { canvas -> drawInGame(canvas, it) }
+                drawInGame(holder, it)
             }
         }
 
@@ -76,7 +88,7 @@ class SurfaceCallback(
         }
     }
 
-    private fun drawInGame(canvas: Canvas, players: List<Player>) {
+    private fun drawInGame(holder: SurfaceHolder, players: List<Player>) {
         var targetPositions = _gameViewModel.game.targetShape.value!!.toList()
         var playerPositions =
             players.filter { it.position != null }
@@ -89,8 +101,8 @@ class SurfaceCallback(
         val gamePositions = Geometry.arrangeGamePositions(
             playerPositions,
             targetPositions,
-            canvas.height,
-            canvas.width,
+            _canvasHeight,
+            _canvasWidth,
             (POINT_SIZE * 2).toInt()
         )
         playerPositions = gamePositions.playerPositions
@@ -103,31 +115,50 @@ class SurfaceCallback(
         )
         Log.d(TAG, "isMatch: $shapesMatch")
 
-        clearCanvas(canvas)
+        if (_oldPlayerPos == null || _oldTargetPos == null) {
+            _oldPlayerPos = playerPositions
+            _oldTargetPos = targetPositions
+        }
 
-        // draw target shape
-        drawFigure(
-            canvas,
-            targetPositions,
-            _paints.lineStrokeTargetShape,
-            _paints.circleStrokeTargetShape,
-            _paints.fillPaintTargetShape,
-            POINT_SIZE * 1.2f
-        )
-
-        // draw players
-        drawFigure(
-            canvas,
+        _animator?.cancel()
+        _animator = Animator.createGameAnimation(
+            _oldPlayerPos!!,
             playerPositions,
-            _paints.lineStroke,
-            _paints.circleStroke,
-            _paints.fillPaint,
-            POINT_SIZE
-        )
-        drawPlayerNames(canvas, players, playerPositions, POINT_SIZE)
-        Log.d(TAG, "players: $players")
-        val playerSelfIndex = players.indexOfFirst { it.name.value == "" }
-        drawPlayerSelf(canvas, playerPositions[playerSelfIndex], POINT_SIZE)
+            _oldTargetPos!!,
+            targetPositions
+        ) { newPlayerPos, newTargetPos ->
+            tryDrawing(holder) { canvas ->
+                _oldPlayerPos = newPlayerPos
+                _oldTargetPos = newTargetPos
+                clearCanvas(canvas)
+
+                // draw target shape
+                drawFigure(
+                    canvas,
+                    newTargetPos,
+                    _paints.lineStrokeTargetShape,
+                    _paints.circleStrokeTargetShape,
+                    _paints.fillPaintTargetShape,
+                    POINT_SIZE * 1.2f
+                )
+
+                // draw players
+                drawFigure(
+                    canvas,
+                    newPlayerPos,
+                    _paints.lineStroke,
+                    _paints.circleStroke,
+                    _paints.fillPaint,
+                    POINT_SIZE
+                )
+                drawPlayerNames(canvas, players, newPlayerPos, POINT_SIZE)
+                Log.d(TAG, "players: $players")
+                val playerSelfIndex = players.indexOfFirst { it.name.value == "" }
+                drawPlayerSelf(canvas, newPlayerPos[playerSelfIndex], POINT_SIZE)
+            }
+        }
+
+
 
         if (shapesMatch) {
             _gameViewModel.game.generateTargetShapeAnimationPoints()
@@ -192,7 +223,6 @@ class SurfaceCallback(
         players: List<Player>,
         playerScaledPositions: List<Vec>,
         pointSize: Float
-
     ) {
         playerScaledPositions.forEachIndexed { i, position ->
             val y = position.y - pointSize - 20f
