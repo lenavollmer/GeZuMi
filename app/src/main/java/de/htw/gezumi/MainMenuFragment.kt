@@ -3,6 +3,7 @@ package de.htw.gezumi
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -31,6 +32,8 @@ class MainMenuFragment : Fragment() {
 
         _binding = DataBindingUtil.inflate(inflater, R.layout.fragment_main_menu, container, false)
 
+
+        Log.d("Test", "Test")
         return _binding.root
     }
 
