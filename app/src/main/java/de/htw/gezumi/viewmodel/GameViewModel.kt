@@ -288,14 +288,6 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun writeRSSILog() {
-        FileStorage.writeFile(
-            getApplication<Application>().applicationContext,
-            "${Calendar.getInstance().time}_distance_log.txt",
-            devices.iterator().next().rssiHistory.toString()
-        )
-    }
-
     @kotlin.ExperimentalUnsignedTypes
     fun updateTargetShape() {
         if (host == null) {

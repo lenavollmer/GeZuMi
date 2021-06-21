@@ -5,8 +5,22 @@ package de.htw.gezumi.filter
  * Taken from https://github.com/fgroch/beacon-rssi-resolver/blob/master/src/main/java/tools/blocks/filter/KalmanFilter.java
  */
 class KalmanFilter: Filter {
+    /**
+     * R models the process noise and describes how noisy
+     * our system internally is. Or, in other words, how much
+     * noise can we expect from the system itself? As our
+     * system is constant we can set this to a (very) low value.
+      */
     private var processNoise //Process noise
             : Float
+
+    /**
+     * Q resembles the measurement noise; how much noise is
+     * caused by our measurements? As we expect that our
+     * measurements will contain most of the noise, it makes
+     * sense to set this parameter to a high number
+     * (especially in comparison to the process noise)
+     */
     private var measurementNoise //Measurement noise
             : Float
     private var estimatedRSSI //calculated rssi

@@ -66,8 +66,8 @@ class ClientFragment : Fragment() {
         _popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0)
         _popupWindow.dimBehind()
 
-        _availableHostDevices.clear()
-        updateBtDeviceListAdapter()
+        //_availableHostDevices.clear()
+        //updateBtDeviceListAdapter()
     }
 
     private val gameLeaveUICallback = object : GameLeaveUICallback {

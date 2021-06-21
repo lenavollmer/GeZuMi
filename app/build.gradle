@@ -25,12 +25,12 @@ android {
 
     lintOptions {
         // set to true to turn off analysis progress reporting by lint
-        quiet false
+        quiet true
         // change this to set the linter live
-        abortOnError true
+        abortOnError false
         absolutePaths true
         checkAllWarnings false
-        warningsAsErrors true
+        warningsAsErrors false
         textReport true
         textOutput 'stdout'
         xmlReport false
