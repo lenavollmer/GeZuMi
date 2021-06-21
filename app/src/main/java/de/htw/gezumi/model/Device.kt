@@ -9,9 +9,13 @@ import de.htw.gezumi.Utils
 import de.htw.gezumi.calculation.Conversions
 import de.htw.gezumi.filter.Filter
 import de.htw.gezumi.filter.KalmanFilter
+import de.htw.gezumi.filter.MedianFilter
 import de.htw.gezumi.viewmodel.GameViewModel
 import java.io.File
 import java.io.FileOutputStream
+import java.text.DateFormat
+import java.text.SimpleDateFormat
+import java.util.*
 
 
 private const val TAG = "Device"
@@ -24,7 +28,7 @@ class Device(val deviceId: ByteArray, var txPower: Short, var bluetoothDevice: B
     init {
         Thread {
             while (GameViewModel.instance.devices.contains(this)) {
-                Thread.sleep(3000)
+                Thread.sleep(5000)
                 writeRSSILog()
             }
         }.start()
@@ -35,23 +39,45 @@ class Device(val deviceId: ByteArray, var txPower: Short, var bluetoothDevice: B
     private val _distance = MutableLiveData(0f)
     val distance: LiveData<Float> get() = _distance
 
-    private val _filter: Filter = KalmanFilter()
+    private val _filterKalman: Filter = KalmanFilter()
+    private val _filterMedian: Filter = MedianFilter()
 
     var lastSeen: Long = System.currentTimeMillis()
 
-    val rssiHistory = mutableListOf<Int>()
-    val distanceHistory = mutableListOf<Float>()
+    val timestamps = mutableListOf<String>()
+
+    val rssiHistoryUnfiltered = mutableListOf<Int>()
+    val distanceHistoryUnfiltered = mutableListOf<Float>()
+
+    val rssiHistoryKalman = mutableListOf<Float>()
+    val distanceHistoryKalman = mutableListOf<Float>()
+
+    val rssiHistoryMedian = mutableListOf<Float>()
+    val distanceHistoryMedian = mutableListOf<Float>()
 
     @kotlin.ExperimentalUnsignedTypes
     fun addRssi(rssi: Int) {
-        rssiHistory.add(rssi)
         Log.d(TAG, "Adding RSSI for device: ${Utils.logDeviceId(deviceId)}")
-        val unfilteredDistance = Conversions.rssiToDistance(rssi.toFloat(), txPower)
-        val distanceFloat = _filter.applyFilter(unfilteredDistance)
-        distanceHistory.add(distanceFloat)
-        _distance.postValue(_filter.applyFilter(unfilteredDistance))
-        Log.d(TAG, "MEASM: rssi: $rssi,  distance: ${_distance.value}")
-        // TODO we don't know how often the device is discovered by the scan, so it might be good to limit the execution of the distance calculation
+        val formatter = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
+        val timeString = formatter.format(Calendar.getInstance().time)
+        timestamps.add(timeString)
+
+        rssiHistoryUnfiltered.add(rssi)
+        val distanceUnfiltered = Conversions.rssiToDistance(rssi.toFloat(), txPower)
+        distanceHistoryUnfiltered.add(distanceUnfiltered)
+
+        val filteredKalman = _filterKalman.applyFilter(rssi.toFloat())
+        rssiHistoryKalman.add(filteredKalman)
+        val distanceKalman = Conversions.rssiToDistance(filteredKalman, txPower)
+        distanceHistoryKalman.add(distanceKalman)
+
+        val filteredMedian = _filterMedian.applyFilter(rssi.toFloat())
+        rssiHistoryMedian.add(filteredMedian)
+        val distanceMedian = Conversions.rssiToDistance(filteredMedian, txPower)
+        distanceHistoryMedian.add(distanceMedian)
+
+        _distance.postValue(distanceKalman)
+        Log.d(TAG, "MEASM: unfiltered rssi: $rssi,  kalman distance: ${distanceKalman}, median distance: $distanceMedian")
     }
     /*
     fun getDeviceData(): DeviceData {
@@ -66,15 +92,17 @@ class Device(val deviceId: ByteArray, var txPower: Short, var bluetoothDevice: B
         return deviceId contentEquals (other as Device).deviceId
     }
 
-    @kotlin.ExperimentalUnsignedTypes
     private fun writeRSSILog() {
+        val fname = "device${GameViewModel.instance.devices.indexOf(this)}_${txPower}_log.txt"
+        Log.d(TAG, "MEASM: save log file: $fname")
+
         val root: String = GameViewModel.instance.getApplication<Application>().applicationContext.getExternalFilesDir(null).toString();
         //val root: String = Environment.getExternalStorageDirectory().toString()
         val myDir = File("$root/gezumi_data")
         if (!myDir.exists()) {
             myDir.mkdirs()
         }
-        val fname = "${Utils.toHexString(deviceId)}_${txPower}_distance_log.txt"
+
         val file = File(myDir, fname)
         if (file.exists()) file.delete()
         try {
@@ -94,9 +122,10 @@ class Device(val deviceId: ByteArray, var txPower: Short, var bluetoothDevice: B
     }
 
     private fun makeLogString(): String {
-        var str: String = "\"rssi\"; \"distance\"\n"
-        for (i in rssiHistory.indices) {
-            str += "${rssiHistory[i]};${distanceHistory[i]}\n"
+        var str: String = "time_ms;rssi_unfiltered;rssi_kalman;rssi_median;distance_unfiltered;distance_kalman;distance_median;\n"
+        for (i in rssiHistoryUnfiltered.indices) {
+            str += "${timestamps[i]};${rssiHistoryUnfiltered[i]};${rssiHistoryKalman[i]};${rssiHistoryMedian[i]};" +
+                    "${distanceHistoryUnfiltered[i]};${distanceHistoryKalman[i]};${distanceHistoryMedian[i]};\n"
         }
         return str
     }
