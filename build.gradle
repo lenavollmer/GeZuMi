@@ -19,6 +19,14 @@ allprojects {
         google()
         jcenter()
     }
+    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
+        kotlinOptions {
+            freeCompilerArgs += [
+                    "-Xuse-experimental=kotlin.ExperimentalUnsignedTypes",
+                    "-XXLanguage:+InlineClasses"
+            ]
+        }
+    }
 }
 
 task clean(type: Delete) {
