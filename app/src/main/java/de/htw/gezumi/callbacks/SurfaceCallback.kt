@@ -3,7 +3,6 @@ package de.htw.gezumi.callbacks
 import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Canvas
-import android.graphics.Paint
 import android.util.Log
 import android.view.SurfaceHolder
 import androidx.core.animation.doOnEnd
@@ -13,8 +12,8 @@ import de.htw.gezumi.calculation.GamePositions
 import de.htw.gezumi.calculation.Geometry
 import de.htw.gezumi.calculation.Vec
 import de.htw.gezumi.canvas.Animator
+import de.htw.gezumi.canvas.Painter
 import de.htw.gezumi.canvas.Paints
-import de.htw.gezumi.canvas.getColorFromAttr
 import de.htw.gezumi.model.Player
 import de.htw.gezumi.viewmodel.GameViewModel
 
@@ -30,6 +29,8 @@ class SurfaceCallback(
     SurfaceHolder.Callback {
 
     private val _paints = Paints(_context, POINT_SIZE)
+    private val _painter = Painter(_paints, POINT_SIZE)
+
     private var _canvasHeight: Int = 0
     private var _canvasWidth: Int = 0
 
@@ -55,8 +56,6 @@ class SurfaceCallback(
             if (shapesMatch) {
                 _animator!!.cancel()
                 animateWin(
-                    _gameViewModel.game.players.value!!.map { it.position!! },
-                    _gameViewModel.game.targetShape.value!!,
                     holder
                 )
             }
@@ -92,8 +91,6 @@ class SurfaceCallback(
             players.filter { it.position != null }
                 .map { it.position!! }.toList()
 
-        Log.i(TAG, "player positions: $playerPositions")
-
         if (playerPositions.size < 3 || targetPositions.size < 3) return
 
         val gamePos = Geometry.arrangeGamePositions(
@@ -122,35 +119,17 @@ class SurfaceCallback(
                     (POINT_SIZE * 2).toInt()
                 )
 
-                clearCanvas(canvas)
+                _painter.clearCanvas(canvas)
+                _painter.drawTargetShape(canvas, scaledGamePos.targets)
+                _painter.drawPlayerFigure(canvas, scaledGamePos.players)
+                _painter.drawPlayerNames(canvas, players, scaledGamePos.players)
 
-                // draw target shape
-                drawFigure(
-                    canvas,
-                    scaledGamePos.targets,
-                    _paints.lineStrokeTargetShape,
-                    _paints.circleStrokeTargetShape,
-                    _paints.fillPaintTargetShape,
-                    POINT_SIZE * 1.2f
-                )
-
-                // draw players
-                drawFigure(
-                    canvas,
-                    scaledGamePos.players,
-                    _paints.lineStroke,
-                    _paints.circleStroke,
-                    _paints.fillPaint,
-                    POINT_SIZE
-                )
-                drawPlayerNames(canvas, players, scaledGamePos.players, POINT_SIZE)
                 val playerSelfIndex = players.indexOfFirst { it.name.value == "" }
-                drawPlayerSelf(canvas, scaledGamePos.players[playerSelfIndex], POINT_SIZE)
+                _painter.drawPlayerSelf(canvas, scaledGamePos.players[playerSelfIndex])
 
                 val shapesMatch = Geometry.determineMatch(_oldGamePos!!.players, _oldGamePos!!.targets)
                 if (shapesMatch) {
-                    _oldGamePos = null
-                    _animator?.cancel()
+                    _animator!!.cancel()
                     _gameViewModel.game.setShapeMatched(shapesMatch)
                     _gameViewModel.game.setRunning(false)
                 }
@@ -158,106 +137,55 @@ class SurfaceCallback(
         }
     }
 
-    private fun animateWin(playerPositions: List<Vec>, targetPositions: List<Vec>, holder: SurfaceHolder) {
+    private fun animateWin(holder: SurfaceHolder) {
         val center = Vec(_canvasWidth / 2, _canvasHeight / 2)
 
-        val arrangedPlayerPos = Geometry.scaleGamePositions(
-            Geometry.arrangeGamePositions(
-                playerPositions,
-                targetPositions
-            ),
+        val scaledGamePos = Geometry.scaleGamePositions(
+            _oldGamePos!!,
             _canvasHeight,
             _canvasWidth,
             (POINT_SIZE * 2).toInt()
-        ).players
+        )
 
-        val animator = Animator.createVecAnimation(
-            arrangedPlayerPos,
-            arrangedPlayerPos.map { center },
-            1000
+        val playerToTargetAnimator = Animator.createVecAnimation(
+            scaledGamePos.players,
+            scaledGamePos.players.map { player ->
+                scaledGamePos.targets.minByOrNull { target -> (target - player).length() }!!
+            },
+            500
         ) { updatedVecs ->
             tryDrawing(holder) { canvas ->
-                drawWinningFigure(canvas, updatedVecs)
+                _painter.clearCanvas(canvas)
+                _painter.drawTargetShape(canvas, scaledGamePos.targets)
+                _painter.drawWinningFigure(canvas, updatedVecs)
             }
         }
 
-        animator.doOnEnd {
-            Animator.createVecAnimation(
-                arrangedPlayerPos.map { center },
-                arrangedPlayerPos,
-                1000
+        playerToTargetAnimator.doOnEnd {
+            val scaleToCenterAnimator = Animator.createVecAnimation(
+                scaledGamePos.targets,
+                scaledGamePos.targets.map { center },
+                800
             ) { updatedVecs ->
                 tryDrawing(holder) { canvas ->
-                    drawWinningFigure(canvas, updatedVecs)
+                    _painter.clearCanvas(canvas)
+                    _painter.drawWinningFigure(canvas, updatedVecs)
+                }
+            }
+
+            scaleToCenterAnimator.doOnEnd {
+                Animator.createVecAnimation(
+                    scaledGamePos.targets.map { center },
+                    scaledGamePos.targets,
+                    800
+                ) { updatedVecs ->
+                    tryDrawing(holder) { canvas ->
+                        _painter.clearCanvas(canvas)
+                        _painter.drawWinningFigure(canvas, updatedVecs)
+                    }
                 }
             }
         }
-    }
-
-    private fun drawWinningFigure(canvas: Canvas, positions: List<Vec>) {
-        clearCanvas(canvas)
-        drawFigure(
-            canvas,
-            positions,
-            _paints.lineStrokeTargetShapeSuccess,
-            _paints.circleStrokeTargetShapeSuccess,
-            _paints.fillPaintTargetShapeSuccess,
-            POINT_SIZE * 1.2f
-        )
-    }
-
-    private fun drawFigure(
-        canvas: Canvas,
-        points: List<Vec>,
-        lineStroke: Paint,
-        circleStroke: Paint,
-        fillPaint: Paint,
-        pointSize: Float
-    ) {
-        points.forEachIndexed { i, point ->
-            val next = if (i < points.size - 1) points[i + 1] else points[0]
-            canvas.drawLine(point.x, point.y, next.x, next.y, lineStroke)
-        }
-
-        points.forEach {
-            canvas.drawCircle(it.x, it.y, pointSize, fillPaint)
-            canvas.drawCircle(it.x, it.y, pointSize, circleStroke)
-        }
-    }
-
-    private fun drawPlayerNames(
-        canvas: Canvas,
-        players: List<Player>,
-        playerScaledPositions: List<Vec>,
-        pointSize: Float
-    ) {
-        playerScaledPositions.forEachIndexed { i, position ->
-            val y = position.y - pointSize - 20f
-            canvas.drawText(
-                players[i].name.value!!,
-                position.x,
-                y,
-                _paints.textPaintPlayerNameStroke
-            )
-            canvas.drawText(
-                players[i].name.value!!,
-                position.x,
-                y,
-                _paints.textPaintPlayerNameFill
-            )
-        }
-    }
-
-    private fun drawPlayerSelf(
-        canvas: Canvas,
-        playerSelfPosition: Vec,
-        pointSize: Float
-    ) {
-        canvas.drawCircle(playerSelfPosition.x, playerSelfPosition.y, pointSize, _paints.playerSelfStroke)
-    }
-
-    private fun clearCanvas(canvas: Canvas) {
-        val backgroundColor = _context.getColorFromAttr(android.R.attr.windowBackground)
-        canvas.drawColor(backgroundColor)
+        _oldGamePos = null
     }
 }
