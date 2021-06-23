@@ -109,8 +109,8 @@ class SurfaceCallback(
 
 
         val shapesMatch = Geometry.determineMatch(
-            playerPositions,
-            targetPositions
+            gamePositions.unscaledPlayers,
+            gamePositions.unscaledTargets
         )
         Log.d(TAG, "isMatch: $shapesMatch")
 

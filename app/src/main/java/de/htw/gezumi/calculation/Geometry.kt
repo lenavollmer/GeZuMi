@@ -11,7 +11,7 @@ class Geometry {
          * Scales the given [points] to a canvas with the given [height] and [width].
          *  @return the scaled and centered points
          */
-        fun scaleToCanvas(points: List<Vec>, height: Int, width: Int, margin: Int): List<Vec> {
+        private fun scaleToCanvas(points: List<Vec>, height: Int, width: Int, margin: Int): List<Vec> {
             // move points to top left position
             var newPoints = moveTopLeft(points)
 
@@ -96,11 +96,9 @@ class Geometry {
 
 
         fun determineMatch(points: List<Vec>, targetShape: List<Vec>): Boolean {
-            // TODO this might be problematic as scaling is different on each device
-            val tolerance = 150.0 // the max distance between the points to be a match
+            val tolerance = 0.5 // the max distance in meter between the points to be a match
             val foundPoints = points.map { a ->
                 // TODO two or more player points could match to the same target point
-                val min = targetShape.map { (it - a).length() }.minOrNull() ?: -1
                 targetShape.find { b ->
                     (b - a).length() <= tolerance
                 }
@@ -168,10 +166,17 @@ class Geometry {
 
             return GamePositions(
                 allPoints.subList(0, players.size),
-                allPoints.subList(players.size, allPoints.size)
+                allPoints.subList(players.size, allPoints.size),
+                players,
+                targets
             )
         }
     }
 }
 
-data class GamePositions(val playerPositions: List<Vec>, val targetPositions: List<Vec>)
+data class GamePositions(
+    val playerPositions: List<Vec>,
+    val targetPositions: List<Vec>,
+    val unscaledPlayers: List<Vec>,
+    val unscaledTargets: List<Vec>
+)
