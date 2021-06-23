@@ -96,9 +96,11 @@ class Geometry {
 
 
         fun determineMatch(points: List<Vec>, targetShape: List<Vec>): Boolean {
-            val tolerance = 0.0 // the max distance between the points to be a match
+            // TODO this might be problematic as scaling is different on each device
+            val tolerance = 150.0 // the max distance between the points to be a match
             val foundPoints = points.map { a ->
                 // TODO two or more player points could match to the same target point
+                val min = targetShape.map { (it - a).length() }.minOrNull() ?: -1
                 targetShape.find { b ->
                     (b - a).length() <= tolerance
                 }

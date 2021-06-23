@@ -26,7 +26,7 @@ class Paints(
     private val _backgroundColor = _context.getColorFromAttr(android.R.attr.windowBackground)
     private val _targetColor = _context.getColorFromAttr(R.attr.targetShapeColor)
     private val _textPaintPlayerName = _context.getColorFromAttr(R.attr.playerNameColor)
-    private val _targetSuccessColor = _context.getColorFromAttr(R.attr.colorSecondary)
+    private val _targetSuccessColor = _colorPrimary
     private val _typeface = _context.resources.getFont(R.font.roboto_mono)
     private val _playerSelfColor = _context.getColorFromAttr(R.attr.playerSelfColor)
 
@@ -82,11 +82,11 @@ class Paints(
         isAntiAlias = true
         color = _targetSuccessColor
         style = Paint.Style.STROKE
-        strokeWidth = _pointSize * 0.1f
+        strokeWidth = _pointSize * 0.2f
     }
     val fillPaintTargetShapeSuccess = Paint().apply {
         isAntiAlias = true
-        color = _targetSuccessColor
+        color = _backgroundColor
         style = Paint.Style.FILL
     }
 

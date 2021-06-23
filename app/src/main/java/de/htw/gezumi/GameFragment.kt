@@ -53,13 +53,6 @@ class GameFragment : Fragment() {
         }
     }
 
-    private val changeTargetLocations = object : Runnable {
-        override fun run() {
-            _gameViewModel.game.changeTargetLocationsLogic()
-            mainHandler.postDelayed(this, 100)
-        }
-    }
-
     @kotlin.ExperimentalUnsignedTypes
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -136,13 +129,7 @@ class GameFragment : Fragment() {
 
     override fun onPause() {
         super.onPause()
-        mainHandler.removeCallbacks(changeTargetLocations)
         _gameViewModel.game.setRunning(false)
-    }
-
-    override fun onResume() {
-        super.onResume()
-        mainHandler.post(changeTargetLocations)
     }
 
     @kotlin.ExperimentalUnsignedTypes
@@ -152,8 +139,6 @@ class GameFragment : Fragment() {
 
         _gameViewModel.game.setRunning(false)
         _gameViewModel.game.setShapeMatched(false)
-        _gameViewModel.game.resetCurrentIdx()
-        mainHandler.removeCallbacks(changeTargetLocations)
         // stop scan and advertise
         if (_gameViewModel.isGattServerInitialized()) {
             _gameViewModel.gattServer.notifyGameEnding()

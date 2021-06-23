@@ -6,6 +6,7 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.util.Log
 import android.view.SurfaceHolder
+import androidx.core.animation.doOnEnd
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.Observer
 import de.htw.gezumi.calculation.Geometry
@@ -51,14 +52,14 @@ class SurfaceCallback(
             _canvasWidth = canvas.width
         }
 
-        // TODO why do we need this observer? we already set game running false after the shapes matched
         val matchedObserver = Observer<Boolean> { shapesMatch ->
-            if (shapesMatch) _gameViewModel.game.setRunning(false)
-        }
-
-        val animationObserver = Observer<List<Vec>> { animationLocation ->
-            if (!_gameViewModel.game.running) {
-                tryDrawing(holder) { canvas -> drawWinningShape(canvas, animationLocation) }
+            if (shapesMatch) {
+                _animator!!.cancel()
+                animateWin(
+                    _gameViewModel.game.players.value!!.map { it.position!! },
+                    _gameViewModel.game.targetShape.value!!,
+                    holder
+                )
             }
         }
 
@@ -68,9 +69,8 @@ class SurfaceCallback(
             }
         }
 
-        _gameViewModel.game.shapeMatched.observe(_viewLifecycleOwner, matchedObserver)
-        _gameViewModel.game.targetShapeAnimation.observe(_viewLifecycleOwner, animationObserver)
         _gameViewModel.game.players.observe(_viewLifecycleOwner, playerObserver)
+        _gameViewModel.game.shapeMatched.observe(_viewLifecycleOwner, matchedObserver)
     }
 
     override fun surfaceDestroyed(holder: SurfaceHolder) {
@@ -78,10 +78,9 @@ class SurfaceCallback(
     }
 
     private fun tryDrawing(holder: SurfaceHolder, drawFunction: (canvas: Canvas) -> Unit) {
-        Log.i(TAG, "Trying to draw... ${holder.isCreating}")
         val canvas = holder.lockCanvas()
         if (canvas == null) {
-            Log.e(TAG, "Cannot draw onto the canvas as it's null")
+            Log.e(TAG, "Canvas is already locked")
         } else {
             drawFunction(canvas)
             holder.unlockCanvasAndPost(canvas)
@@ -120,22 +119,20 @@ class SurfaceCallback(
             _oldTargetPos = targetPositions
         }
 
-        _animator?.cancel()
-        _animator = Animator.createGameAnimation(
-            _oldPlayerPos!!,
-            playerPositions,
-            _oldTargetPos!!,
-            targetPositions
-        ) { newPlayerPos, newTargetPos ->
+        _animator?.cancel()       
+        _animator = Animator.createVecAnimation(
+            _oldPlayerPos!! + _oldTargetPos!!,
+            playerPositions + targetPositions
+        ) { updatedVecs ->
             tryDrawing(holder) { canvas ->
-                _oldPlayerPos = newPlayerPos
-                _oldTargetPos = newTargetPos
+                _oldPlayerPos = updatedVecs.subList(0, playerPositions.size)
+                _oldTargetPos = updatedVecs.subList(playerPositions.size, updatedVecs.size)
                 clearCanvas(canvas)
 
                 // draw target shape
                 drawFigure(
                     canvas,
-                    newTargetPos,
+                    _oldTargetPos!!,
                     _paints.lineStrokeTargetShape,
                     _paints.circleStrokeTargetShape,
                     _paints.fillPaintTargetShape,
@@ -145,53 +142,64 @@ class SurfaceCallback(
                 // draw players
                 drawFigure(
                     canvas,
-                    newPlayerPos,
+                    _oldPlayerPos!!,
                     _paints.lineStroke,
                     _paints.circleStroke,
                     _paints.fillPaint,
                     POINT_SIZE
                 )
-                drawPlayerNames(canvas, players, newPlayerPos, POINT_SIZE)
+                drawPlayerNames(canvas, players, _oldPlayerPos!!, POINT_SIZE)
                 Log.d(TAG, "players: $players")
                 val playerSelfIndex = players.indexOfFirst { it.name.value == "" }
-                drawPlayerSelf(canvas, newPlayerPos[playerSelfIndex], POINT_SIZE)
+                drawPlayerSelf(canvas, _oldPlayerPos!![playerSelfIndex], POINT_SIZE)
             }
         }
 
-
-
         if (shapesMatch) {
-            _gameViewModel.game.generateTargetShapeAnimationPoints()
             _gameViewModel.game.setShapeMatched(shapesMatch)
             _gameViewModel.game.setRunning(false)
-            Log.d(TAG, "animationShape: ${_gameViewModel.game.animationPointsArray.map { it }}")
         }
-
     }
 
-    private fun drawWinningShape(canvas: Canvas, currentTargetShape: List<Vec>) {
-        Log.d(TAG, "In drawWinningShape")
+    private fun animateWin(playerPositions: List<Vec>, targetPositions: List<Vec>, holder: SurfaceHolder) {
+        val center = Vec(_canvasWidth / 2, _canvasHeight / 2)
 
-        clearCanvas(canvas)
-        // translate player location to target shape
-        val allAnimationPoints = _gameViewModel.game.animationPointsArray.flatMap { it }
-
-        // center players and target shape independently
-        val targetShape = Geometry.center(currentTargetShape)
-        val animationPoints = Geometry.center(allAnimationPoints)
-
-        // scale all points to fit canvas
-        val allPoints = Geometry.scaleToCanvas(
-            targetShape + animationPoints,
-            canvas.height,
-            canvas.width,
+        val arrangedPlayerPos = Geometry.arrangeGamePositions(
+            playerPositions,
+            targetPositions,
+            _canvasHeight,
+            _canvasWidth,
             (POINT_SIZE * 2).toInt()
-        )
+        ).playerPositions
 
-        // draw and animate target shape
+        val animator = Animator.createVecAnimation(
+            arrangedPlayerPos,
+            arrangedPlayerPos.map { center },
+            1000
+        ) { updatedVecs ->
+            tryDrawing(holder) { canvas ->
+                drawWinningFigure(canvas, updatedVecs)
+            }
+        }
+
+        animator.doOnEnd {
+            Animator.createVecAnimation(
+                arrangedPlayerPos.map { center },
+                arrangedPlayerPos,
+                1000
+            ) { updatedVecs ->
+                tryDrawing(holder) { canvas ->
+                    drawWinningFigure(canvas, updatedVecs)
+                }
+            }
+        }
+    }
+
+    private fun drawWinningFigure(canvas: Canvas, positions: List<Vec>) {
+        clearCanvas(canvas)
         drawFigure(
             canvas,
-            allPoints.subList(0, _gameViewModel.game.numberOfPlayers),
+            positions,
             _paints.lineStrokeTargetShapeSuccess,
             _paints.circleStrokeTargetShapeSuccess,
             _paints.fillPaintTargetShapeSuccess,

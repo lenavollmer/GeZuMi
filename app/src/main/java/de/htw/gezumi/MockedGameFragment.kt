@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.view.*
 import android.widget.Button
 import androidx.databinding.DataBindingUtil
@@ -15,6 +16,7 @@ import de.htw.gezumi.calculation.Vec
 import de.htw.gezumi.callbacks.SurfaceCallback
 import de.htw.gezumi.databinding.FragmentGameBinding
 import de.htw.gezumi.viewmodel.GameViewModel
+import java.util.*
 
 
 private const val TAG = "MockedGameFragment"
@@ -32,13 +34,6 @@ class MockedGameFragment : Fragment() {
 
     private var initializedPlayerNames = false
 
-    private val changeTargetLocations = object : Runnable {
-        override fun run() {
-            _gameViewModel.game.changeTargetLocationsLogic()
-            mainHandler.postDelayed(this, 100)
-        }
-    }
-
     private val changePlayerLocations = object : Runnable {
         val player1 = byteArrayOf(0, 0, 0)
         val player2 = byteArrayOf(1, 1, 1)
@@ -46,7 +41,8 @@ class MockedGameFragment : Fragment() {
         val playerNames = arrayOf("", "Targo", "Kaenu")
 
         override fun run() {
-            if (_gameViewModel.game.time < 5) {
+            Log.d(TAG, "${_gameViewModel.game.time}")
+            if (!_gameViewModel.game.shapeMatched.value!!) {
                 val currentObj = Geometry.generateGeometricObject(3)
                 _gameViewModel.game.updatePlayer(player1, currentObj[0])
                 _gameViewModel.game.updatePlayer(player2, currentObj[1])
@@ -56,10 +52,6 @@ class MockedGameFragment : Fragment() {
                         player.setName(playerNames[index])
                     }
                 }
-            } else {
-                _gameViewModel.game.updatePlayer(player1, _gameViewModel.game.targetShape.value!![0])
-                _gameViewModel.game.updatePlayer(player2, _gameViewModel.game.targetShape.value!![1])
-                _gameViewModel.game.updatePlayer(player3, _gameViewModel.game.targetShape.value!![2])
             }
             mainHandler.postDelayed(this, 2000)
         }
@@ -123,19 +115,18 @@ class MockedGameFragment : Fragment() {
             _gameViewModel.game.setRunning(true)
         }
 
+        runTimer()
     }
 
     override fun onPause() {
         super.onPause()
         mainHandler.removeCallbacks(changePlayerLocations)
-        mainHandler.removeCallbacks(changeTargetLocations)
         _gameViewModel.game.setRunning(false)
     }
 
     override fun onResume() {
         super.onResume()
         mainHandler.post(changePlayerLocations)
-        mainHandler.post(changeTargetLocations)
         _gameViewModel.game.setRunning(true)
     }
 
@@ -145,13 +136,46 @@ class MockedGameFragment : Fragment() {
         super.onStop()
         _gameViewModel.game.setRunning(false)
         _gameViewModel.game.setShapeMatched(false)
-        _gameViewModel.game.resetCurrentIdx()
         mainHandler.removeCallbacks(changePlayerLocations)
-        mainHandler.removeCallbacks(changeTargetLocations)
         // stop scan and advertise
         if (_gameViewModel.isGattServerInitialized()) {
             _gameViewModel.gattServer.notifyGameEnding()
             _gameViewModel.gattServer.stopServer()
         }
+    }
+
+    private fun runTimer() {
+        // Get the text view.
+        val timeView = _binding.timeView
+
+        mainHandler.post(object : Runnable {
+            override fun run() {
+                val seconds = _gameViewModel.game.time
+                val hours = seconds / 3600
+                val minutes = seconds % 3600 / 60
+                val secs = seconds % 60
+
+                // Format the seconds into hours, minutes,
+                // and seconds.
+                val time: String = java.lang.String
+                    .format(
+                        Locale.getDefault(),
+                        "%d:%02d:%02d", hours,
+                        minutes, secs
+                    )
+
+                timeView.text = time
+
+                // If running is true, increment the
+                // seconds variable.
+                if (_gameViewModel.game.running) {
+                    _gameViewModel.game.setTime(seconds + 1)
+                }
+
+                // Post the code again
+                // with a delay of 1 second.
+                mainHandler.postDelayed(this, 1000)
+            }
+        })
     }
 }
