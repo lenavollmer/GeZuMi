@@ -21,7 +21,7 @@ class Animator {
             val animator = ValueAnimator()
             animator.setValues(*(playerProperties.map { it.x } + playerProperties.map { it.y }
                     + targetProperties.map { it.x } + targetProperties.map { it.y }).toTypedArray())
-            animator.duration = 1000
+            animator.duration = 2000
 
             animator.addUpdateListener { animation ->
                 val players = playerProperties.map {
