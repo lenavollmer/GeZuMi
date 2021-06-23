@@ -95,15 +95,15 @@ class Geometry {
             points.map { rotatePoint(it, o, angle) }
 
 
-        fun determineMatch(points: List<Vec>, targetShape: List<Vec>): Boolean {
+        fun determineMatch(players: List<Vec>, targets: List<Vec>): Boolean {
             val tolerance = 0.5 // the max distance in meter between the points to be a match
-            val foundPoints = points.map { a ->
+            val foundPoints = players.map { a ->
                 // TODO two or more player points could match to the same target point
-                targetShape.find { b ->
+                targets.find { b ->
                     (b - a).length() <= tolerance
                 }
             }
-            return foundPoints.filterNotNull().size == points.size
+            return foundPoints.filterNotNull().size == players.size
         }
 
         /**
@@ -128,9 +128,6 @@ class Geometry {
         fun arrangeGamePositions(
             playerPositions: List<Vec>,
             targetPositions: List<Vec>,
-            height: Int,
-            width: Int,
-            margin: Int
         ): GamePositions {
             // use closest point to host of target shape as base point of the target shape
             val hostPosition = playerPositions[0]
@@ -156,27 +153,33 @@ class Geometry {
             players = center(players)
             targets = center(targets)
 
-            // scale all positions to fit canvas
+            return GamePositions(players, targets)
+        }
+
+        /**
+         * Scale [scaleGamePositions] to a canvas with the given dimension.
+         */
+        fun scaleGamePositions(
+            gamePositions: GamePositions,
+            height: Int,
+            width: Int,
+            margin: Int
+        ): GamePositions {
             val allPoints = scaleToCanvas(
-                players + targets,
+                gamePositions.players + gamePositions.targets,
                 height,
                 width,
                 margin
             )
-
             return GamePositions(
-                allPoints.subList(0, players.size),
-                allPoints.subList(players.size, allPoints.size),
-                players,
-                targets
+                allPoints.subList(0, gamePositions.players.size),
+                allPoints.subList(gamePositions.players.size, allPoints.size),
             )
         }
     }
 }
 
 data class GamePositions(
-    val playerPositions: List<Vec>,
-    val targetPositions: List<Vec>,
-    val unscaledPlayers: List<Vec>,
-    val unscaledTargets: List<Vec>
+    val players: List<Vec>,
+    val targets: List<Vec>,
 )

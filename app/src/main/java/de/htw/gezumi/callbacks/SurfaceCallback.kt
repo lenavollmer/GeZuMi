@@ -9,6 +9,7 @@ import android.view.SurfaceHolder
 import androidx.core.animation.doOnEnd
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.Observer
+import de.htw.gezumi.calculation.GamePositions
 import de.htw.gezumi.calculation.Geometry
 import de.htw.gezumi.calculation.Vec
 import de.htw.gezumi.canvas.Animator
@@ -32,9 +33,7 @@ class SurfaceCallback(
     private var _canvasHeight: Int = 0
     private var _canvasWidth: Int = 0
 
-    private var _oldPlayerPos: List<Vec>? = null
-    private var _oldTargetPos: List<Vec>? = null
-
+    private var _oldGamePos: GamePositions? = null
     private var _animator: ValueAnimator? = null
 
     override fun surfaceChanged(
@@ -97,42 +96,38 @@ class SurfaceCallback(
 
         if (playerPositions.size < 3 || targetPositions.size < 3) return
 
-        val gamePositions = Geometry.arrangeGamePositions(
+        val gamePos = Geometry.arrangeGamePositions(
             playerPositions,
             targetPositions,
-            _canvasHeight,
-            _canvasWidth,
-            (POINT_SIZE * 2).toInt()
         )
-        playerPositions = gamePositions.playerPositions
-        targetPositions = gamePositions.targetPositions
 
-
-        val shapesMatch = Geometry.determineMatch(
-            gamePositions.unscaledPlayers,
-            gamePositions.unscaledTargets
-        )
-        Log.d(TAG, "isMatch: $shapesMatch")
-
-        if (_oldPlayerPos == null || _oldTargetPos == null) {
-            _oldPlayerPos = playerPositions
-            _oldTargetPos = targetPositions
+        if (_oldGamePos == null) {
+            _oldGamePos = gamePos
         }
 
-        _animator?.cancel()       
+        _animator?.cancel()
         _animator = Animator.createVecAnimation(
-            _oldPlayerPos!! + _oldTargetPos!!,
-            playerPositions + targetPositions
+            _oldGamePos!!.players + _oldGamePos!!.targets,
+            gamePos.players + gamePos.targets
         ) { updatedVecs ->
             tryDrawing(holder) { canvas ->
-                _oldPlayerPos = updatedVecs.subList(0, playerPositions.size)
-                _oldTargetPos = updatedVecs.subList(playerPositions.size, updatedVecs.size)
+                _oldGamePos = GamePositions(
+                    updatedVecs.subList(0, playerPositions.size),
+                    updatedVecs.subList(playerPositions.size, updatedVecs.size)
+                )
+                val scaledGamePos = Geometry.scaleGamePositions(
+                    _oldGamePos!!,
+                    _canvasHeight,
+                    _canvasWidth,
+                    (POINT_SIZE * 2).toInt()
+                )
+
                 clearCanvas(canvas)
 
                 // draw target shape
                 drawFigure(
                     canvas,
-                    _oldTargetPos!!,
+                    scaledGamePos.targets,
                     _paints.lineStrokeTargetShape,
                     _paints.circleStrokeTargetShape,
                     _paints.fillPaintTargetShape,
@@ -142,35 +137,39 @@ class SurfaceCallback(
                 // draw players
                 drawFigure(
                     canvas,
-                    _oldPlayerPos!!,
+                    scaledGamePos.players,
                     _paints.lineStroke,
                     _paints.circleStroke,
                     _paints.fillPaint,
                     POINT_SIZE
                 )
-                drawPlayerNames(canvas, players, _oldPlayerPos!!, POINT_SIZE)
-                Log.d(TAG, "players: $players")
+                drawPlayerNames(canvas, players, scaledGamePos.players, POINT_SIZE)
                 val playerSelfIndex = players.indexOfFirst { it.name.value == "" }
-                drawPlayerSelf(canvas, _oldPlayerPos!![playerSelfIndex], POINT_SIZE)
-            }
-        }
+                drawPlayerSelf(canvas, scaledGamePos.players[playerSelfIndex], POINT_SIZE)
 
-        if (shapesMatch) {
-            _gameViewModel.game.setShapeMatched(shapesMatch)
-            _gameViewModel.game.setRunning(false)
+                val shapesMatch = Geometry.determineMatch(_oldGamePos!!.players, _oldGamePos!!.targets)
+                if (shapesMatch) {
+                    _oldGamePos = null
+                    _animator?.cancel()
+                    _gameViewModel.game.setShapeMatched(shapesMatch)
+                    _gameViewModel.game.setRunning(false)
+                }
+            }
         }
     }
 
     private fun animateWin(playerPositions: List<Vec>, targetPositions: List<Vec>, holder: SurfaceHolder) {
         val center = Vec(_canvasWidth / 2, _canvasHeight / 2)
 
-        val arrangedPlayerPos = Geometry.arrangeGamePositions(
-            playerPositions,
-            targetPositions,
+        val arrangedPlayerPos = Geometry.scaleGamePositions(
+            Geometry.arrangeGamePositions(
+                playerPositions,
+                targetPositions
+            ),
             _canvasHeight,
             _canvasWidth,
             (POINT_SIZE * 2).toInt()
-        ).playerPositions
+        ).players
 
         val animator = Animator.createVecAnimation(
             arrangedPlayerPos,
