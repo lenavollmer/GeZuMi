@@ -1,11 +1,13 @@
 package de.htw.gezumi.canvas
 
+import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
 import de.htw.gezumi.calculation.Vec
 import de.htw.gezumi.model.Player
 
-class Painter(private val _paints: Paints, private val _pointSize: Float) {
+class Painter(private val _context: Context, private val _pointSize: Float) {
+    private val _paints = Paints(_context, _pointSize)
 
     fun drawWinningFigure(canvas: Canvas, positions: List<Vec>) {
         drawFigure(

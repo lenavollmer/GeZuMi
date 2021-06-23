@@ -13,7 +13,6 @@ import de.htw.gezumi.calculation.Geometry
 import de.htw.gezumi.calculation.Vec
 import de.htw.gezumi.canvas.Animator
 import de.htw.gezumi.canvas.Painter
-import de.htw.gezumi.canvas.Paints
 import de.htw.gezumi.model.Player
 import de.htw.gezumi.viewmodel.GameViewModel
 
@@ -28,8 +27,7 @@ class SurfaceCallback(
 ) :
     SurfaceHolder.Callback {
 
-    private val _paints = Paints(_context, POINT_SIZE)
-    private val _painter = Painter(_paints, POINT_SIZE)
+    private val _painter = Painter(_context, POINT_SIZE)
 
     private var _canvasHeight: Int = 0
     private var _canvasWidth: Int = 0
@@ -129,9 +127,9 @@ class SurfaceCallback(
 
                 val shapesMatch = Geometry.determineMatch(_oldGamePos!!.players, _oldGamePos!!.targets)
                 if (shapesMatch) {
-                    _animator!!.cancel()
-                    _gameViewModel.game.setShapeMatched(shapesMatch)
+                    _animator?.cancel()
                     _gameViewModel.game.setRunning(false)
+                    _gameViewModel.game.setShapeMatched(true)
                 }
             }
         }
