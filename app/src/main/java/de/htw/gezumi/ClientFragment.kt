@@ -100,7 +100,7 @@ class ClientFragment : Fragment() {
 
         override fun gameDeclined() {
             Handler(Looper.getMainLooper()).post {
-                Toast.makeText(context, R.string.game_declined, Toast.LENGTH_LONG).show()
+                Toast.makeText(context, R.string.join_declined, Toast.LENGTH_LONG).show()
                 _connected = false
                 resetConnection()
             }
