@@ -67,6 +67,7 @@ class ClientFragment : Fragment() {
         _popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0)
         _popupWindow.dimBehind()
 
+        _connected = true
         _gameViewModel.bluetoothController.stopScan(HOST_SCAN_KEY)
         _binding.buttonScan.isEnabled = false
         _availableHostDevices.clear()
@@ -94,7 +95,6 @@ class ClientFragment : Fragment() {
                 _popupBinding.joinText.text = getString(R.string.join_approved)
                 _popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0)
                 _popupWindow.dimBehind()
-                _connected = true
             }
         }
 
@@ -178,6 +178,7 @@ class ClientFragment : Fragment() {
             addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
         }
         _binding.buttonScan.setOnClickListener {
+            _gameViewModel.bluetoothController.stopScan(HOST_SCAN_KEY)
             _availableHostDevices.clear()
             updateBtDeviceListAdapter()
             _gameViewModel.bluetoothController.startHostScan(_gameViewModel.hostScanCallback)// ParcelUuid(GameService.getGameId()), true) <- doesn't work, why???
