@@ -30,7 +30,6 @@ import de.htw.gezumi.gatt.GattServer
 import de.htw.gezumi.util.CSVReader
 import de.htw.gezumi.viewmodel.GAME_NAME_LENGTH
 import de.htw.gezumi.viewmodel.GameViewModel
-import java.lang.reflect.Array.newInstance
 import kotlin.random.Random
 
 
@@ -104,7 +103,7 @@ class HostFragment : Fragment() {
                 val idx = _connectedDevices.indexOf(bluetoothDevice)
                 _joinNames.removeAt(idx)
                 _connectedDevices.remove(bluetoothDevice) // is only present if currently neither approved nor declined
-                updateAdapters()
+                Handler(Looper.getMainLooper()).post { updateAdapters() }
             }
             _gattServer.subscribedDevices.remove(bluetoothDevice)
 
@@ -257,11 +256,12 @@ class HostFragment : Fragment() {
             _connectedDevices.forEach{ // approve all to cancel join process when stopping
                 _gattServer.notifyJoinApproved(it, true)
             }
+            Thread.sleep(500)
 
             _gattServer.notifyGameEnding()
             stopScanAndAdvertise()
             _gameViewModel.clearModel()
-            _gattServer.stopServer() // Das war vorher nicht im gamestarted.
+            _gattServer.stopServer()
             updateAdapters()
         }
     }

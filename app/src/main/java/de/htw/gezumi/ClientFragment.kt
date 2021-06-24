@@ -48,7 +48,7 @@ class ClientFragment : Fragment() {
 
     private var _gameStarted = false
     private var _firstLeave = true
-    private var _connected = true
+    private var _connected = false
 
     private val _availableHostDevices: ArrayList<Device> = ArrayList()
     private val _hostDeviceListAdapter: JoinGameListAdapter = JoinGameListAdapter(_availableHostDevices) {

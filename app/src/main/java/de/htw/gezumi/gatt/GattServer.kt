@@ -11,6 +11,7 @@ import de.htw.gezumi.HostFragment
 import de.htw.gezumi.Utils
 import de.htw.gezumi.controller.BluetoothController
 import de.htw.gezumi.model.BluetoothData
+import de.htw.gezumi.model.Device
 import java.nio.ByteBuffer
 
 private const val TAG = "GattServer"
