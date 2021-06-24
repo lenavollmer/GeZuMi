@@ -53,8 +53,6 @@ class ClientFragment : Fragment() {
     private val _availableHostDevices: ArrayList<Device> = ArrayList()
     private val _hostDeviceListAdapter: JoinGameListAdapter = JoinGameListAdapter(_availableHostDevices) {
 
-        _gameViewModel.bluetoothController.stopScan(HOST_SCAN_KEY)
-
         _gameViewModel.host = _availableHostDevices[it]
         _gameViewModel.game.hostId = _availableHostDevices[it].deviceId
 
@@ -69,6 +67,8 @@ class ClientFragment : Fragment() {
         _popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0)
         _popupWindow.dimBehind()
 
+        _gameViewModel.bluetoothController.stopScan(HOST_SCAN_KEY)
+        _binding.buttonScan.isEnabled = false
         _availableHostDevices.clear()
         updateBtDeviceListAdapter()
     }
@@ -94,12 +94,7 @@ class ClientFragment : Fragment() {
                 _popupBinding.joinText.text = getString(R.string.join_approved)
                 _popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0)
                 _popupWindow.dimBehind()
-
-                _binding.buttonScan.isEnabled = false
                 _connected = true
-
-                _availableHostDevices.clear()
-                updateBtDeviceListAdapter()
             }
         }
 
