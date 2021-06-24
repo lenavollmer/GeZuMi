@@ -16,6 +16,7 @@ import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import de.htw.gezumi.callbacks.GameLeaveUICallback
 import de.htw.gezumi.callbacks.SurfaceCallback
+import de.htw.gezumi.controller.GAME_SCAN_KEY
 import de.htw.gezumi.databinding.FragmentGameBinding
 import de.htw.gezumi.model.Player
 import de.htw.gezumi.viewmodel.GameViewModel
@@ -86,7 +87,7 @@ class GameFragment : Fragment() {
             }
         }
         val playerObserver = Observer<List<Player>> { players ->
-            var playersWithPosition = players.filter { it.position != null && !it.position!!.isNan() }
+            val playersWithPosition = players.filter { it.position != null && !it.position!!.isNan() }
             if (
                 playersWithPosition.size > 2 &&
                 _gameViewModel.game.targetShape.value!!.size > 2 &&
@@ -160,6 +161,9 @@ class GameFragment : Fragment() {
             _gameViewModel.gattServer.stopServer()
         }
         if (_gameViewModel.isGattClientInitialized()) _gameViewModel.gattClient.disconnect()
+
+        _gameViewModel.bluetoothController.stopAdvertising()
+        _gameViewModel.bluetoothController.stopScan(GAME_SCAN_KEY) // Todo crashed on rare occasions
     }
 
     private fun runTimer() {

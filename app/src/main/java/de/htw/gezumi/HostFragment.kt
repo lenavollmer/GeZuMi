@@ -1,6 +1,7 @@
 package de.htw.gezumi
 
 import android.bluetooth.BluetoothDevice
+import android.bluetooth.BluetoothGattService
 import android.content.Context
 import android.os.Build
 import android.os.Bundle
@@ -29,7 +30,7 @@ import de.htw.gezumi.gatt.GattServer
 import de.htw.gezumi.util.CSVReader
 import de.htw.gezumi.viewmodel.GAME_NAME_LENGTH
 import de.htw.gezumi.viewmodel.GameViewModel
-import java.util.*
+import java.lang.reflect.Array.newInstance
 import kotlin.random.Random
 
 
@@ -41,14 +42,15 @@ class HostFragment : Fragment() {
     private val _minimumPlayers = 2
     private var _currentPlayers = 0 // use variable to not use threaded methods for device calculation
 
+    private lateinit var _gameService: BluetoothGattService
     private lateinit var _binding: FragmentHostBinding
     private lateinit var _bottomSheetBehavior: BottomSheetBehavior<ConstraintLayout>
     private lateinit var _gattServer: GattServer
 
     private var _gameStarted = false
-    private var wasOnPause = false
 
-    private val _connectedDevices: MutableList<BluetoothDevice> = mutableListOf() // devices that are connected, but neither approved nor declined
+    private val _connectedDevices: MutableList<BluetoothDevice> =
+        mutableListOf() // devices that are connected, but neither approved nor declined
     private val _joinNames: MutableList<String> = mutableListOf() // depends on connectedDevices
 
     //private val _approvedDevices: ArrayList<Device> = ArrayList()
@@ -102,6 +104,7 @@ class HostFragment : Fragment() {
                 val idx = _connectedDevices.indexOf(bluetoothDevice)
                 _joinNames.removeAt(idx)
                 _connectedDevices.remove(bluetoothDevice) // is only present if currently neither approved nor declined
+                updateAdapters()
             }
             _gattServer.subscribedDevices.remove(bluetoothDevice)
 
@@ -112,9 +115,11 @@ class HostFragment : Fragment() {
                 Log.d(TAG, "remove device: $device")
                 GameViewModel.instance.devices.remove(device)
                 _currentPlayers--
-                if(_currentPlayers == 0){
-                    _binding.noPlayers.visibility = View.VISIBLE
-                    _binding.recyclerPlayers.visibility = View.GONE
+                if (_currentPlayers == 0) {
+                    Handler(Looper.getMainLooper()).post {
+                        _binding.noPlayers.visibility = View.VISIBLE
+                        _binding.recyclerPlayers.visibility = View.GONE
+                    }
                 }
                 if (_gameStarted) {
                     // could come here (HostFragment) even if game is running
@@ -144,13 +149,8 @@ class HostFragment : Fragment() {
         if (_gameViewModel.txPower == null)
             _gameViewModel.txPower = CSVReader.getTxPower(Build.DEVICE, requireContext())
 
-        val gameService = GameService.createHostService()
+        _gameService = GameService.createHostService()
         _gameViewModel.makeGameId()
-
-        Log.d(TAG, "start gatt server and game service")
-        _gattServer = GattServer(requireContext(), _gameViewModel.bluetoothController, connectCallback)
-        _gameViewModel.gattServer = _gattServer
-        _gattServer.startServer(gameService)
     }
 
     override fun onCreateView(
@@ -221,7 +221,7 @@ class HostFragment : Fragment() {
             return@setOnEditorActionListener false
         }
 
-        if(arguments?.getString("playerName") != null){
+        if (arguments?.getString("playerName") != null) {
             val playerName = arguments?.getString("playerName")!!
             _gameViewModel.onPlayerNameChanged(playerName)
         }
@@ -250,32 +250,30 @@ class HostFragment : Fragment() {
         _gameViewModel.bluetoothController.stopScan(GAME_SCAN_KEY)
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        _gameViewModel.clearModel()
-        _gattServer.stopServer()
-    }
-
     override fun onStop() {
         super.onStop()
-        if (!_gameStarted) _gattServer.notifyGameEnding() // how can that ever happen? when game is started, then we are in game fragment
-    }
+        if (!_gameStarted) {
 
-    override fun onPause() {
-        super.onPause()
-        wasOnPause = true
-        if (!_gameStarted) stopScanAndAdvertise() // how can that ever happen? when game is started, then we are in game fragment
+            _connectedDevices.forEach{ // approve all to cancel join process when stopping
+                _gattServer.notifyJoinApproved(it, true)
+            }
+
+            _gattServer.notifyGameEnding()
+            stopScanAndAdvertise()
+            _gameViewModel.clearModel()
+            _gattServer.stopServer() // Das war vorher nicht im gamestarted.
+            updateAdapters()
+        }
     }
 
     @kotlin.ExperimentalUnsignedTypes
-    override fun onResume() {
-        super.onResume()
-        updateAdapters()
-        if (wasOnPause) {
-            wasOnPause = false
-            scanAndAdvertise()
-            // _gameViewModel.bluetoothController.startAdvertising(_gameViewModel.gameId, GameService.gameName.toByteArray(Charsets.UTF_8)) why just restart advertisement??
-        }
+    override fun onStart() {
+        super.onStart()
+        Log.d(TAG, "start gatt server and game service")
+        _gattServer = GattServer(requireContext(), _gameViewModel.bluetoothController, connectCallback)
+        _gameViewModel.gattServer = _gattServer
+        _gattServer.startServer(_gameService)
+        scanAndAdvertise()
     }
 
     private fun updateAdapters() {
