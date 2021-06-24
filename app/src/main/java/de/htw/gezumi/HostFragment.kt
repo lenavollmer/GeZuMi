@@ -253,10 +253,9 @@ class HostFragment : Fragment() {
         super.onStop()
         if (!_gameStarted) {
 
-            _connectedDevices.forEach{ // approve all to cancel join process when stopping
-                _gattServer.notifyJoinApproved(it, true)
+            _connectedDevices.forEach{ // decline all pending players
+                _gattServer.notifyJoinApproved(it, false)
             }
-            Thread.sleep(500)
 
             _gattServer.notifyGameEnding()
             stopScanAndAdvertise()
