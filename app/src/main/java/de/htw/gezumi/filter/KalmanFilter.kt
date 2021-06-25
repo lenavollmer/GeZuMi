@@ -30,8 +30,8 @@ class KalmanFilter: Filter {
     private var isInitialized = false //initialization flag
 
     constructor() {
-        processNoise = 0.125f
-        measurementNoise = 0.8f
+        processNoise = 0.05f //0.125f
+        measurementNoise = 1f //0.8f
     }
 
     constructor(processNoise: Float, measurementNoise: Float) {
