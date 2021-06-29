@@ -106,13 +106,13 @@ class MockedGameFragment : Fragment() {
                 viewLifecycleOwner
             )
         )
-        _gameViewModel.game.setRunning(true)
+        _gameViewModel.game.running = true
 
         view.findViewById<Button>(R.id.start_new_game).setOnClickListener {
             _binding.shapesMatched.visibility = View.INVISIBLE
             _binding.startNewGame.visibility = View.INVISIBLE
             _gameViewModel.game.resetState()
-            _gameViewModel.game.setRunning(true)
+            _gameViewModel.game.running = true
         }
 
         runTimer()
@@ -121,20 +121,20 @@ class MockedGameFragment : Fragment() {
     override fun onPause() {
         super.onPause()
         mainHandler.removeCallbacks(changePlayerLocations)
-        _gameViewModel.game.setRunning(false)
+        _gameViewModel.game.running = false
     }
 
     override fun onResume() {
         super.onResume()
         mainHandler.post(changePlayerLocations)
-        _gameViewModel.game.setRunning(true)
+        _gameViewModel.game.running = true
     }
 
     @kotlin.ExperimentalUnsignedTypes
     @SuppressLint("DefaultLocale")
     override fun onStop() {
         super.onStop()
-        _gameViewModel.game.setRunning(false)
+        _gameViewModel.game.running = false
         _gameViewModel.game.setShapeMatched(false)
         mainHandler.removeCallbacks(changePlayerLocations)
         // stop scan and advertise
@@ -169,7 +169,7 @@ class MockedGameFragment : Fragment() {
                 // If running is true, increment the
                 // seconds variable.
                 if (_gameViewModel.game.running) {
-                    _gameViewModel.game.setTime(seconds + 1)
+                    _gameViewModel.game.time = seconds + 1
                 }
 
                 // Post the code again

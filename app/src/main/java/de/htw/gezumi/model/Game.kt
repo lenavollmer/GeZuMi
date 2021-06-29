@@ -10,8 +10,6 @@ private const val TAG = "Game"
 class Game() {
     var hostId: ByteArray? = null
 
-    val numberOfPlayers: Int get() = _players.value?.size ?: 0
-
     // contains a player for myself
     private val _players = MutableLiveData<MutableList<Player>>(
         mutableListOf()
@@ -25,12 +23,10 @@ class Game() {
     private var _shapeMatched = MutableLiveData(false)
     val shapeMatched: MutableLiveData<Boolean> get() = _shapeMatched
 
-    private var _time = 0
-    val time: Int get() = _time
+    var time = 0
 
     // stopwatch running?
-    private var _running = false
-    val running: Boolean get() = _running
+    var running = true
 
     fun setShapeMatched(matchedShape: Boolean) {
         _shapeMatched.postValue(matchedShape)
@@ -40,17 +36,9 @@ class Game() {
         _targetShape.postValue(points)
     }
 
-    fun setTime(time: Int) {
-        _time = time
-    }
-
-    fun setRunning(running: Boolean) {
-        _running = running
-    }
-
     fun resetState() {
-        setRunning(false)
-        setTime(0)
+        running = false
+        time = 0
         // TODO generate new target shape and send to clients
         _shapeMatched.value = false
     }

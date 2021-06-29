@@ -85,7 +85,7 @@ class GameFragment : Fragment() {
                 _gameViewModel.game.targetShape.value!!.size > 2 &&
                 !_gameViewModel.game.running
             ) {
-                _gameViewModel.game.setRunning(true)
+                if (!_gameViewModel.game.shapeMatched.value!!) _gameViewModel.game.running = true
                 runTimer()
                 _binding.progressBar.visibility = View.INVISIBLE
                 _binding.surfaceView.visibility = View.VISIBLE
@@ -120,7 +120,7 @@ class GameFragment : Fragment() {
             _binding.startNewGame.visibility = View.INVISIBLE
             _gameViewModel.updateTargetShape()
             _gameViewModel.game.resetState()
-            _gameViewModel.game.setRunning(true)
+            _gameViewModel.game.running = true
         }
 
         (activity as AppCompatActivity?)!!.supportActionBar?.hide() // Hide Bar
@@ -129,7 +129,7 @@ class GameFragment : Fragment() {
 
     override fun onPause() {
         super.onPause()
-        _gameViewModel.game.setRunning(false)
+        _gameViewModel.game.running = false
     }
 
     @kotlin.ExperimentalUnsignedTypes
@@ -137,7 +137,7 @@ class GameFragment : Fragment() {
     override fun onStop() {
         super.onStop()
 
-        _gameViewModel.game.setRunning(false)
+        _gameViewModel.game.running = false
         _gameViewModel.game.setShapeMatched(false)
         // stop scan and advertise
         if (_gameViewModel.isGattServerInitialized()) {
@@ -172,7 +172,7 @@ class GameFragment : Fragment() {
                 // If running is true, increment the
                 // seconds variable.
                 if (_gameViewModel.game.running) {
-                    _gameViewModel.game.setTime(seconds + 1)
+                    _gameViewModel.game.time = seconds + 1
                 }
 
                 // Post the code again

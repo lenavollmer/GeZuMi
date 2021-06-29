@@ -43,30 +43,20 @@ class SurfaceCallback(
     }
 
     override fun surfaceCreated(holder: SurfaceHolder) {
-        Log.d(TAG, "surfaceCreated")
-
         tryDrawing(holder) { canvas ->
             _canvasHeight = canvas.height
             _canvasWidth = canvas.width
         }
 
-        val matchedObserver = Observer<Boolean> { shapesMatch ->
-            if (shapesMatch) {
-                _animator!!.cancel()
-                animateWin(
-                    holder
-                )
-            }
-        }
+        val shapesMatchedObserver = Observer<Boolean> { if (it) animateWin(holder) }
 
         val playerObserver = Observer<List<Player>> {
-            if (_gameViewModel.game.running) {
-                drawInGame(holder, it)
-            }
+            if (_gameViewModel.game.running) drawInGame(holder, it)
         }
 
         _gameViewModel.game.players.observe(_viewLifecycleOwner, playerObserver)
-        _gameViewModel.game.shapeMatched.observe(_viewLifecycleOwner, matchedObserver)
+        _gameViewModel.game.shapeMatched.observe(_viewLifecycleOwner, shapesMatchedObserver)
+
     }
 
     override fun surfaceDestroyed(holder: SurfaceHolder) {
@@ -128,7 +118,7 @@ class SurfaceCallback(
                 val shapesMatch = Geometry.determineMatch(_oldGamePos!!.players, _oldGamePos!!.targets)
                 if (shapesMatch) {
                     _animator?.cancel()
-                    _gameViewModel.game.setRunning(false)
+                    _gameViewModel.game.running = false
                     _gameViewModel.game.setShapeMatched(true)
                 }
             }
