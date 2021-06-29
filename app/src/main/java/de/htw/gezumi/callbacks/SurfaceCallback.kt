@@ -74,21 +74,17 @@ class SurfaceCallback(
     }
 
     private fun drawInGame(holder: SurfaceHolder, players: List<Player>) {
-        var targetPositions = _gameViewModel.game.targetShape.value!!.toList()
-        var playerPositions =
+        var gamePos = GamePositions(
+            _gameViewModel.game.targetShape.value!!.toList(),
             players.filter { it.position != null }
                 .map { it.position!! }.toList()
-
-        if (playerPositions.size < 3 || targetPositions.size < 3) return
-
-        val gamePos = Geometry.arrangeGamePositions(
-            playerPositions,
-            targetPositions,
         )
 
-        if (_oldGamePos == null) {
-            _oldGamePos = gamePos
-        }
+        if (gamePos.players.size < 3 || gamePos.targets.size < 3) return
+
+        gamePos = Geometry.arrangeGamePositions(gamePos)
+
+        if (_oldGamePos == null) _oldGamePos = gamePos
 
         _animator?.cancel()
         _animator = Animator.createVecAnimation(
@@ -97,8 +93,8 @@ class SurfaceCallback(
         ) { updatedVecs ->
             tryDrawing(holder) { canvas ->
                 _oldGamePos = GamePositions(
-                    updatedVecs.subList(0, playerPositions.size),
-                    updatedVecs.subList(playerPositions.size, updatedVecs.size)
+                    updatedVecs.subList(0, gamePos.players.size),
+                    updatedVecs.subList(gamePos.players.size, updatedVecs.size)
                 )
                 val scaledGamePos = Geometry.scaleGamePositions(
                     _oldGamePos!!,
@@ -115,7 +111,7 @@ class SurfaceCallback(
                 val playerSelfIndex = players.indexOfFirst { it.name.value == "" }
                 _painter.drawPlayerSelf(canvas, scaledGamePos.players[playerSelfIndex])
 
-                val shapesMatch = Geometry.determineMatch(_oldGamePos!!.players, _oldGamePos!!.targets)
+                val shapesMatch = Geometry.determineMatch(_oldGamePos!!)
                 if (shapesMatch) {
                     _animator?.cancel()
                     _gameViewModel.game.running = false
@@ -128,7 +124,7 @@ class SurfaceCallback(
     private fun animateWin(holder: SurfaceHolder) {
         val center = Vec(_canvasWidth / 2, _canvasHeight / 2)
 
-        val scaledGamePos = Geometry.scaleGamePositions(
+        val gamePos = Geometry.scaleGamePositions(
             _oldGamePos!!,
             _canvasHeight,
             _canvasWidth,
@@ -136,23 +132,23 @@ class SurfaceCallback(
         )
 
         val playerToTargetAnimator = Animator.createVecAnimation(
-            scaledGamePos.players,
-            scaledGamePos.players.map { player ->
-                scaledGamePos.targets.minByOrNull { target -> (target - player).length() }!!
+            gamePos.players,
+            gamePos.players.map { player ->
+                gamePos.targets.minByOrNull { target -> (target - player).length() }!!
             },
             500
         ) { updatedVecs ->
             tryDrawing(holder) { canvas ->
                 _painter.clearCanvas(canvas)
-                _painter.drawTargetShape(canvas, scaledGamePos.targets)
+                _painter.drawTargetShape(canvas, gamePos.targets)
                 _painter.drawWinningFigure(canvas, updatedVecs)
             }
         }
 
         playerToTargetAnimator.doOnEnd {
             val scaleToCenterAnimator = Animator.createVecAnimation(
-                scaledGamePos.targets,
-                scaledGamePos.targets.map { center },
+                gamePos.targets,
+                gamePos.targets.map { center },
                 800
             ) { updatedVecs ->
                 tryDrawing(holder) { canvas ->
@@ -163,8 +159,8 @@ class SurfaceCallback(
 
             scaleToCenterAnimator.doOnEnd {
                 Animator.createVecAnimation(
-                    scaledGamePos.targets.map { center },
-                    scaledGamePos.targets,
+                    gamePos.targets.map { center },
+                    gamePos.targets,
                     800
                 ) { updatedVecs ->
                     tryDrawing(holder) { canvas ->

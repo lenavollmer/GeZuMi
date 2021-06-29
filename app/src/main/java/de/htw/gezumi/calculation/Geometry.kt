@@ -95,15 +95,15 @@ class Geometry {
             points.map { rotatePoint(it, o, angle) }
 
 
-        fun determineMatch(players: List<Vec>, targets: List<Vec>): Boolean {
+        fun determineMatch(gamePositions: GamePositions): Boolean {
             val tolerance = 0.5 // the max distance in meter between the points to be a match
-            val foundPoints = players.map { a ->
+            val foundPoints = gamePositions.players.map { a ->
                 // TODO two or more player points could match to the same target point
-                targets.find { b ->
+                gamePositions.targets.find { b ->
                     (b - a).length() <= tolerance
                 }
             }
-            return foundPoints.filterNotNull().size == players.size
+            return foundPoints.filterNotNull().size == gamePositions.players.size
         }
 
         /**
@@ -126,15 +126,14 @@ class Geometry {
          * Arranges [playerPositions] and [targetPositions] on a canvas with the given [height] and [width].
          */
         fun arrangeGamePositions(
-            playerPositions: List<Vec>,
-            targetPositions: List<Vec>,
+            gamePositions: GamePositions,
         ): GamePositions {
             // use closest point to host of target shape as base point of the target shape
-            val hostPosition = playerPositions[0]
-            var targets = targetPositions.toList();
+            val hostPosition = gamePositions.players[0]
+            var targets = gamePositions.targets.toList();
 
             // translate player positions to target shape
-            var players = playerPositions.map { it + targets[0] - hostPosition }
+            var players = gamePositions.players.map { it + targets[0] - hostPosition }
             val base = players[0]
 
             // rotate player positions to fit target shape
