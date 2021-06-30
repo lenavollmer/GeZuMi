@@ -19,7 +19,10 @@ class Conversions {
             val envFactor = 3f
             val attenuation = txPower - rssi
             val distance = 10f.pow((-56 + attenuation) / (10f * envFactor))
-            Log.d("Distance Calculation", "unfilteredDistance: $distance, rssi: $rssi, attenuation: $attenuation, txPower: $txPower")
+            Log.d(
+                "Distance Calculation",
+                "unfilteredDistance: $distance, rssi: $rssi, attenuation: $attenuation, txPower: $txPower"
+            )
             return distance
         }
 
@@ -44,6 +47,7 @@ class Conversions {
                 val a = dists[0][1]
                 val b = dists[0][i]
                 val c = dists[1][i]
+                if (!isValidTriangle(a, b, c)) throw IllegalArgumentException("Invalid triangle")
                 val possiblePoints = getRelativePos(a, b, c, points[0])
 
                 // take the point that matches more closely to the already calculated points and their distances
@@ -98,21 +102,23 @@ class Conversions {
             val cValid = clipSide(c, aValid, bValid)
 
             val angle =
-                    acos(
-                            clipToRange(
-                                    (aValid.pow(2) + bValid.pow(2) - cValid.pow(2)) / (2 * aValid * bValid),
-                                    0.99999f,
-                                    -0.99999f
-                            )
+                acos(
+                    clipToRange(
+                        (aValid.pow(2) + bValid.pow(2) - cValid.pow(2)) / (2 * aValid * bValid),
+                        0.99999f,
+                        -0.99999f
                     )
+                )
 
             val x = (basePoint.x - bValid * cos(angle))
             val yAnglePos = (bValid * sin(angle))
             return Pair(
-                    Vec(x, basePoint.y - yAnglePos), // point is below basePoint and A
-                    Vec(x, basePoint.y + yAnglePos)  // point is above basePoint and A
+                Vec(x, basePoint.y - yAnglePos), // point is below basePoint and A
+                Vec(x, basePoint.y + yAnglePos)  // point is above basePoint and A
             )
         }
+
+        private fun isValidTriangle(a: Float, b: Float, c: Float) = a < b + c && b < a + c && c < a + b
 
         private fun clipToRange(value: Float, max: Float, min: Float): Float {
             if (value > max) return max
@@ -123,7 +129,7 @@ class Conversions {
         private fun clipSide(a: Float, b: Float, c: Float) = if (a > (b + c)) b + c else a
 
         private fun matrixToString(mat: Array<FloatArray>) =
-                mat.joinToString(separator = "\n") { row -> row.joinToString(prefix = "[", postfix = "]", separator = ",") }
+            mat.joinToString(separator = "\n") { row -> row.joinToString(prefix = "[", postfix = "]", separator = ",") }
 
     }
 }

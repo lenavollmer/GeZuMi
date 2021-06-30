@@ -32,6 +32,7 @@ import java.util.*
 
 private const val TAG = "GameViewModel"
 const val RSSI_READ_INTERVAL = 500
+
 // total of 21 (24 without standard txPowerLevel?) bytes available for custom data in advertise packet
 const val GAME_ID_LENGTH = 8 // 8 bytes for game id (4 prefix, 4 random)
 const val RANDOM_GAME_ID_PART_LENGTH = 4
@@ -135,30 +136,32 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
             _distances[senderDeviceIdx][deviceDistanceToIdx] = bluetoothData.values[0]
 
-            val newPositions = Conversions.distancesToPoints(_distances)
+            try {
+                val newPositions = Conversions.distancesToPoints(_distances)
+                // if contains new player, take all new
+                val changedPositionsIndices =
+                    if (newPositions.size > _positions.size) newPositions.indices else newPositions.indices.filter {
+                        newPositions[it] != _positions[it]
+                    }
 
-            // if contains new player, take all new
-            val changedPositionsIndices =
-                if (newPositions.size > _positions.size) newPositions.indices else newPositions.indices.filter {
-                    newPositions[it] != _positions[it]
-                }
-
-            changedPositionsIndices.forEach {
-                val deviceId = if (it == devices.size) myDeviceId else devices[it].deviceId
-                gattServer.notifyHostUpdate(
-                    BluetoothData(
-                        deviceId,
-                        myDeviceId,
-                        floatArrayOf(newPositions[it].x, newPositions[it].y)
+                changedPositionsIndices.forEach {
+                    val deviceId = if (it == devices.size) myDeviceId else devices[it].deviceId
+                    gattServer.notifyHostUpdate(
+                        BluetoothData(
+                            deviceId,
+                            myDeviceId,
+                            floatArrayOf(newPositions[it].x, newPositions[it].y)
+                        )
                     )
-                )
-                // also update own game
-                if (game.hostId == null && isHost()) game.hostId = myDeviceId
-                game.updatePlayer(deviceId, Vec(newPositions[it].x, newPositions[it].y))
+                    // also update own game
+                    if (game.hostId == null && isHost()) game.hostId = myDeviceId
+                    game.updatePlayer(deviceId, Vec(newPositions[it].x, newPositions[it].y))
+                }
+                _positions = newPositions
+            } catch (e: IllegalArgumentException) {
+                Log.d(TAG, e.message.toString())
             }
-            _positions = newPositions
         }
-
     }
 
     @kotlin.ExperimentalUnsignedTypes
@@ -167,7 +170,10 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         Log.d(TAG, "on game join")
         gameJoinUICallback.gameJoined()
         // waiting for game start is not necessary
-        bluetoothController.startAdvertising(gameId, if (playerName != null) playerName!!.toByteArray(Charsets.UTF_8) else ByteArray(0))
+        bluetoothController.startAdvertising(
+            gameId,
+            if (playerName != null) playerName!!.toByteArray(Charsets.UTF_8) else ByteArray(0)
+        )
         bluetoothController.startScan(gameScanCallback, gameId)
     }
 
@@ -210,7 +216,10 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         // restart advertisement with new name if client
         if (!isHost()) {
             bluetoothController.stopAdvertising()
-            bluetoothController.startAdvertising(gameId, if (playerName != null) playerName!!.toByteArray(Charsets.UTF_8) else ByteArray(0))
+            bluetoothController.startAdvertising(
+                gameId,
+                if (playerName != null) playerName!!.toByteArray(Charsets.UTF_8) else ByteArray(0)
+            )
         }
     }
 
@@ -295,7 +304,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     @kotlin.ExperimentalUnsignedTypes
     fun updateTargetShape() {
         if (host == null) {
-            Log.d(TAG, "generating target shapes for ${devices.size + 1} players" )
+            Log.d(TAG, "generating target shapes for ${devices.size + 1} players")
             val targetShape = Geometry.generateGeometricObject(devices.size + 1)
             game.setTargetShape(targetShape as MutableList<Vec>)
             targetShape.forEach {
