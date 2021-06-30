@@ -7,7 +7,6 @@ import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.RecyclerView
 import de.htw.gezumi.databinding.ItemJoinBinding
 import de.htw.gezumi.model.Device
-import java.util.stream.IntStream
 
 class JoinGameListAdapter(private val _hostDevices: List<Device>, private val listener: (position: Int) -> Unit) : RecyclerView.Adapter<JoinGameListAdapter.ItemViewHolder>() {
     private lateinit var _recyclerView: RecyclerView
@@ -65,14 +64,4 @@ class JoinGameListAdapter(private val _hostDevices: List<Device>, private val li
         _recyclerView = recyclerView
     }
 
-    /**
-     * Disable all items and add new items disabled if false
-     */
-    fun setItemsEnabled(enabled: Boolean) {
-        _itemsEnabled = enabled
-        IntStream.range(0, itemCount).forEach {
-            (_recyclerView.findViewHolderForLayoutPosition(it) as JoinGameListAdapter.ItemViewHolder).binding.buttonJoin.isEnabled = enabled
-        }
-
-    }
 }

@@ -86,7 +86,7 @@ class GameFragment : Fragment() {
             }
         }
         val playerObserver = Observer<List<Player>> { players ->
-            var playersWithPosition = players.filter { it.position != null && !it.position!!.isNan() }
+            val playersWithPosition = players.filter { it.position != null && !it.position!!.isNan() }
             if (
                 playersWithPosition.size > 2 &&
                 _gameViewModel.game.targetShape.value!!.size > 2 &&
@@ -160,6 +160,8 @@ class GameFragment : Fragment() {
             _gameViewModel.gattServer.stopServer()
         }
         if (_gameViewModel.isGattClientInitialized()) _gameViewModel.gattClient.disconnect()
+
+        _gameViewModel.bluetoothController.stopAdvertising()
     }
 
     private fun runTimer() {
