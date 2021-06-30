@@ -189,9 +189,6 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         Log.d(TAG, "on game leave")
         bluetoothController.stopAdvertising()
         bluetoothController.stopScan(GAME_SCAN_KEY)
-        Handler(Looper.getMainLooper()).post{
-            game.resetState()
-        }
         if (gameLeaveUICallback != null) gameLeaveUICallback?.gameLeft() // it crashes otherwise
         // TODO: test game leave and join new game
         // TODO: go back to join activity if game already started
@@ -220,7 +217,6 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     fun clearModel() {
         // TODO lifecycle: add stuff here
         devices.clear()
-        game.clear()
         playerName = null
     }
 

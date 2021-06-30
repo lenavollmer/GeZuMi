@@ -80,7 +80,10 @@ class SurfaceCallback(
             _gameViewModel.game.targetShape.value!!.toList()
         )
 
-        if (gamePos.players.size < 3 || gamePos.targets.size < 3) return
+        if (gamePos.players.size < 3 || gamePos.targets.size < 3) {
+            _animator?.cancel()
+            return
+        }
 
         gamePos = Geometry.arrangeGamePositions(gamePos)
 
@@ -97,7 +100,7 @@ class SurfaceCallback(
                     updatedVecs.subList(gamePos.players.size, updatedVecs.size)
                 )
 
-                if (_oldGamePos!!.players.size >= 3 || _oldGamePos!!.targets.size >= 3) {
+                if (_oldGamePos!!.players.size >= 3 && _oldGamePos!!.targets.size >= 3 && players.size >= 3) {
                     val scaledGamePos = Geometry.scaleGamePositions(
                         _oldGamePos!!,
                         _canvasHeight,

@@ -70,6 +70,7 @@ class Painter(private val _context: Context, private val _pointSize: Float) {
         players: List<Player>,
         playerScaledPositions: List<Vec>,
     ) {
+        if (players.size < 3) return
         playerScaledPositions.forEachIndexed { i, position ->
             val y = position.y - _pointSize - 20f
             canvas.drawText(
