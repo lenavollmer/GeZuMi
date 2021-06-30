@@ -20,6 +20,9 @@
         <item name="bottomDrawerColor">@color/white</item>
         <item name="bottomDrawerTextColor">@color/black</item>
 
+        <item name="logoTextColor">@color/white</item>
+        <item name="logoTextOutlineColor">@color/black</item>
+
     </style>
     <style name="Theme.GeZuMi.NoActionBar">
         <item name="windowActionBar">false</item>

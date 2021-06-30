@@ -25,14 +25,15 @@
             android:id="@+id/Host"
             android:name="de.htw.gezumi.HostFragment"
             tools:layout="@layout/fragment_host">
-        <action android:id="@+id/action_HostFragment_to_Game" app:destination="@id/Game"/>
+        <action android:id="@+id/action_HostFragment_to_Game" app:destination="@id/Game" app:popUpTo="@id/Host" app:popUpToInclusive="true"/>
+        <action android:id="@+id/action_HostFramgent_to_MainMenu" app:destination="@id/MainMenuFragment" app:popUpTo="@id/Host" app:popUpToInclusive="true"/>
     </fragment>
 
     <fragment
             android:id="@+id/Client"
             android:name="de.htw.gezumi.ClientFragment"
             tools:layout="@layout/fragment_client">
-        <action android:id="@+id/action_ClientFragment_to_Game" app:destination="@id/Game"/>
+        <action android:id="@+id/action_ClientFragment_to_Game" app:destination="@id/Game" app:popUpTo="@id/Client" app:popUpToInclusive="true"/>
         <action android:id="@+id/action_Client_to_MainMenuFragment" app:destination="@id/MainMenuFragment"
                 app:popUpTo="@id/MainFragment" app:popUpToInclusive="true"/>
     </fragment>

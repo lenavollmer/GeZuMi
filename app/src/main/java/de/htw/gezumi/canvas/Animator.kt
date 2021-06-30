@@ -21,6 +21,7 @@ class Animator {
                     ).toTypedArray())
             animator.duration = duration
 
+
             animator.addUpdateListener { animation ->
                 val updatedVecs = properties.map {
                     Vec(

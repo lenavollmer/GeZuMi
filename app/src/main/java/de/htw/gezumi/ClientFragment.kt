@@ -14,8 +14,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.PopupWindow
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.os.bundleOf
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -48,6 +48,7 @@ class ClientFragment : Fragment() {
 
     private var _gameStarted = false
     private var _firstLeave = true
+    private var _connected = false
 
     private val _availableHostDevices: ArrayList<Device> = ArrayList()
     private val _hostDeviceListAdapter: JoinGameListAdapter = JoinGameListAdapter(_availableHostDevices) {
@@ -66,6 +67,9 @@ class ClientFragment : Fragment() {
         _popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0)
         _popupWindow.dimBehind()
 
+        _connected = true
+        _gameViewModel.bluetoothController.stopScan(HOST_SCAN_KEY)
+        _binding.buttonScan.isEnabled = false
         _availableHostDevices.clear()
         updateBtDeviceListAdapter()
     }
@@ -75,9 +79,9 @@ class ClientFragment : Fragment() {
             Handler(Looper.getMainLooper()).post {
                 Log.d(TAG, "game ended by host")
                 if(_firstLeave){
-                    _popupWindow.dismiss()
-                    val bundle = bundleOf("gameEnded" to true)
-                    findNavController().navigate(R.id.action_Client_to_MainMenuFragment, bundle)
+                    Toast.makeText(context, R.string.game_closed, Toast.LENGTH_LONG).show()
+                    _binding.buttonScan.isEnabled = true
+                    resetConnection()
                 }
                 _firstLeave = false
             }
@@ -91,27 +95,16 @@ class ClientFragment : Fragment() {
                 _popupBinding.joinText.text = getString(R.string.join_approved)
                 _popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0)
                 _popupWindow.dimBehind()
-
-                _hostDeviceListAdapter.setItemsEnabled(false)
-                _binding.buttonScan.isEnabled = false
-
-                _availableHostDevices.clear()
-                updateBtDeviceListAdapter()
             }
         }
 
         override fun gameDeclined() {
             Handler(Looper.getMainLooper()).post {
-                _popupWindow.dismiss()
-                _popupBinding.joinText.text = getString(R.string.join_declined)
-                _popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0)
-                _popupWindow.dimBehind()
-
-                _gameViewModel.bluetoothController.stopScan(HOST_SCAN_KEY)
-                _gattClient.disconnect() // functionality should not be in UI callback
-                _availableHostDevices.clear()
-                updateBtDeviceListAdapter()
+                Toast.makeText(context, R.string.join_declined, Toast.LENGTH_LONG).show()
+                _connected = false
+                resetConnection()
             }
+
         }
 
         override fun gameStarted() {
@@ -185,6 +178,7 @@ class ClientFragment : Fragment() {
             addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
         }
         _binding.buttonScan.setOnClickListener {
+            _gameViewModel.bluetoothController.stopScan(HOST_SCAN_KEY)
             _availableHostDevices.clear()
             updateBtDeviceListAdapter()
             _gameViewModel.bluetoothController.startHostScan(_gameViewModel.hostScanCallback)// ParcelUuid(GameService.getGameId()), true) <- doesn't work, why???
@@ -207,22 +201,25 @@ class ClientFragment : Fragment() {
 
         _gattClient = GattClient(requireContext())
     }
-    
-    @kotlin.ExperimentalUnsignedTypes
-    override fun onPause() {
-        super.onPause()
+
+
+    private fun resetConnection(){
         _popupWindow.dismiss()
-        if (!_gameStarted) {
-            _gattClient.disconnect()
-        }
-        //_gameViewModel.onGameLeave()
+        _gameViewModel.bluetoothController.stopScan(HOST_SCAN_KEY)
+        if(_connected) _gattClient.disconnect()
+        _binding.buttonScan.isEnabled = true
+
         _availableHostDevices.clear()
         updateBtDeviceListAdapter()
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        _gameViewModel.bluetoothController.stopScan(HOST_SCAN_KEY)
+    @kotlin.ExperimentalUnsignedTypes
+    override fun onStop() {
+        super.onStop()
+        _popupWindow.dismiss()
+        if (!_gameStarted) {
+            resetConnection()
+        }
     }
 
     private fun updateBtDeviceListAdapter() {

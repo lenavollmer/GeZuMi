@@ -12,6 +12,7 @@
     </string>
 
     <!-- Main Fragment-->
+    <string name="logo">Logo</string>
     <string name="player_name">Your name</string>
     <string name="game_closed">This Game was closed.</string>
     <string name="main_fragment">Welcome to GeZuMi</string>
