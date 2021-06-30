@@ -53,6 +53,36 @@ class GameFragment : Fragment() {
         }
     }
 
+    private val timer = object : Runnable {
+        override fun run() {
+            val seconds = _gameViewModel.game.time
+            val hours = seconds / 3600
+            val minutes = seconds % 3600 / 60
+            val secs = seconds % 60
+
+            // Format the seconds into hours, minutes,
+            // and seconds.
+            val time: String = java.lang.String
+                .format(
+                    Locale.getDefault(),
+                    "%d:%02d:%02d", hours,
+                    minutes, secs
+                )
+
+            _binding.timeView.text = time
+
+            // If running is true, increment the
+            // seconds variable.
+            if (_gameViewModel.game.running) {
+                _gameViewModel.game.time = seconds + 1
+            }
+
+            // Post the code again
+            // with a delay of 1 second.
+            mainHandler.postDelayed(this, 1000)
+        }
+    }
+
     @kotlin.ExperimentalUnsignedTypes
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -85,7 +115,7 @@ class GameFragment : Fragment() {
                 !_gameViewModel.game.running
             ) {
                 if (!_gameViewModel.game.shapeMatched.value!!) _gameViewModel.game.running = true
-                runTimer()
+                mainHandler.post(timer)
                 _binding.progressBar.visibility = View.INVISIBLE
                 _binding.surfaceView.visibility = View.VISIBLE
             }
@@ -138,42 +168,8 @@ class GameFragment : Fragment() {
         if (_gameViewModel.isGattClientInitialized()) _gameViewModel.gattClient.disconnect()
         _gameViewModel.bluetoothController.stopAdvertising()
 
+        mainHandler.removeCallbacks(timer)
         _gameViewModel.game.reset()
         _gameViewModel.clearModel()
-    }
-
-    private fun runTimer() {
-        // Get the text view.
-        val timeView = _binding.timeView
-
-        mainHandler.post(object : Runnable {
-            override fun run() {
-                val seconds = _gameViewModel.game.time
-                val hours = seconds / 3600
-                val minutes = seconds % 3600 / 60
-                val secs = seconds % 60
-
-                // Format the seconds into hours, minutes,
-                // and seconds.
-                val time: String = java.lang.String
-                    .format(
-                        Locale.getDefault(),
-                        "%d:%02d:%02d", hours,
-                        minutes, secs
-                    )
-
-                timeView.text = time
-
-                // If running is true, increment the
-                // seconds variable.
-                if (_gameViewModel.game.running) {
-                    _gameViewModel.game.time = seconds + 1
-                }
-
-                // Post the code again
-                // with a delay of 1 second.
-                mainHandler.postDelayed(this, 1000)
-            }
-        })
     }
 }

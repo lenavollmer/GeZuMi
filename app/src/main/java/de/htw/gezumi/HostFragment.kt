@@ -39,6 +39,7 @@ class HostFragment : Fragment() {
 
     private val _gameViewModel: GameViewModel by activityViewModels()
     private val _minimumPlayers = 2
+    private val _maxPlayers = 3
     private var _currentPlayers = 0 // use variable to not use threaded methods for device calculation
 
     private lateinit var _gameService: BluetoothGattService
@@ -64,7 +65,7 @@ class HostFragment : Fragment() {
             _currentPlayers++
             _binding.noPlayers.visibility = View.GONE
             _binding.recyclerPlayers.visibility = View.VISIBLE
-            if (_currentPlayers >= (_minimumPlayers - 1)) {
+            if (_currentPlayers >= (_minimumPlayers - 1) && _currentPlayers <= (_maxPlayers - 1)) {
                 _binding.startGame.isEnabled = true
             }
         } else {
@@ -128,7 +129,7 @@ class HostFragment : Fragment() {
             }
             // update UI
             Handler(Looper.getMainLooper()).post {
-                if (_currentPlayers <= (_minimumPlayers - 1)) {
+                if (_currentPlayers <= (_minimumPlayers - 1) && _currentPlayers < (_maxPlayers - 1)) {
                     _binding.startGame.isEnabled = false
                 }
                 if (_gameViewModel.devices.size == 0)
@@ -253,7 +254,7 @@ class HostFragment : Fragment() {
         super.onStop()
         if (!_gameStarted) {
 
-            _connectedDevices.forEach{ // decline all pending players
+            _connectedDevices.forEach { // decline all pending players
                 _gattServer.notifyJoinApproved(it, false)
             }
 
