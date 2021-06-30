@@ -111,6 +111,8 @@ class MockedGameFragment : Fragment() {
             _binding.shapesMatched.visibility = View.INVISIBLE
             _binding.startNewGame.visibility = View.INVISIBLE
             _gameViewModel.game.restart()
+            val targetShape = Geometry.generateGeometricObject(3)
+            _gameViewModel.game.setTargetShape(targetShape as MutableList<Vec>)
         }
 
         runTimer()
@@ -135,11 +137,8 @@ class MockedGameFragment : Fragment() {
         _gameViewModel.game.running = false
         _gameViewModel.game.setShapeMatched(false)
         mainHandler.removeCallbacks(changePlayerLocations)
-        // stop scan and advertise
-        if (_gameViewModel.isGattServerInitialized()) {
-            _gameViewModel.gattServer.notifyGameEnding()
-            _gameViewModel.gattServer.stopServer()
-        }
+        _gameViewModel.game.reset()
+        _gameViewModel.clearModel()
     }
 
     private fun runTimer() {

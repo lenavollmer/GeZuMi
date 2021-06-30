@@ -49,8 +49,8 @@ class Game() {
     fun reset() {
         running = false
         time = 0
-        _targetShape.postValue(mutableListOf())
-        _players.postValue(mutableListOf())
+        _targetShape.value?.clear()
+        _players.value?.clear()
         _shapeMatched.value = false
     }
 
@@ -91,10 +91,5 @@ class Game() {
             currentTarget.add(vec)
             setTargetShape(currentTarget)
         }
-    }
-
-    fun clear() {
-        // add more stuff here
-        _players.value?.clear()
     }
 }

@@ -217,7 +217,6 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     fun clearModel() {
         // TODO lifecycle: add stuff here
         devices.clear()
-        game.clear()
         playerName = null
     }
 
