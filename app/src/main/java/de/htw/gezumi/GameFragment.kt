@@ -131,9 +131,8 @@ class GameFragment : Fragment() {
     @SuppressLint("DefaultLocale")
     override fun onStop() {
         super.onStop()
+        _gameViewModel.game.resetState()
 
-        _gameViewModel.game.running = false
-        _gameViewModel.game.setShapeMatched(false)
         // stop scan and advertise
         if (_gameViewModel.isGattServerInitialized()) {
             _gameViewModel.gattServer.notifyGameEnding()
