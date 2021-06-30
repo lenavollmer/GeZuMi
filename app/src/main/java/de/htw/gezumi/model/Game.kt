@@ -25,7 +25,7 @@ class Game() {
 
     var time = 0
 
-    var running = true
+    var running = false
 
     fun setShapeMatched(matchedShape: Boolean) {
         _shapeMatched.postValue(matchedShape)
@@ -35,10 +35,22 @@ class Game() {
         _targetShape.postValue(points)
     }
 
-    fun resetState() {
+    fun restart() {
+        running = true
+        time = 0
+        _targetShape.postValue(mutableListOf())
+        // TODO generate new target shape and send to clients
+        _shapeMatched.value = false
+    }
+
+    /**
+     * Kills game and resets all states.
+     */
+    fun reset() {
         running = false
         time = 0
-        // TODO generate new target shape and send to clients
+        _targetShape.postValue(mutableListOf())
+        _players.postValue(mutableListOf())
         _shapeMatched.value = false
     }
 

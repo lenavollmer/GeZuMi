@@ -67,7 +67,6 @@ class GameFragment : Fragment() {
     ): View {
         _binding = DataBindingUtil.inflate(inflater, R.layout.fragment_game, container, false)
 
-        _gameViewModel.game.resetState()
         _gameViewModel.updateTargetShape()
 
         val matchedObserver = Observer<Boolean> { shapesMatch ->
@@ -119,8 +118,7 @@ class GameFragment : Fragment() {
             _binding.shapesMatched.visibility = View.INVISIBLE
             _binding.startNewGame.visibility = View.INVISIBLE
             _gameViewModel.updateTargetShape()
-            _gameViewModel.game.resetState()
-            _gameViewModel.game.running = true
+            _gameViewModel.game.restart()
         }
 
         (activity as AppCompatActivity?)!!.supportActionBar?.hide() // Hide Bar
@@ -131,7 +129,6 @@ class GameFragment : Fragment() {
     @SuppressLint("DefaultLocale")
     override fun onStop() {
         super.onStop()
-        _gameViewModel.game.resetState()
 
         // stop scan and advertise
         if (_gameViewModel.isGattServerInitialized()) {
@@ -139,8 +136,10 @@ class GameFragment : Fragment() {
             _gameViewModel.gattServer.stopServer()
         }
         if (_gameViewModel.isGattClientInitialized()) _gameViewModel.gattClient.disconnect()
-
         _gameViewModel.bluetoothController.stopAdvertising()
+
+        _gameViewModel.game.reset()
+        _gameViewModel.clearModel()
     }
 
     private fun runTimer() {

@@ -71,7 +71,6 @@ class MockedGameFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = DataBindingUtil.inflate(inflater, R.layout.fragment_game, container, false)
-        _gameViewModel.game.resetState()
 
         val matchedObserver = Observer<Boolean> { shapesMatch ->
             if (shapesMatch) {
@@ -111,8 +110,7 @@ class MockedGameFragment : Fragment() {
         view.findViewById<Button>(R.id.start_new_game).setOnClickListener {
             _binding.shapesMatched.visibility = View.INVISIBLE
             _binding.startNewGame.visibility = View.INVISIBLE
-            _gameViewModel.game.resetState()
-            _gameViewModel.game.running = true
+            _gameViewModel.game.restart()
         }
 
         runTimer()
