@@ -7,36 +7,29 @@ import de.htw.gezumi.calculation.Vec
 
 class Animator {
     companion object {
-        fun createGameAnimation(
-            currentPlayers: List<Vec>,
-            nextPlayers: List<Vec>,
-            currentTarget: List<Vec>,
-            nextTarget: List<Vec>,
-            onUpdate: (players: List<Vec>, targets: List<Vec>) -> Unit
+        fun createVecAnimation(
+            from: List<Vec>,
+            to: List<Vec>,
+            duration: Long = 2000,
+            onUpdate: (updatedVecs: List<Vec>) -> Unit
         ): ValueAnimator {
 
-            val playerProperties = generatePropertiesVec("players", currentPlayers, nextPlayers)
-            val targetProperties = generatePropertiesVec("targets", currentTarget, nextTarget)
+            val properties = generatePropertiesVec(from, to)
 
             val animator = ValueAnimator()
-            animator.setValues(*(playerProperties.map { it.x } + playerProperties.map { it.y }
-                    + targetProperties.map { it.x } + targetProperties.map { it.y }).toTypedArray())
-            animator.duration = 2000
+            animator.setValues(*(properties.map { it.x } + properties.map { it.y }
+                    ).toTypedArray())
+            animator.duration = duration
+
 
             animator.addUpdateListener { animation ->
-                val players = playerProperties.map {
+                val updatedVecs = properties.map {
                     Vec(
                         animation.getAnimatedValue(it.x.propertyName) as Float,
                         animation.getAnimatedValue(it.y.propertyName) as Float
                     )
                 }
-                val targets = targetProperties.map {
-                    Vec(
-                        animation.getAnimatedValue(it.x.propertyName) as Float,
-                        animation.getAnimatedValue(it.y.propertyName) as Float
-                    )
-                }
-                onUpdate(players, targets)
+                onUpdate(updatedVecs)
             }
             animator.start()
             return animator
@@ -44,17 +37,16 @@ class Animator {
         }
 
         private fun generatePropertiesVec(
-            prefix: String,
             points: List<Vec>,
             nextPoints: List<Vec>
         ): List<VecValueHolder> = points.mapIndexed { i, point ->
             VecValueHolder(
                 PropertyValuesHolder.ofFloat(
-                    "${prefix}X$i",
+                    "X$i",
                     point.x,
                     nextPoints[i].x
                 ), PropertyValuesHolder.ofFloat(
-                    "${prefix}Y$i",
+                    "Y$i",
                     point.y,
                     nextPoints[i].y
                 )

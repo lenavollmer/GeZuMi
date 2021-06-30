@@ -10,8 +10,6 @@ private const val TAG = "Game"
 class Game() {
     var hostId: ByteArray? = null
 
-    val numberOfPlayers: Int get() = _players.value?.size ?: 0
-
     // contains a player for myself
     private val _players = MutableLiveData<MutableList<Player>>(
         mutableListOf()
@@ -21,83 +19,27 @@ class Game() {
     private var _targetShape = MutableLiveData<MutableList<Vec>>(mutableListOf())
     val targetShape: MutableLiveData<MutableList<Vec>> get() = _targetShape
 
-    private val _targetShapeAnimation = MutableLiveData<List<Vec>>()
-    val targetShapeAnimation: MutableLiveData<List<Vec>> get() = _targetShapeAnimation
-
     // Determines whether the target shape has been matched by the players
     private var _shapeMatched = MutableLiveData(false)
     val shapeMatched: MutableLiveData<Boolean> get() = _shapeMatched
 
-    private var _time = 0
-    val time: Int get() = _time
+    var time = 0
 
-    // stopwatch running?
-    private var _running = false
-    val running: Boolean get() = _running
-
-    private var _currentIdx = 0
-
-    private var _animationPointsArray: Array<List<Vec>> = arrayOf()
-    val animationPointsArray: Array<List<Vec>> get() = _animationPointsArray
-
-//    fun setPlayerLocations(locations: List<Point>) {
-//        _players.postValue(locations)
-//    }
+    var running = true
 
     fun setShapeMatched(matchedShape: Boolean) {
-        Log.d("TAG", "I'm in setShapeMatched: $matchedShape")
         _shapeMatched.postValue(matchedShape)
-    }
-
-    private fun setTargetShapeAnimation(points: List<Vec>) {
-        _targetShapeAnimation.postValue(points)
     }
 
     fun setTargetShape(points: MutableList<Vec>) {
         _targetShape.postValue(points)
     }
 
-    fun setTime(time: Int) {
-        _time = time
-    }
-
-    fun setRunning(running: Boolean) {
-        _running = running
-    }
-
-    fun resetCurrentIdx() {
-        _currentIdx = 0
-    }
-
-    fun changeTargetLocationsLogic() {
-        if (_currentIdx < 12 && _shapeMatched.value!!) {
-            setTargetShapeAnimation(_animationPointsArray[_currentIdx])
-            _currentIdx++
-        }
-    }
-
     fun resetState() {
-        setRunning(false)
-        setTime(0)
-        resetCurrentIdx()
+        running = false
+        time = 0
         // TODO generate new target shape and send to clients
         _shapeMatched.value = false
-    }
-
-    fun generateTargetShapeAnimationPoints() {
-        val array: Array<List<Vec>> = Array(12) { _targetShape.value!! }
-
-        for (int: Int in 0..4) {
-            val current = array[int]
-            array[int + 1] = current.map { Vec(it.x / 2, it.y / 2) }
-        }
-
-        for (int: Int in 4..(array.size - 2)) {
-            val current = array[int]
-            array[int + 1] = current.map { Vec(it.x * 2, it.y * 2) }
-        }
-
-        _animationPointsArray = array
     }
 
     /**

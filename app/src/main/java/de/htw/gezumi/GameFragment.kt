@@ -53,13 +53,6 @@ class GameFragment : Fragment() {
         }
     }
 
-    private val changeTargetLocations = object : Runnable {
-        override fun run() {
-            _gameViewModel.game.changeTargetLocationsLogic()
-            mainHandler.postDelayed(this, 100)
-        }
-    }
-
     @kotlin.ExperimentalUnsignedTypes
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -92,7 +85,7 @@ class GameFragment : Fragment() {
                 _gameViewModel.game.targetShape.value!!.size > 2 &&
                 !_gameViewModel.game.running
             ) {
-                _gameViewModel.game.setRunning(true)
+                if (!_gameViewModel.game.shapeMatched.value!!) _gameViewModel.game.running = true
                 runTimer()
                 _binding.progressBar.visibility = View.INVISIBLE
                 _binding.surfaceView.visibility = View.VISIBLE
@@ -127,22 +120,11 @@ class GameFragment : Fragment() {
             _binding.startNewGame.visibility = View.INVISIBLE
             _gameViewModel.updateTargetShape()
             _gameViewModel.game.resetState()
-            _gameViewModel.game.setRunning(true)
+            _gameViewModel.game.running = true
         }
 
         (activity as AppCompatActivity?)!!.supportActionBar?.hide() // Hide Bar
 
-    }
-
-    override fun onPause() {
-        super.onPause()
-        mainHandler.removeCallbacks(changeTargetLocations)
-        _gameViewModel.game.setRunning(false)
-    }
-
-    override fun onResume() {
-        super.onResume()
-        mainHandler.post(changeTargetLocations)
     }
 
     @kotlin.ExperimentalUnsignedTypes
@@ -150,10 +132,8 @@ class GameFragment : Fragment() {
     override fun onStop() {
         super.onStop()
 
-        _gameViewModel.game.setRunning(false)
+        _gameViewModel.game.running = false
         _gameViewModel.game.setShapeMatched(false)
-        _gameViewModel.game.resetCurrentIdx()
-        mainHandler.removeCallbacks(changeTargetLocations)
         // stop scan and advertise
         if (_gameViewModel.isGattServerInitialized()) {
             _gameViewModel.gattServer.notifyGameEnding()
@@ -189,7 +169,7 @@ class GameFragment : Fragment() {
                 // If running is true, increment the
                 // seconds variable.
                 if (_gameViewModel.game.running) {
-                    _gameViewModel.game.setTime(seconds + 1)
+                    _gameViewModel.game.time = seconds + 1
                 }
 
                 // Post the code again

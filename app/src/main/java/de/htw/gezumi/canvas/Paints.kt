@@ -20,15 +20,15 @@ fun Context.getColorFromAttr(
 class Paints(
     private val _context: Context,
     private val _pointSize: Float,
-
     ) {
     private val _colorPrimary = _context.getColorFromAttr(R.attr.colorPrimary)
-    private val _backgroundColor = _context.getColorFromAttr(android.R.attr.windowBackground)
     private val _targetColor = _context.getColorFromAttr(R.attr.targetShapeColor)
     private val _textPaintPlayerName = _context.getColorFromAttr(R.attr.playerNameColor)
-    private val _targetSuccessColor = _context.getColorFromAttr(R.attr.colorSecondary)
+    private val _targetSuccessColor = _colorPrimary
     private val _typeface = _context.resources.getFont(R.font.roboto_mono)
     private val _playerSelfColor = _context.getColorFromAttr(R.attr.playerSelfColor)
+    
+    val backgroundColor = _context.getColorFromAttr(android.R.attr.windowBackground)
 
     val lineStroke = Paint().apply {
         isAntiAlias = true
@@ -50,7 +50,7 @@ class Paints(
     }
     val fillPaint = Paint().apply {
         isAntiAlias = true
-        color = _backgroundColor
+        color = backgroundColor
         style = Paint.Style.FILL
     }
 
@@ -82,11 +82,11 @@ class Paints(
         isAntiAlias = true
         color = _targetSuccessColor
         style = Paint.Style.STROKE
-        strokeWidth = _pointSize * 0.1f
+        strokeWidth = _pointSize * 0.2f
     }
     val fillPaintTargetShapeSuccess = Paint().apply {
         isAntiAlias = true
-        color = _targetSuccessColor
+        color = backgroundColor
         style = Paint.Style.FILL
     }
 
@@ -102,7 +102,7 @@ class Paints(
         isAntiAlias = true
         textAlign = Paint.Align.CENTER
         textSize = 45f
-        color = _backgroundColor
+        color = backgroundColor
         style = Paint.Style.STROKE
         strokeWidth = 16f
         typeface = _typeface

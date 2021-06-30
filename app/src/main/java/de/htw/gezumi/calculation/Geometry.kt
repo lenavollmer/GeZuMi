@@ -11,7 +11,7 @@ class Geometry {
          * Scales the given [points] to a canvas with the given [height] and [width].
          *  @return the scaled and centered points
          */
-        fun scaleToCanvas(points: List<Vec>, height: Int, width: Int, margin: Int): List<Vec> {
+        private fun scaleToCanvas(points: List<Vec>, height: Int, width: Int, margin: Int): List<Vec> {
             // move points to top left position
             var newPoints = moveTopLeft(points)
 
@@ -95,15 +95,15 @@ class Geometry {
             points.map { rotatePoint(it, o, angle) }
 
 
-        fun determineMatch(points: List<Vec>, targetShape: List<Vec>): Boolean {
-            val tolerance = 0.0 // the max distance between the points to be a match
-            val foundPoints = points.map { a ->
+        fun determineMatch(gamePositions: GamePositions): Boolean {
+            val tolerance = 0.5 // the max distance in meter between the points to be a match
+            val foundPoints = gamePositions.players.map { a ->
                 // TODO two or more player points could match to the same target point
-                targetShape.find { b ->
+                gamePositions.targets.find { b ->
                     (b - a).length() <= tolerance
                 }
             }
-            return foundPoints.filterNotNull().size == points.size
+            return foundPoints.filterNotNull().size == gamePositions.players.size
         }
 
         /**
@@ -126,18 +126,14 @@ class Geometry {
          * Arranges [playerPositions] and [targetPositions] on a canvas with the given [height] and [width].
          */
         fun arrangeGamePositions(
-            playerPositions: List<Vec>,
-            targetPositions: List<Vec>,
-            height: Int,
-            width: Int,
-            margin: Int
+            gamePositions: GamePositions,
         ): GamePositions {
             // use closest point to host of target shape as base point of the target shape
-            val hostPosition = playerPositions[0]
-            var targets = targetPositions.toList();
+            val hostPosition = gamePositions.players[0]
+            var targets = gamePositions.targets.toList();
 
             // translate player positions to target shape
-            var players = playerPositions.map { it + targets[0] - hostPosition }
+            var players = gamePositions.players.map { it + targets[0] - hostPosition }
             val base = players[0]
 
             // rotate player positions to fit target shape
@@ -156,20 +152,33 @@ class Geometry {
             players = center(players)
             targets = center(targets)
 
-            // scale all positions to fit canvas
+            return GamePositions(players, targets)
+        }
+
+        /**
+         * Scale [scaleGamePositions] to a canvas with the given dimension.
+         */
+        fun scaleGamePositions(
+            gamePositions: GamePositions,
+            height: Int,
+            width: Int,
+            margin: Int
+        ): GamePositions {
             val allPoints = scaleToCanvas(
-                players + targets,
+                gamePositions.players + gamePositions.targets,
                 height,
                 width,
                 margin
             )
-
             return GamePositions(
-                allPoints.subList(0, players.size),
-                allPoints.subList(players.size, allPoints.size)
+                allPoints.subList(0, gamePositions.players.size),
+                allPoints.subList(gamePositions.players.size, allPoints.size),
             )
         }
     }
 }
 
-data class GamePositions(val playerPositions: List<Vec>, val targetPositions: List<Vec>)
+data class GamePositions(
+    val players: List<Vec>,
+    val targets: List<Vec>,
+)
