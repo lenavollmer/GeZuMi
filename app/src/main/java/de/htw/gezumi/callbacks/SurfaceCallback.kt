@@ -96,26 +96,31 @@ class SurfaceCallback(
                     updatedVecs.subList(0, gamePos.players.size),
                     updatedVecs.subList(gamePos.players.size, updatedVecs.size)
                 )
-                val scaledGamePos = Geometry.scaleGamePositions(
-                    _oldGamePos!!,
-                    _canvasHeight,
-                    _canvasWidth,
-                    (POINT_SIZE * 2).toInt()
-                )
 
-                _painter.clearCanvas(canvas)
-                _painter.drawTargetShape(canvas, scaledGamePos.targets)
-                _painter.drawPlayerFigure(canvas, scaledGamePos.players)
-                _painter.drawPlayerNames(canvas, players, scaledGamePos.players)
+                if (_oldGamePos!!.players.size >= 3 || _oldGamePos!!.targets.size >= 3) {
+                    val scaledGamePos = Geometry.scaleGamePositions(
+                        _oldGamePos!!,
+                        _canvasHeight,
+                        _canvasWidth,
+                        (POINT_SIZE * 2).toInt()
+                    )
 
-                val playerSelfIndex = players.indexOfFirst { it.name.value == "" }
-                _painter.drawPlayerSelf(canvas, scaledGamePos.players[playerSelfIndex])
+                    _painter.clearCanvas(canvas)
+                    _painter.drawTargetShape(canvas, scaledGamePos.targets)
+                    _painter.drawPlayerFigure(canvas, scaledGamePos.players)
+                    _painter.drawPlayerNames(canvas, players, scaledGamePos.players)
 
-                val shapesMatch = Geometry.determineMatch(_oldGamePos!!)
-                if (shapesMatch) {
+                    val playerSelfIndex = players.indexOfFirst { it.name.value == "" }
+                    _painter.drawPlayerSelf(canvas, scaledGamePos.players[playerSelfIndex])
+
+                    val shapesMatch = Geometry.determineMatch(_oldGamePos!!)
+                    if (shapesMatch) {
+                        _animator?.cancel()
+                        _gameViewModel.game.running = false
+                        _gameViewModel.game.setShapeMatched(true)
+                    }
+                } else {
                     _animator?.cancel()
-                    _gameViewModel.game.running = false
-                    _gameViewModel.game.setShapeMatched(true)
                 }
             }
         }
