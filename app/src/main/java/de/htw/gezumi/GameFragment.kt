@@ -127,11 +127,6 @@ class GameFragment : Fragment() {
 
     }
 
-    override fun onPause() {
-        super.onPause()
-        _gameViewModel.game.running = false
-    }
-
     @kotlin.ExperimentalUnsignedTypes
     @SuppressLint("DefaultLocale")
     override fun onStop() {

@@ -25,7 +25,6 @@ class Game() {
 
     var time = 0
 
-    // stopwatch running?
     var running = true
 
     fun setShapeMatched(matchedShape: Boolean) {
