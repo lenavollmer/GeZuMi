@@ -75,9 +75,9 @@ class SurfaceCallback(
 
     private fun drawInGame(holder: SurfaceHolder, players: List<Player>) {
         var gamePos = GamePositions(
-            _gameViewModel.game.targetShape.value!!.toList(),
             players.filter { it.position != null }
-                .map { it.position!! }.toList()
+                .map { it.position!! }.toList(),
+            _gameViewModel.game.targetShape.value!!.toList()
         )
 
         if (gamePos.players.size < 3 || gamePos.targets.size < 3) return
