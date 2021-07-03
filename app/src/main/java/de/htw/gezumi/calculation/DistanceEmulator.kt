@@ -8,7 +8,7 @@ object DistanceEmulator {
 
     val file = "device0_-25_log_outdoor_1.txt"
     val path = "C:/Users/samue/gezumi/"
-    val txPower: Short = -25
+    val txPower: Short = -14
 
     val testDevice: Device = Device(byteArrayOf(), txPower, null, true)
     private val _timestamps = mutableListOf<String>()
@@ -23,7 +23,7 @@ object DistanceEmulator {
     }
 
     private fun writeTestLog() {
-        val fname = "testDevice_${txPower}_log.txt"
+        val fname = "testDevice_log.txt"
         val myDir = File(path)
         if (!myDir.exists()) {
             myDir.mkdirs()

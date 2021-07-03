@@ -16,7 +16,7 @@ class Conversions {
          * @return the distance in meters
          */
         fun rssiToDistance(rssi: Float, txPower: Short, test: Boolean = false): Float {
-            val envFactor = 3//0.65f //3 // indoors: 2
+            val envFactor = 1.7f//0.65f //3 // indoors: 2
             val attenuation = txPower - rssi
             val distance = 10f.pow((-56 + attenuation) / (10f * envFactor))
             if (!test) Log.d("Distance Calculation", "unfilteredDistance: $distance, rssi: $rssi, attenuation: $attenuation, txPower: $txPower")
