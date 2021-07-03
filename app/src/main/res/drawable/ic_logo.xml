@@ -65,7 +65,7 @@
             android:fillColor="?attr/playerSelfColor"
             android:strokeColor="?attr/android:colorBackground"
             android:strokeWidth="4"
-            android:pathData="M 217.529 45.5 C 227.193983122 45.5 235.029 53.335016878 235.029 63 C 235.029 72.664983122 227.193983122 80.5 217.529 80.5 C 207.864016878 80.5 200.029 72.664983122 200.029 63 C 200.029 53.335016878 207.864016878 45.5 217.529 45.5 Z" />
+            android:pathData="M 213 47 C 222.388840747 47 230 54.6111592529 230 64 C 230 73.3888407471 222.388840747 81 213 81 C 203.611159253 81 196 73.3888407471 196 64 C 196 54.6111592529 203.611159253 47 213 47 Z" />
     <path
             android:fillColor="?attr/colorPrimary"
             android:strokeColor="?attr/android:colorBackground"
