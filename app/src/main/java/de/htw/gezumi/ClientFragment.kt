@@ -45,11 +45,12 @@ class ClientFragment : Fragment() {
     private lateinit var _gattClient: GattClient
 
     private var _gameStarted = false
-    private var _firstLeave = true
     private var _connected = false
     private var _playerName = "gustav"
 
     private val _availableHostDevices: ArrayList<Device> = ArrayList()
+
+    @kotlin.ExperimentalUnsignedTypes
     private val _hostDeviceListAdapter: JoinGameListAdapter = JoinGameListAdapter(_availableHostDevices) {
         try {
             _gameViewModel.host = _availableHostDevices[it]
@@ -77,19 +78,18 @@ class ClientFragment : Fragment() {
         }
     }
 
+    @kotlin.ExperimentalUnsignedTypes
     private val gameLeaveUICallback = object : GameLeaveUICallback {
         override fun gameLeft() {
             Handler(Looper.getMainLooper()).post {
-                if(_firstLeave){
-                    Toast.makeText(context, R.string.game_closed, Toast.LENGTH_LONG).show()
-                    _binding.buttonScan.isEnabled = true
-                    resetConnection()
-                }
-                _firstLeave = false
+                Toast.makeText(context, R.string.game_closed, Toast.LENGTH_LONG).show()
+                _binding.buttonScan.isEnabled = true
+                resetConnection()
             }
         }
     }
 
+    @kotlin.ExperimentalUnsignedTypes
     private val gameJoinUICallback = object : GameJoinUICallback {
         override fun gameJoined() {
             Handler(Looper.getMainLooper()).post {
@@ -118,6 +118,7 @@ class ClientFragment : Fragment() {
         }
     }
 
+    @kotlin.ExperimentalUnsignedTypes
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         _gameViewModel.gameId = GameService.GAME_ID_PREFIX
@@ -152,6 +153,7 @@ class ClientFragment : Fragment() {
         }
     }
 
+    @kotlin.ExperimentalUnsignedTypes
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = DataBindingUtil.inflate(inflater, R.layout.fragment_client, container, false)
         _popupBinding = DataBindingUtil.inflate(inflater, R.layout.popup_join, null, false)
@@ -177,7 +179,6 @@ class ClientFragment : Fragment() {
             resetConnection()
             updateBtDeviceListAdapter()
             _gameViewModel.bluetoothController.startHostScan(_gameViewModel.hostScanCallback)
-            _gameViewModel.onPlayerNameChanged(_playerName)
         }
 
         if(arguments?.getString("playerName") != null){
@@ -198,6 +199,7 @@ class ClientFragment : Fragment() {
     }
 
 
+    @kotlin.ExperimentalUnsignedTypes
     private fun resetConnection(){
         _popupWindow.dismiss()
         _gameViewModel.bluetoothController.stopScan(HOST_SCAN_KEY)
@@ -205,6 +207,7 @@ class ClientFragment : Fragment() {
         if(_connected) _gattClient.disconnect()
 
         _binding.buttonScan.isEnabled = true
+        _gameViewModel.onPlayerNameChanged(_playerName)
 
         _availableHostDevices.clear()
         updateBtDeviceListAdapter()
@@ -219,6 +222,7 @@ class ClientFragment : Fragment() {
         }
     }
 
+    @kotlin.ExperimentalUnsignedTypes
     private fun updateBtDeviceListAdapter() {
         _hostDeviceListAdapter.notifyDataSetChanged()
     }

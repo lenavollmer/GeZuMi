@@ -240,6 +240,8 @@ class HostFragment : Fragment() {
             _connectedDevices.clear()
             _joinNames.clear()
 
+            _binding.startGame.isEnabled = false
+
             _gattServer.notifyGameEnding()
             stopScanAndAdvertise()
             _gameViewModel.clearModel()
