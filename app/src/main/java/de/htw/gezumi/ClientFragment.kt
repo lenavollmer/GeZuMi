@@ -34,6 +34,7 @@ import de.htw.gezumi.model.Device
 import de.htw.gezumi.util.CSVReader
 import de.htw.gezumi.viewmodel.GameViewModel
 import de.htw.gezumi.util.dimBehind
+import java.lang.IndexOutOfBoundsException
 
 private const val TAG = "ClientFragment"
 
@@ -47,47 +48,55 @@ class ClientFragment : Fragment() {
     private lateinit var _gattClient: GattClient
 
     private var _gameStarted = false
-    private var _firstLeave = true
     private var _connected = false
 
+    private var _playerName = "gustav"
+
     private val _availableHostDevices: ArrayList<Device> = ArrayList()
+
+    @kotlin.ExperimentalUnsignedTypes
     private val _hostDeviceListAdapter: JoinGameListAdapter = JoinGameListAdapter(_availableHostDevices) {
 
-        _gameViewModel.host = _availableHostDevices[it]
-        _gameViewModel.game.hostId = _availableHostDevices[it].deviceId
+        try{
+            _gameViewModel.host = _availableHostDevices[it]
+            _gameViewModel.game.hostId = _availableHostDevices[it].deviceId
 
-        val gattClientCallback = GattClientCallback()
-        _gattClient.connect(_availableHostDevices[it].bluetoothDevice!!, gattClientCallback)
+            val gattClientCallback = GattClientCallback()
+            _gattClient.connect(_availableHostDevices[it].bluetoothDevice!!, gattClientCallback)
 
-        _gameViewModel.gameJoinUICallback = gameJoinUICallback
-        _gameViewModel.gameLeaveUICallback = gameLeaveUICallback
-        _gameViewModel.gattClient = _gattClient
+            _gameViewModel.gameJoinUICallback = gameJoinUICallback
+            _gameViewModel.gameLeaveUICallback = gameLeaveUICallback
+            _gameViewModel.gattClient = _gattClient
 
-        _popupBinding.joinText.text = getString(R.string.join_wait)
-        _popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0)
-        _popupWindow.dimBehind()
+            _popupBinding.joinText.text = getString(R.string.join_wait)
+            _popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0)
+            _popupWindow.dimBehind()
 
-        _connected = true
-        _gameViewModel.bluetoothController.stopScan(HOST_SCAN_KEY)
-        _binding.buttonScan.isEnabled = false
-        _availableHostDevices.clear()
-        updateBtDeviceListAdapter()
+            _connected = true
+            _gameViewModel.bluetoothController.stopScan(HOST_SCAN_KEY)
+            _binding.buttonScan.isEnabled = false
+            _availableHostDevices.clear()
+            updateBtDeviceListAdapter()
+        }catch (e : IndexOutOfBoundsException){
+            _availableHostDevices.clear()
+            updateBtDeviceListAdapter()
+            Log.d(TAG, "Game did not exist")
+        }
     }
 
+    @kotlin.ExperimentalUnsignedTypes
     private val gameLeaveUICallback = object : GameLeaveUICallback {
         override fun gameLeft() {
             Handler(Looper.getMainLooper()).post {
                 Log.d(TAG, "game ended by host")
-                if(_firstLeave){
-                    Toast.makeText(context, R.string.game_closed, Toast.LENGTH_LONG).show()
-                    _binding.buttonScan.isEnabled = true
-                    resetConnection()
-                }
-                _firstLeave = false
+                Toast.makeText(context, R.string.game_closed, Toast.LENGTH_LONG).show()
+                _binding.buttonScan.isEnabled = true
+                resetConnection()
             }
         }
     }
 
+    @kotlin.ExperimentalUnsignedTypes
     private val gameJoinUICallback = object : GameJoinUICallback {
         override fun gameJoined() {
             Handler(Looper.getMainLooper()).post {
@@ -156,6 +165,7 @@ class ClientFragment : Fragment() {
         }
     }
 
+    @kotlin.ExperimentalUnsignedTypes
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = DataBindingUtil.inflate(inflater, R.layout.fragment_client, container, false)
         _popupBinding = DataBindingUtil.inflate(inflater, R.layout.popup_join, null, false)
@@ -178,15 +188,12 @@ class ClientFragment : Fragment() {
             addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
         }
         _binding.buttonScan.setOnClickListener {
-            _gameViewModel.bluetoothController.stopScan(HOST_SCAN_KEY)
-            _availableHostDevices.clear()
-            updateBtDeviceListAdapter()
+            resetConnection()
             _gameViewModel.bluetoothController.startHostScan(_gameViewModel.hostScanCallback)// ParcelUuid(GameService.getGameId()), true) <- doesn't work, why???
         }
 
         if(arguments?.getString("playerName") != null){
-            val playerName = arguments?.getString("playerName")!!
-            _gameViewModel.onPlayerNameChanged(playerName)
+            _playerName = arguments?.getString("playerName")!!
         }
 
         _popupWindow = PopupWindow(
@@ -202,13 +209,15 @@ class ClientFragment : Fragment() {
         _gattClient = GattClient(requireContext())
     }
 
-
+    @kotlin.ExperimentalUnsignedTypes
     private fun resetConnection(){
         _popupWindow.dismiss()
         _gameViewModel.bluetoothController.stopScan(HOST_SCAN_KEY)
+        _gameViewModel.bluetoothController.stopAdvertising()
         if(_connected) _gattClient.disconnect()
-        _binding.buttonScan.isEnabled = true
 
+        _binding.buttonScan.isEnabled = true
+        _gameViewModel.onPlayerNameChanged(_playerName)
         _availableHostDevices.clear()
         updateBtDeviceListAdapter()
     }
@@ -222,6 +231,7 @@ class ClientFragment : Fragment() {
         }
     }
 
+    @kotlin.ExperimentalUnsignedTypes
     private fun updateBtDeviceListAdapter() {
         _hostDeviceListAdapter.notifyDataSetChanged()
     }

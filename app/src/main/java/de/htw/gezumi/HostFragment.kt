@@ -148,9 +148,6 @@ class HostFragment : Fragment() {
 
         if (_gameViewModel.txPower == null)
             _gameViewModel.txPower = CSVReader.getTxPower(Build.DEVICE, requireContext())
-
-        _gameService = GameService.createHostService()
-        _gameViewModel.makeGameId()
     }
 
     override fun onCreateView(
@@ -258,6 +255,11 @@ class HostFragment : Fragment() {
                 _gattServer.notifyJoinApproved(it, false)
             }
 
+            _connectedDevices.clear()
+            _joinNames.clear()
+
+            _binding.startGame.isEnabled = false
+
             _gattServer.notifyGameEnding()
             stopScanAndAdvertise()
             _gameViewModel.clearModel()
@@ -270,6 +272,9 @@ class HostFragment : Fragment() {
     override fun onStart() {
         super.onStart()
         Log.d(TAG, "start gatt server and game service")
+        _gameService = GameService.createHostService()
+        _gameViewModel.makeGameId()
+
         _gattServer = GattServer(requireContext(), _gameViewModel.bluetoothController, connectCallback)
         _gameViewModel.gattServer = _gattServer
         _gattServer.startServer(_gameService)
