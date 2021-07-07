@@ -105,6 +105,7 @@ class GameFragment : Fragment() {
                 _binding.shapesMatched.z = 500.0F
                 if(_gameViewModel.isHost()) _binding.startNewGame.visibility = View.VISIBLE
                 _binding.shapesMatched.z = 500.0F
+                mainHandler.removeCallbacks(timer)
             } else {
                 _binding.shapesMatched.visibility = View.INVISIBLE
                 if(_gameViewModel.isHost()) _binding.startNewGame.visibility = View.INVISIBLE
@@ -118,8 +119,10 @@ class GameFragment : Fragment() {
                 _gameViewModel.game.targetShape.value!!.size > 2 &&
                 !_gameViewModel.game.running
             ) {
-                if (!_gameViewModel.game.shapeMatched.value!!) _gameViewModel.game.running = true
-                mainHandler.post(timer)
+                if (!_gameViewModel.game.shapeMatched.value!!){
+                    _gameViewModel.game.running = true
+                    mainHandler.post(timer)
+                }
                 _binding.progressBar.visibility = View.INVISIBLE
                 _binding.surfaceView.visibility = View.VISIBLE
             }

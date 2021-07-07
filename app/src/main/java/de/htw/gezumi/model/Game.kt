@@ -39,7 +39,7 @@ class Game() {
         time = 0
         _targetShape.value?.clear()
         _shapeMatched.postValue(false)
-        running = true
+        running = false
     }
 
     /**
