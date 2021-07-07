@@ -38,9 +38,7 @@ class Game() {
     fun restart() {
         running = true
         time = 0
-        _targetShape.postValue(mutableListOf())
-        // TODO generate new target shape and send to clients
-        _shapeMatched.value = false
+        _shapeMatched.postValue(false)
     }
 
     /**
@@ -50,8 +48,8 @@ class Game() {
         running = false
         time = 0
         _targetShape.value?.clear()
-        _players.value?.clear()
-        _shapeMatched.value = false
+//        _players.value?.clear()
+        _shapeMatched.postValue(false)
     }
 
     /**
@@ -60,17 +58,21 @@ class Game() {
     fun addPlayerIfNew(deviceId: ByteArray) {
         if (players.value !== null && !_players.value!!.any { it.deviceId contentEquals deviceId }) {
             // make sure that the host is always at index 0 of players
-            Log.d(TAG, "hostid: $hostId deviceId:$deviceId")
+            Log.d(TAG, "hostId: $hostId deviceId:$deviceId")
 
             if (deviceId contentEquals hostId) {
                 (_players.value as MutableList<Player>).add(0, Player(deviceId))
-                Log.d(TAG, "Added host at beggining, hostid: $hostId first player id:${_players.value!![0].deviceId}")
+                Log.d(
+                    TAG,
+                    "Added host at beginning, hostId: $hostId first player id:${_players.value!![0].deviceId}"
+                )
             }
             (_players.value as MutableList<Player>).add(Player(deviceId))
         }
     }
 
-    fun getPlayer(deviceId: ByteArray): Player? = _players.value?.find { it.deviceId contentEquals deviceId }
+    fun getPlayer(deviceId: ByteArray): Player? =
+        _players.value?.find { it.deviceId contentEquals deviceId }
 
     /**
      * Add player if they do not exist. Update player position.

@@ -97,10 +97,10 @@ class GameFragment : Fragment() {
     ): View {
         _binding = DataBindingUtil.inflate(inflater, R.layout.fragment_game, container, false)
 
-        _gameViewModel.updateTargetShape()
+        _gameViewModel.updateAndSendTargetShape()
 
         val matchedObserver = Observer<Boolean> { shapesMatch ->
-            if (shapesMatch) {
+            if (shapesMatch && _gameViewModel.isHost()) {
                 _binding.shapesMatched.visibility = View.VISIBLE
                 _binding.shapesMatched.z = 500.0F
                 _binding.startNewGame.visibility = View.VISIBLE
@@ -108,7 +108,8 @@ class GameFragment : Fragment() {
             }
         }
         val playerObserver = Observer<List<Player>> { players ->
-            val playersWithPosition = players.filter { it.position != null && !it.position!!.isNan() }
+            val playersWithPosition =
+                players.filter { it.position != null && !it.position!!.isNan() }
             if (
                 playersWithPosition.size > 2 &&
                 _gameViewModel.game.targetShape.value!!.size > 2 &&
@@ -145,9 +146,10 @@ class GameFragment : Fragment() {
         )
 
         view.findViewById<Button>(R.id.start_new_game).setOnClickListener {
+            Log.d(TAG, "in onClick")
             _binding.shapesMatched.visibility = View.INVISIBLE
             _binding.startNewGame.visibility = View.INVISIBLE
-            _gameViewModel.updateTargetShape()
+            _gameViewModel.updateAndSendTargetShape(withReset = true)
             _gameViewModel.game.restart()
         }
 

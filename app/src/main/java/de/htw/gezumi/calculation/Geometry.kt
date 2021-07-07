@@ -96,7 +96,8 @@ class Geometry {
 
 
         fun determineMatch(gamePositions: GamePositions): Boolean {
-            val tolerance = 0.5 // the max distance in meter between the points to be a match
+            val tolerance = 2
+//                0.5 // the max distance in meter between the points to be a match
             val foundPoints = gamePositions.players.map { a ->
                 // TODO two or more player points could match to the same target point
                 gamePositions.targets.find { b ->

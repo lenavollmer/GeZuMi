@@ -98,7 +98,7 @@ class GattServer(private val _context: Context, private val _bluetoothController
 
     @kotlin.ExperimentalUnsignedTypes
     fun indicateHostUpdate(bluetoothData: BluetoothData) {
-        Log.d(TAG, "índicate host update sender: ${Utils.toHexString(bluetoothData.senderId)}")
+        Log.d(TAG, "indicate host update sender: ${Utils.toHexString(bluetoothData.senderId)}")
         val responseHostUpdateCharacteristic = bluetoothGattServer?.getService(GameService.HOST_UUID)?.getCharacteristic(GameService.RESPONSE_HOST_UPDATE_UUID)
         responseHostUpdateCharacteristic?.value = bluetoothData.toByteArray()
         for (device in subscribedDevices) {
