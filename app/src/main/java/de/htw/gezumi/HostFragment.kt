@@ -181,7 +181,7 @@ class HostFragment : Fragment() {
             _gattServer.notifyGameStart()
             _gameStarted = true
             findNavController().navigate(R.id.action_HostFragment_to_Game)
-            stopScanAndAdvertise()
+            // Start Advertising stops the old advertise
             _gameViewModel.bluetoothController.startAdvertising(
                 _gameViewModel.gameId,
                 if (_gameViewModel.playerName != null)
@@ -233,6 +233,7 @@ class HostFragment : Fragment() {
 
     private fun stopScanAndAdvertise() {
         _gameViewModel.bluetoothController.stopScan(GAME_SCAN_KEY)
+        _gameViewModel.bluetoothController.stopAdvertising()
     }
 
     override fun onStop() {

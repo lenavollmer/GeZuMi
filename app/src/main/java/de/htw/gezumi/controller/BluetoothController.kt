@@ -85,6 +85,7 @@ class BluetoothController {
 
     @kotlin.ExperimentalUnsignedTypes
     fun startAdvertising(gameId: ByteArray, name: ByteArray = ByteArray(0)) { // leave empty if client because name is not important then
+        stopAdvertising()
         require(::_bluetoothManager.isInitialized) {"Must have context set"}
         val bluetoothLeAdvertiser: BluetoothLeAdvertiser? = _bluetoothManager.adapter.bluetoothLeAdvertiser
 
@@ -104,6 +105,11 @@ class BluetoothController {
 
     fun openGattServer(gattServerCallback: BluetoothGattServerCallback): BluetoothGattServer {
         return _bluetoothManager.openGattServer(_context, gattServerCallback)
+    }
+
+    fun stopAdvertising() {
+        val bluetoothLeAdvertiser: BluetoothLeAdvertiser? = _bluetoothManager.adapter.bluetoothLeAdvertiser
+        bluetoothLeAdvertiser?.stopAdvertising(advertiseCallback)
     }
 
     fun setContext(context: Context) {

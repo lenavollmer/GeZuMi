@@ -160,6 +160,7 @@ class GameFragment : Fragment() {
             _gameViewModel.gattServer.stopServer()
         }
         if (_gameViewModel.isGattClientInitialized()) _gameViewModel.gattClient.disconnect()
+        _gameViewModel.bluetoothController.stopAdvertising()
 
         mainHandler.removeCallbacks(timer)
         _gameViewModel.game.reset()
