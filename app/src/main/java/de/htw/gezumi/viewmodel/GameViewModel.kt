@@ -277,10 +277,10 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         }
 
         // update player name
-        if (playerName.isNotBlank()){
+        if (playerName.isNotBlank()) {
             Log.d(TAG, "in update Player name: $deviceId, $playerName")
-            game.getPlayer(deviceId)!!.setName(playerName)}
-        else // set back to device id if player deletes name
+            game.getPlayer(deviceId)!!.setName(playerName)
+        } else // set back to device id if player deletes name
             game.getPlayer(deviceId)!!.setName(Utils.toHexString(deviceId))
 
         // store rssi and send player update
@@ -309,50 +309,39 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         )
     }
 
-//    @kotlin.ExperimentalUnsignedTypes
-//    fun notifyGameReset() {
-//        if (host == null) {
-//            Log.d(TAG, "send game reset notification to ${devices.size} players and send new target shape")
-//
-//            gattServer.indicateHostUpdate(
-//                BluetoothData(
-//                    RESET_GAME_ID,
-//                    myDeviceId,
-//                    floatArrayOf(0F, 0F)
-//                )
-//            )
-//        }
-//    }
+    @kotlin.ExperimentalUnsignedTypes
+    fun notifyGameRestart() {
+        if (host == null) {
+            Log.d(
+                TAG,
+                "send game reset notification to ${devices.size} players and send new target shape"
+            )
+
+            gattServer.indicateHostUpdate(
+                BluetoothData(
+                    RESET_GAME_ID,
+                    myDeviceId,
+                    floatArrayOf(0F, 0F)
+                )
+            )
+        }
+    }
 
     @kotlin.ExperimentalUnsignedTypes
-    fun updateAndSendTargetShape(withReset: Boolean? = false) {
-        Log.d(TAG, "withReset: $withReset")
+    fun updateAndSendTargetShape() {
         if (host == null) {
             Log.d(TAG, "generating target shapes for ${devices.size + 1} players")
             val targetShape = Geometry.generateGeometricObject(devices.size + 1)
             game.setTargetShape(targetShape as MutableList<Vec>)
             targetShape.forEach {
-                run {
-                    if (withReset == true) {
-                        Log.d(TAG,"In withReset true")
-                        gattServer.indicateHostUpdate(
-                            BluetoothData(
-                                RESET_GAME_ID,
-                                myDeviceId,
-                                floatArrayOf(it.x, it.y)
-                            )
-                        )
-                    } else {
-                        Log.d(TAG,"In withReset true")
-                        gattServer.indicateHostUpdate(
-                            BluetoothData(
-                                TARGET_SHAPE_ID,
-                                myDeviceId,
-                                floatArrayOf(it.x, it.y)
-                            )
-                        )
-                    }
-                }
+                Log.d(TAG, "In withReset true")
+                gattServer.indicateHostUpdate(
+                    BluetoothData(
+                        TARGET_SHAPE_ID,
+                        myDeviceId,
+                        floatArrayOf(it.x, it.y)
+                    )
+                )
             }
         }
     }

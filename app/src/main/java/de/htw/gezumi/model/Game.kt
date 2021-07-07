@@ -36,9 +36,10 @@ class Game() {
     }
 
     fun restart() {
-        running = true
         time = 0
+        _targetShape.value?.clear()
         _shapeMatched.postValue(false)
+        running = true
     }
 
     /**
@@ -48,7 +49,7 @@ class Game() {
         running = false
         time = 0
         _targetShape.value?.clear()
-//        _players.value?.clear()
+        _players.value?.clear()
         _shapeMatched.postValue(false)
     }
 

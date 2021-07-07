@@ -74,7 +74,7 @@ class GameFragment : Fragment() {
             // If running is true, increment the
             // seconds variable.
             if (_gameViewModel.game.running) {
-                _gameViewModel.game.time = seconds + 1
+                _gameViewModel.game.time++
             }
 
             // Post the code again
@@ -100,11 +100,14 @@ class GameFragment : Fragment() {
         _gameViewModel.updateAndSendTargetShape()
 
         val matchedObserver = Observer<Boolean> { shapesMatch ->
-            if (shapesMatch && _gameViewModel.isHost()) {
+            if (shapesMatch) {
                 _binding.shapesMatched.visibility = View.VISIBLE
                 _binding.shapesMatched.z = 500.0F
-                _binding.startNewGame.visibility = View.VISIBLE
+                if(_gameViewModel.isHost()) _binding.startNewGame.visibility = View.VISIBLE
                 _binding.shapesMatched.z = 500.0F
+            } else {
+                _binding.shapesMatched.visibility = View.INVISIBLE
+                if(_gameViewModel.isHost()) _binding.startNewGame.visibility = View.INVISIBLE
             }
         }
         val playerObserver = Observer<List<Player>> { players ->
@@ -147,10 +150,9 @@ class GameFragment : Fragment() {
 
         view.findViewById<Button>(R.id.start_new_game).setOnClickListener {
             Log.d(TAG, "in onClick")
-            _binding.shapesMatched.visibility = View.INVISIBLE
-            _binding.startNewGame.visibility = View.INVISIBLE
-            _gameViewModel.updateAndSendTargetShape(withReset = true)
             _gameViewModel.game.restart()
+            _gameViewModel.notifyGameRestart()
+            _gameViewModel.updateAndSendTargetShape()
         }
 
         (activity as AppCompatActivity?)!!.supportActionBar?.hide() // Hide Bar
