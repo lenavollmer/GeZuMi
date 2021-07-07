@@ -19,7 +19,6 @@
             tools:layout="@layout/fragment_permission">
         <action android:id="@+id/action_MainMenuFragment_to_Host" app:destination="@id/Host"/>
         <action android:id="@+id/action_MainMenuFragment_to_Client" app:destination="@id/Client"/>
-        <action android:id="@+id/action_MainMenuFragment_to_MockedGame" app:destination="@id/MockedGame"/>
     </fragment>
     <fragment
             android:id="@+id/Host"
@@ -44,10 +43,5 @@
             tools:layout="@layout/fragment_game">
         <action android:id="@+id/action_Game_to_MainMenuFragment" app:destination="@id/MainMenuFragment"
                 app:popUpTo="@id/MainFragment" app:popUpToInclusive="true"/>
-    </fragment>
-    <fragment
-            android:id="@+id/MockedGame"
-            android:name="de.htw.gezumi.MockedGameFragment"
-            tools:layout="@layout/fragment_game">
     </fragment>
 </navigation>

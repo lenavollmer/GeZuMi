@@ -22,7 +22,6 @@ class JoinGameListAdapter(private val _hostDevices: List<Device>, private val li
                 binding.textGameName.text = newName
             }
 
-            // Observe the LiveData, passing in this activity as the LifecycleOwner and the observer.
             device.gameName.observe(lifecycleOwner, nameObserver)
 
             binding.textGameName.text = device.gameName.value
@@ -33,28 +32,23 @@ class JoinGameListAdapter(private val _hostDevices: List<Device>, private val li
             }
             joinButton.isEnabled = _itemsEnabled
 
-            // make sure to include this so your view will be updated
+            // updates the view
             binding.invalidateAll()
             binding.executePendingBindings()
         }
     }
 
-    // ... constructor and member variables
-    // Usually involves inflating a layout from XML and returning the holder
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemViewHolder {
         val inflater = LayoutInflater.from(parent.context)
         val binding = ItemJoinBinding.inflate(inflater)
         return ItemViewHolder(binding)
     }
 
-    // Involves populating data into the item through holder
     override fun onBindViewHolder(viewHolder: ItemViewHolder, position: Int) {
-        // Get the data model based on position
         val device: Device = _hostDevices[position]
         viewHolder.bind(device)
     }
 
-    // Returns the total count of items in the list
     override fun getItemCount(): Int {
         return _hostDevices.size
     }

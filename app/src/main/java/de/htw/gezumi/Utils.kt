@@ -39,11 +39,5 @@ class Utils {
 
         @kotlin.ExperimentalUnsignedTypes
         fun logDeviceId(arr: ByteArray) = toHexString(arr)
-
-        fun <T> swap(list: List<T>, i: Int, j: Int): List<T> {
-            val mutList = list.toMutableList()
-            Collections.swap(mutList, i, j);
-            return mutList.toList()
-        }
     }
 }

@@ -27,27 +27,22 @@ class ConnectedPlayerDeviceAdapter(private val _playerNames: List<String>, priva
             declineButton.setOnClickListener {
                 listener.invoke(adapterPosition, STATUS.DECLINED)
             }
-            // make sure to include this so your view will be updated
+            // updates the view
             binding.invalidateAll()
             binding.executePendingBindings()
         }
     }
 
-    // ... constructor and member variables
-    // Usually involves inflating a layout from XML and returning the holder
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemViewHolder {
         val inflater = LayoutInflater.from(parent.context)
         val binding = BottomSheetItemBinding.inflate(inflater)
         return ItemViewHolder(binding)
     }
 
-    // Involves populating data into the item through holder
     override fun onBindViewHolder(viewHolder: ItemViewHolder, position: Int) {
-        // Get the data model based on position
         viewHolder.bind(_playerNames[position])
     }
 
-    // Returns the total count of items in the list
     override fun getItemCount(): Int {
         return _playerNames.size
     }

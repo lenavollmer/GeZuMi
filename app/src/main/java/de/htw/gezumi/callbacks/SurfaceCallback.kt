@@ -22,7 +22,7 @@ private const val POINT_SIZE = 60f
 
 class SurfaceCallback(
     private val _gameViewModel: GameViewModel,
-    private val _context: Context,
+    _context: Context,
     private val _viewLifecycleOwner: LifecycleOwner,
 ) :
     SurfaceHolder.Callback {
@@ -60,7 +60,7 @@ class SurfaceCallback(
     }
 
     override fun surfaceDestroyed(holder: SurfaceHolder) {
-        // and here you need to stop it <-- whats does that mean?
+        Log.d(TAG, "surfaceDestroyed")
     }
 
     private fun tryDrawing(holder: SurfaceHolder, drawFunction: (canvas: Canvas) -> Unit) {
