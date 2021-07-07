@@ -237,6 +237,8 @@ class HostFragment : Fragment() {
             _connectedDevices.forEach { // decline all pending players
                 _gattServer.notifyJoinApproved(it, false)
             }
+            _connectedDevices.clear()
+            _joinNames.clear()
 
             _gattServer.notifyGameEnding()
             stopScanAndAdvertise()
