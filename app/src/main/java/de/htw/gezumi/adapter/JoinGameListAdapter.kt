@@ -39,22 +39,18 @@ class JoinGameListAdapter(private val _hostDevices: List<Device>, private val li
         }
     }
 
-    // ... constructor and member variables
-    // Usually involves inflating a layout from XML and returning the holder
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemViewHolder {
         val inflater = LayoutInflater.from(parent.context)
         val binding = ItemJoinBinding.inflate(inflater)
         return ItemViewHolder(binding)
     }
 
-    // Involves populating data into the item through holder
     override fun onBindViewHolder(viewHolder: ItemViewHolder, position: Int) {
         // Get the data model based on position
         val device: Device = _hostDevices[position]
         viewHolder.bind(device)
     }
 
-    // Returns the total count of items in the list
     override fun getItemCount(): Int {
         return _hostDevices.size
     }

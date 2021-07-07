@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import android.view.*
 import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
@@ -21,9 +20,6 @@ import de.htw.gezumi.model.Player
 import de.htw.gezumi.viewmodel.GameViewModel
 import java.util.*
 
-
-private const val TAG = "GameFragment"
-
 /**
  * A simple [Fragment] subclass as the default destination in the navigation.
  */
@@ -34,7 +30,6 @@ class GameFragment : Fragment() {
     private lateinit var _binding: FragmentGameBinding
     lateinit var mainHandler: Handler
 
-
     private lateinit var _surfaceView: SurfaceView
     private lateinit var _surfaceHolder: SurfaceHolder
 
@@ -43,7 +38,6 @@ class GameFragment : Fragment() {
     private val gameLeaveUICallback = object : GameLeaveUICallback {
         override fun gameLeft() {
             Handler(Looper.getMainLooper()).post {
-                Log.d(TAG, "game ended by host")
                 if (_firstLeave) {
                     val bundle = bundleOf("gameEnded" to true)
                     findNavController().navigate(R.id.action_Game_to_MainMenuFragment, bundle)
@@ -166,7 +160,6 @@ class GameFragment : Fragment() {
             _gameViewModel.gattServer.stopServer()
         }
         if (_gameViewModel.isGattClientInitialized()) _gameViewModel.gattClient.disconnect()
-        _gameViewModel.bluetoothController.stopAdvertising()
 
         mainHandler.removeCallbacks(timer)
         _gameViewModel.game.reset()

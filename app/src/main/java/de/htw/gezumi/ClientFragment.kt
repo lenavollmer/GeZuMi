@@ -7,7 +7,6 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
@@ -34,8 +33,6 @@ import de.htw.gezumi.model.Device
 import de.htw.gezumi.util.CSVReader
 import de.htw.gezumi.viewmodel.GameViewModel
 import de.htw.gezumi.util.dimBehind
-
-private const val TAG = "ClientFragment"
 
 class ClientFragment : Fragment() {
 
@@ -77,7 +74,6 @@ class ClientFragment : Fragment() {
     private val gameLeaveUICallback = object : GameLeaveUICallback {
         override fun gameLeft() {
             Handler(Looper.getMainLooper()).post {
-                Log.d(TAG, "game ended by host")
                 if(_firstLeave){
                     Toast.makeText(context, R.string.game_closed, Toast.LENGTH_LONG).show()
                     _binding.buttonScan.isEnabled = true
@@ -111,7 +107,6 @@ class ClientFragment : Fragment() {
             Handler(Looper.getMainLooper()).post {
                 _gameStarted = true
                 _popupWindow.dismiss()
-                Log.d(TAG, "game started")
                 findNavController().navigate(R.id.action_ClientFragment_to_Game)
             }
         }
@@ -147,11 +142,6 @@ class ClientFragment : Fragment() {
                     }
                 }
                 updateBtDeviceListAdapter()
-            }
-
-            override fun onScanFailed(errorCode: Int) {
-                super.onScanFailed(errorCode)
-                Log.d(TAG, "scan failed: $errorCode")
             }
         }
     }

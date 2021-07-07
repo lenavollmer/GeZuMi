@@ -16,8 +16,6 @@ class ApprovedDevicesAdapter(private val _devices: List<Device>) : RecyclerView.
 
         @kotlin.ExperimentalUnsignedTypes
         fun bind(device: Device) {
-            // TODO move to item_bt_device per data binding
-            //_binding.deviceName.text = GameViewModel.instance.game.getPlayer(device.deviceId)!!.name.value
             // Create the observer which updates the UI.
             val nameObserver = Observer<String> { newName ->
                 // Update the UI, in this case, a TextView.

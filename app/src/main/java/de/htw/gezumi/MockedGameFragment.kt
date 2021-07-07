@@ -41,7 +41,6 @@ class MockedGameFragment : Fragment() {
         val playerNames = arrayOf("", "Targo", "Kaenu")
 
         override fun run() {
-            Log.d(TAG, "${_gameViewModel.game.time}")
             if (!_gameViewModel.game.shapeMatched.value!!) {
                 val currentObj = Geometry.generateGeometricObject(3)
                 _gameViewModel.game.updatePlayer(player1, currentObj[0])

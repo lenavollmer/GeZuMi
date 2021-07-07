@@ -1,13 +1,10 @@
 package de.htw.gezumi.model
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import de.htw.gezumi.calculation.Vec
 
-private const val TAG = "Game"
-
-class Game() {
+class Game {
     var hostId: ByteArray? = null
 
     // contains a player for myself
@@ -39,7 +36,6 @@ class Game() {
         running = true
         time = 0
         _targetShape.postValue(mutableListOf())
-        // TODO generate new target shape and send to clients
         _shapeMatched.value = false
     }
 
@@ -60,11 +56,8 @@ class Game() {
     fun addPlayerIfNew(deviceId: ByteArray) {
         if (players.value !== null && !_players.value!!.any { it.deviceId contentEquals deviceId }) {
             // make sure that the host is always at index 0 of players
-            Log.d(TAG, "hostid: $hostId deviceId:$deviceId")
-
             if (deviceId contentEquals hostId) {
                 (_players.value as MutableList<Player>).add(0, Player(deviceId))
-                Log.d(TAG, "Added host at beggining, hostid: $hostId first player id:${_players.value!![0].deviceId}")
             }
             (_players.value as MutableList<Player>).add(Player(deviceId))
         }
@@ -85,7 +78,6 @@ class Game() {
      * Add vectors to the target shape - called by clients.
      */
     fun updateTargetShape(vec: Vec) {
-        Log.d(TAG, "new target position: $vec")
         if (!_targetShape.value!!.contains(vec)) {
             val currentTarget = _targetShape.value!!
             currentTarget.add(vec)

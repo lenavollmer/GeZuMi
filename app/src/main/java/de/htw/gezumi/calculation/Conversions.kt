@@ -1,6 +1,5 @@
 package de.htw.gezumi.calculation
 
-import android.util.Log
 import kotlin.math.*
 
 
@@ -18,12 +17,7 @@ class Conversions {
         fun rssiToDistance(rssi: Float, txPower: Short): Float {
             val envFactor = 3f
             val attenuation = txPower - rssi
-            val distance = 10f.pow((-56 + attenuation) / (10f * envFactor))
-            Log.d(
-                "Distance Calculation",
-                "unfilteredDistance: $distance, rssi: $rssi, attenuation: $attenuation, txPower: $txPower"
-            )
-            return distance
+            return 10f.pow((-56 + attenuation) / (10f * envFactor))
         }
 
         /**
@@ -40,7 +34,7 @@ class Conversions {
             // compute position of the second point with the following assumptions:
             // 1. it shares the same y coordinate as the first point
             // 2. it is to the right of the first point
-            points.add(Vec((points[0].x - dists[0][1]), points[0].y));
+            points.add(Vec((points[0].x - dists[0][1]), points[0].y))
 
             // compute positions of all other points
             for (i in dists.indices.drop(2)) {
@@ -127,9 +121,6 @@ class Conversions {
         }
 
         private fun clipSide(a: Float, b: Float, c: Float) = if (a > (b + c)) b + c else a
-
-        private fun matrixToString(mat: Array<FloatArray>) =
-            mat.joinToString(separator = "\n") { row -> row.joinToString(prefix = "[", postfix = "]", separator = ",") }
 
     }
 }

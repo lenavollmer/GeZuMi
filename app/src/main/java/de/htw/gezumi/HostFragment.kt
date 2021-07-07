@@ -7,7 +7,6 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -32,9 +31,6 @@ import de.htw.gezumi.viewmodel.GAME_NAME_LENGTH
 import de.htw.gezumi.viewmodel.GameViewModel
 import kotlin.random.Random
 
-
-private const val TAG = "HostFragment"
-
 class HostFragment : Fragment() {
 
     private val _gameViewModel: GameViewModel by activityViewModels()
@@ -52,15 +48,11 @@ class HostFragment : Fragment() {
     private val _connectedDevices: MutableList<BluetoothDevice> =
         mutableListOf() // devices that are connected, but neither approved nor declined
     private val _joinNames: MutableList<String> = mutableListOf() // depends on connectedDevices
-
-    //private val _approvedDevices: ArrayList<Device> = ArrayList()
-    // for displayed list
     private lateinit var _playerListAdapter: ApprovedDevicesAdapter
 
     // for bottom sheet
     private val _connectedListAdapter = ConnectedPlayerDeviceAdapter(_joinNames) { position, status ->
         if (status == ConnectedPlayerDeviceAdapter.STATUS.APPROVED) {
-            //_approvedDevices.add(_connectedDevices[position])
             _gattServer.notifyJoinApproved(_connectedDevices[position], true)
             _currentPlayers++
             _binding.noPlayers.visibility = View.GONE
@@ -83,7 +75,6 @@ class HostFragment : Fragment() {
         fun onGattDisconnect(bluetoothDevice: BluetoothDevice)
     }
 
-    // TODO refactor GattConnectCallback
     @kotlin.ExperimentalUnsignedTypes
     private val connectCallback = object : GattConnectCallback {
         override fun onJoinRequest(bluetoothDevice: BluetoothDevice, joinName: String?) {
@@ -108,11 +99,9 @@ class HostFragment : Fragment() {
             }
             _gattServer.subscribedDevices.remove(bluetoothDevice)
 
-            // remove device TODO: remove player
             val device = GameViewModel.instance.devices.find { it.bluetoothDevice == bluetoothDevice }
             if (device != null) {
                 // device was already a player of the game
-                Log.d(TAG, "remove device: $device")
                 GameViewModel.instance.devices.remove(device)
                 _currentPlayers--
                 if (_currentPlayers == 0) {
@@ -122,7 +111,6 @@ class HostFragment : Fragment() {
                     }
                 }
                 if (_gameStarted) {
-                    // could come here (HostFragment) even if game is running
                     _gattServer.notifyGameEnding()
                     _gameViewModel.onGameLeave()
                 }
@@ -193,8 +181,7 @@ class HostFragment : Fragment() {
             _gattServer.notifyGameStart()
             _gameStarted = true
             findNavController().navigate(R.id.action_HostFragment_to_Game)
-            // start advertising with player name
-            _gameViewModel.bluetoothController.stopAdvertising()
+            stopScanAndAdvertise()
             _gameViewModel.bluetoothController.startAdvertising(
                 _gameViewModel.gameId,
                 if (_gameViewModel.playerName != null)
@@ -210,7 +197,6 @@ class HostFragment : Fragment() {
 
         _binding.editTextGameName.setOnEditorActionListener { textView, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_GO) {
-                Log.d(TAG, "game name changed")
                 onGameNameChanged(textView.text.toString())
                 val imm: InputMethodManager =
                     requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
@@ -246,7 +232,6 @@ class HostFragment : Fragment() {
     }
 
     private fun stopScanAndAdvertise() {
-        _gameViewModel.bluetoothController.stopAdvertising()
         _gameViewModel.bluetoothController.stopScan(GAME_SCAN_KEY)
     }
 
@@ -269,7 +254,6 @@ class HostFragment : Fragment() {
     @kotlin.ExperimentalUnsignedTypes
     override fun onStart() {
         super.onStart()
-        Log.d(TAG, "start gatt server and game service")
         _gattServer = GattServer(requireContext(), _gameViewModel.bluetoothController, connectCallback)
         _gameViewModel.gattServer = _gattServer
         _gattServer.startServer(_gameService)

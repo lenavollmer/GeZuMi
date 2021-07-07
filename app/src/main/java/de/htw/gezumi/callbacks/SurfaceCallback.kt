@@ -3,7 +3,6 @@ package de.htw.gezumi.callbacks
 import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Canvas
-import android.util.Log
 import android.view.SurfaceHolder
 import androidx.core.animation.doOnEnd
 import androidx.lifecycle.LifecycleOwner
@@ -16,13 +15,11 @@ import de.htw.gezumi.canvas.Painter
 import de.htw.gezumi.model.Player
 import de.htw.gezumi.viewmodel.GameViewModel
 
-
-private const val TAG = "SurfaceCallback"
 private const val POINT_SIZE = 60f
 
 class SurfaceCallback(
     private val _gameViewModel: GameViewModel,
-    private val _context: Context,
+    _context: Context,
     private val _viewLifecycleOwner: LifecycleOwner,
 ) :
     SurfaceHolder.Callback {
@@ -34,13 +31,6 @@ class SurfaceCallback(
 
     private var _oldGamePos: GamePositions? = null
     private var _animator: ValueAnimator? = null
-
-    override fun surfaceChanged(
-        holder: SurfaceHolder, format: Int,
-        width: Int, height: Int
-    ) {
-        Log.d(TAG, "surfaceChanged")
-    }
 
     override fun surfaceCreated(holder: SurfaceHolder) {
         tryDrawing(holder) { canvas ->
@@ -59,15 +49,15 @@ class SurfaceCallback(
 
     }
 
+    override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
+    }
+
     override fun surfaceDestroyed(holder: SurfaceHolder) {
-        // and here you need to stop it <-- whats does that mean?
     }
 
     private fun tryDrawing(holder: SurfaceHolder, drawFunction: (canvas: Canvas) -> Unit) {
         val canvas = holder.lockCanvas()
-        if (canvas == null) {
-            Log.e(TAG, "Canvas is already locked")
-        } else {
+        if (canvas != null) {
             drawFunction(canvas)
             holder.unlockCanvasAndPost(canvas)
         }

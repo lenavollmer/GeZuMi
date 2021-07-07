@@ -27,10 +27,8 @@ import de.htw.gezumi.model.BluetoothData
 import de.htw.gezumi.model.Device
 import de.htw.gezumi.model.Game
 import de.htw.gezumi.util.Constants.TARGET_SHAPE_ID
-import de.htw.gezumi.util.FileStorage
 import java.util.*
 
-private const val TAG = "GameViewModel"
 const val RSSI_READ_INTERVAL = 500
 
 // total of 21 (24 without standard txPowerLevel?) bytes available for custom data in advertise packet
@@ -43,6 +41,8 @@ const val DEVICE_ID_LENGTH = 3
 const val TXPOWER_LENGTH = 2 // txpower is a short
 const val DEVICE_ID_OFFSET = GAME_ID_LENGTH + GAME_NAME_LENGTH
 const val TXPOWER_OFFSET = DEVICE_ID_OFFSET + DEVICE_ID_LENGTH
+
+const val TAG = "GameViewModel"
 
 class GameViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -69,7 +69,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     private var _positions: List<Vec> = listOf()
 
     var host: Device? =
-        null // is null for host themselves // is currently not the same object as host in _devices (and has default txpower)
+        null // is null for host themselves // currently not the same object as host in _devices (and has default txpower)
 
     val game = Game()
 
@@ -105,10 +105,6 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                     val playerName = GameService.extractName(result)
                     val txPower = GameService.extractTxPower(result)
                     onGameScanResult(deviceId, playerName, result.rssi, txPower)
-                }
-                ScanSettings.CALLBACK_TYPE_MATCH_LOST -> {
-                    Log.d(TAG, "lost " + result.device.name)
-                    // when do we delete a device?
                 }
             }
         }
@@ -167,7 +163,6 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     @kotlin.ExperimentalUnsignedTypes
     @SuppressLint("DefaultLocale")
     fun onGameJoin() { // == approve
-        Log.d(TAG, "on game join")
         gameJoinUICallback.gameJoined()
         // waiting for game start is not necessary
         bluetoothController.startAdvertising(
@@ -184,7 +179,6 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun onGameStart() {
-        Log.d(TAG, "I'm in onGameStart: $game")
         bluetoothController.stopScan(HOST_SCAN_KEY)
         gameJoinUICallback.gameStarted()
     }
@@ -192,14 +186,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     @kotlin.ExperimentalUnsignedTypes
     @SuppressLint("DefaultLocale")
     fun onGameLeave() {
-        Log.d(TAG, "on game leave")
-        bluetoothController.stopAdvertising()
         bluetoothController.stopScan(GAME_SCAN_KEY)
-        if (gameLeaveUICallback != null) gameLeaveUICallback?.gameLeft() // it crashes otherwise
-        // TODO: test game leave and join new game
-        // TODO: go back to join activity if game already started
-        // TODO: differentiate between game left and game terminated by host (terminated by host does not work)
-        // Handler(Looper.getMainLooper()).post{}
+        if (gameLeaveUICallback != null) gameLeaveUICallback?.gameLeft()
         clearModel()
         if (isHost()) {
             // restart advertising on a new game id
@@ -215,7 +203,6 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         playerName = newName
         // restart advertisement with new name if client
         if (!isHost()) {
-            bluetoothController.stopAdvertising()
             bluetoothController.startAdvertising(
                 gameId,
                 if (playerName != null) playerName!!.toByteArray(Charsets.UTF_8) else ByteArray(0)
@@ -228,8 +215,6 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         devices.clear()
         playerName = null
     }
-
-    fun isJoined(): Boolean = gameId.isNotEmpty()
 
     private fun isHost(): Boolean = host == null
 
@@ -248,7 +233,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         // extend distance matrix for new player
         _distances = Array(devices.size + 1) { FloatArray(devices.size + 1) } // +1 for self
         // refresh host screen, if is host
-        Handler(Looper.getMainLooper()).post { _playerListAdapter?.notifyDataSetChanged() } // TODO: use intent here
+        Handler(Looper.getMainLooper()).post { _playerListAdapter?.notifyDataSetChanged() }
     }
 
     private fun getLastRssiMillis(device: Device): Long {
@@ -263,13 +248,11 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     @SuppressLint("DefaultLocale")
     fun onGameScanResult(deviceId: ByteArray, playerName: String, rssi: Int, txPower: Short) {
         var device = Utils.findDevice(devices, deviceId)
-        // add device if not present yet
         if (device == null) {
             addDevice(Device(deviceId, txPower, null))
             device = Utils.findDevice(devices, deviceId)!!
         } else if (device.txPower == 0.toShort()) { // if devices was added at identification, then fill txpower
             device.txPower = txPower
-            Log.d(TAG, "game scan: set txPower for device: $txPower")
         }
 
         // update player name
@@ -282,7 +265,6 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         val millisPassed = getLastRssiMillis(device)
 
         if (millisPassed > RSSI_READ_INTERVAL) {
-            Log.d(TAG, "game scan: read rssi of ${Utils.toHexString(deviceId)}, last read: $millisPassed")
             device.addRssi(rssi)
             val deviceData = BluetoothData.fromDevice(device, myDeviceId)
             if (!isHost())
@@ -293,18 +275,9 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun writeRSSILog() {
-        FileStorage.writeFile(
-            getApplication<Application>().applicationContext,
-            "${Calendar.getInstance().time}_distance_log.txt",
-            devices.iterator().next().rssiHistory.toString()
-        )
-    }
-
     @kotlin.ExperimentalUnsignedTypes
     fun updateTargetShape() {
         if (host == null) {
-            Log.d(TAG, "generating target shapes for ${devices.size + 1} players")
             val targetShape = Geometry.generateGeometricObject(devices.size + 1)
             game.setTargetShape(targetShape as MutableList<Vec>)
             targetShape.forEach {

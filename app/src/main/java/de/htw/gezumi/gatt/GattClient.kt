@@ -5,11 +5,7 @@ import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattDescriptor
 import android.content.Context
-import android.util.Log
-import de.htw.gezumi.Utils
 import de.htw.gezumi.model.BluetoothData
-
-private const val TAG = "GattClient"
 
 class GattClient(private val _context: Context) {
 
@@ -17,12 +13,6 @@ class GattClient(private val _context: Context) {
 
     fun connect(hostDevice: BluetoothDevice, gattClientCallback: GattClientCallback) {
         _gatt = hostDevice.connectGatt(_context, false, gattClientCallback)
-        reconnect()
-    }
-
-    fun reconnect() {
-        val success = _gatt?.connect()
-        Log.d(TAG, "connected to gatt: $success")
     }
 
     fun disconnect() {
@@ -44,10 +34,6 @@ class GattClient(private val _context: Context) {
         val playerUpdateCharacteristic =
             _gatt?.getService(GameService.HOST_UUID)?.getCharacteristic(GameService.PLAYER_UPDATE_UUID)
         playerUpdateCharacteristic?.value = bluetoothData.toByteArray()
-        Log.d(
-            TAG,
-            "send player update: ${Utils.toHexString(bluetoothData.id)}, values=${bluetoothData.values.contentToString()}"
-        )
         if (playerUpdateCharacteristic != null) {
             _gatt?.writeCharacteristic(playerUpdateCharacteristic)
         }

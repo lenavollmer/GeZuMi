@@ -9,9 +9,6 @@ import de.htw.gezumi.viewmodel.*
 import java.nio.ByteBuffer
 import java.util.*
 
-
-private const val TAG = "GameService"
-
 object GameService {
 
     const val GAME_START_EVENT = 0
