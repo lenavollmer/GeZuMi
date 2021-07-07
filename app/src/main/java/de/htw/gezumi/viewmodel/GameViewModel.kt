@@ -189,12 +189,6 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         bluetoothController.stopScan(GAME_SCAN_KEY)
         if (gameLeaveUICallback != null) gameLeaveUICallback?.gameLeft()
         clearModel()
-        if (isHost()) {
-            // restart advertising on a new game id
-            makeGameId()
-            bluetoothController.startAdvertising(gameId, GameService.gameName.toByteArray(Charsets.UTF_8))
-            bluetoothController.startScan(gameScanCallback, gameId)
-        }
     }
 
     @kotlin.ExperimentalUnsignedTypes

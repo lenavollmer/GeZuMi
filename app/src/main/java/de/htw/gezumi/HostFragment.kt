@@ -110,10 +110,6 @@ class HostFragment : Fragment() {
                         _binding.recyclerPlayers.visibility = View.GONE
                     }
                 }
-                if (_gameStarted) {
-                    _gattServer.notifyGameEnding()
-                    _gameViewModel.onGameLeave()
-                }
             }
             // update UI
             Handler(Looper.getMainLooper()).post {
@@ -137,8 +133,6 @@ class HostFragment : Fragment() {
         if (_gameViewModel.txPower == null)
             _gameViewModel.txPower = CSVReader.getTxPower(Build.DEVICE, requireContext())
 
-        _gameService = GameService.createHostService()
-        _gameViewModel.makeGameId()
     }
 
     override fun onCreateView(
@@ -255,6 +249,9 @@ class HostFragment : Fragment() {
     @kotlin.ExperimentalUnsignedTypes
     override fun onStart() {
         super.onStart()
+        _gameService = GameService.createHostService()
+        _gameViewModel.makeGameId()
+
         _gattServer = GattServer(requireContext(), _gameViewModel.bluetoothController, connectCallback)
         _gameViewModel.gattServer = _gattServer
         _gattServer.startServer(_gameService)
