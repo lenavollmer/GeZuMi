@@ -277,10 +277,9 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         }
 
         // update player name
-        if (playerName.isNotBlank()) {
-            Log.d(TAG, "in update Player name: $deviceId, $playerName")
+        if (playerName.isNotBlank())
             game.getPlayer(deviceId)!!.setName(playerName)
-        } else // set back to device id if player deletes name
+        else // set back to device id if player deletes name
             game.getPlayer(deviceId)!!.setName(Utils.toHexString(deviceId))
 
         // store rssi and send player update
@@ -334,7 +333,6 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             val targetShape = Geometry.generateGeometricObject(devices.size + 1)
             game.setTargetShape(targetShape as MutableList<Vec>)
             targetShape.forEach {
-                Log.d(TAG, "In withReset true")
                 gattServer.indicateHostUpdate(
                     BluetoothData(
                         TARGET_SHAPE_ID,

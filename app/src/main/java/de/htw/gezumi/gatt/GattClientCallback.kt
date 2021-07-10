@@ -165,7 +165,6 @@ class GattClientCallback() : BluetoothGattCallback() {
                         Vec(bluetoothData.values[0], bluetoothData.values[1])
                     )
                 } else if (bluetoothData.id contentEquals Constants.RESET_GAME_ID) {
-                    Log.d(TAG, "I am in the reset game client callback situation")
                     GameViewModel.instance.game.restart()
                 } else {
                     GameViewModel.instance.game.updatePlayer(

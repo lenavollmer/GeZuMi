@@ -152,7 +152,7 @@ class GameFragment : Fragment() {
         )
 
         view.findViewById<Button>(R.id.start_new_game).setOnClickListener {
-            Log.d(TAG, "in onClick")
+            _binding.progressBar.visibility = View.VISIBLE
             _gameViewModel.game.restart()
             _gameViewModel.notifyGameRestart()
             _gameViewModel.updateAndSendTargetShape()
