@@ -28,6 +28,7 @@ import de.htw.gezumi.model.Device
 import de.htw.gezumi.model.Game
 import de.htw.gezumi.util.Constants.RESET_GAME_ID
 import de.htw.gezumi.util.Constants.TARGET_SHAPE_ID
+import java.lang.Exception
 import java.util.*
 
 private const val TAG = "GameViewModel"
@@ -93,6 +94,10 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         gameId = GameService.HOST_ID_PREFIX + GameService.randomIdPart
     }
 
+    fun clearGameId(){
+        gameId = ByteArray(0)
+    }
+
     @kotlin.ExperimentalUnsignedTypes
     @SuppressLint("DefaultLocale")
     val gameScanCallback: ScanCallback = object : ScanCallback() {
@@ -156,7 +161,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                     game.updatePlayer(deviceId, Vec(newPositions[it].x, newPositions[it].y))
                 }
                 _positions = newPositions
-            } catch (e: IllegalArgumentException) {
+            } catch (e: Exception) {
                 Log.d(TAG, e.message.toString())
             }
         }

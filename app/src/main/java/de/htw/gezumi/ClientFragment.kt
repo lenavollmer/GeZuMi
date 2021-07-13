@@ -80,6 +80,7 @@ class ClientFragment : Fragment() {
             }else {
                 _availableHostDevices.clear()
                 updateBtDeviceListAdapter()
+                Log.d(TAG, "Data was not send correctly")
             }
         }catch (e : IndexOutOfBoundsException){
             _availableHostDevices.clear()
@@ -194,6 +195,7 @@ class ClientFragment : Fragment() {
         }
         _binding.buttonScan.setOnClickListener {
             resetConnection()
+            _gameViewModel.onPlayerNameChanged(_playerName)
             _gameViewModel.bluetoothController.startHostScan(_gameViewModel.hostScanCallback)// ParcelUuid(GameService.getGameId()), true) <- doesn't work, why???
         }
 
@@ -215,16 +217,18 @@ class ClientFragment : Fragment() {
     }
 
     @kotlin.ExperimentalUnsignedTypes
-    private fun resetConnection(){
+    private fun  resetConnection(){
         _popupWindow.dismiss()
-        _gameViewModel.bluetoothController.stopScan(HOST_SCAN_KEY)
-        _gameViewModel.bluetoothController.stopAdvertising()
-        if(_connected) _gattClient.disconnect()
-
-        _binding.buttonScan.isEnabled = true
-        _gameViewModel.onPlayerNameChanged(_playerName)
         _availableHostDevices.clear()
         updateBtDeviceListAdapter()
+
+        if(_connected) _gattClient.disconnect()
+
+        _gameViewModel.bluetoothController.stopScan(HOST_SCAN_KEY)
+        _gameViewModel.bluetoothController.stopAdvertising()
+        _gameViewModel.clearGameId()
+
+        _binding.buttonScan.isEnabled = true
     }
 
     @kotlin.ExperimentalUnsignedTypes
