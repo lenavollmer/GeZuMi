@@ -162,6 +162,8 @@ class GattClientCallback : BluetoothGattCallback() {
                     GameViewModel.instance.game.updateTargetShape(
                         Vec(bluetoothData.values[0], bluetoothData.values[1])
                     )
+                } else if (bluetoothData.id contentEquals Constants.RESET_GAME_ID) {
+                    GameViewModel.instance.game.restart()
                 } else {
                     GameViewModel.instance.game.updatePlayer(
                         bluetoothData.id,

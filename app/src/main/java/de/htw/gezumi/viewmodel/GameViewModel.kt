@@ -26,6 +26,7 @@ import de.htw.gezumi.gatt.GattServer
 import de.htw.gezumi.model.BluetoothData
 import de.htw.gezumi.model.Device
 import de.htw.gezumi.model.Game
+import de.htw.gezumi.util.Constants.RESET_GAME_ID
 import de.htw.gezumi.util.Constants.TARGET_SHAPE_ID
 import java.util.*
 
@@ -197,7 +198,10 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         if (isHost()) {
             // restart advertising on a new game id
             makeGameId()
-            bluetoothController.startAdvertising(gameId, GameService.gameName.toByteArray(Charsets.UTF_8))
+            bluetoothController.startAdvertising(
+                gameId,
+                GameService.gameName.toByteArray(Charsets.UTF_8)
+            )
             bluetoothController.startScan(gameScanCallback, gameId)
         }
     }
@@ -221,7 +225,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         playerName = null
     }
 
-    private fun isHost(): Boolean = host == null
+    fun isHost(): Boolean = host == null
 
     private var _playerListAdapter: ApprovedDevicesAdapter? = null
 
@@ -272,7 +276,10 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         val millisPassed = getLastRssiMillis(device)
 
         if (millisPassed > RSSI_READ_INTERVAL) {
-            Log.d(TAG, "game scan: read rssi of ${Utils.toHexString(deviceId)}, last read: $millisPassed")
+            Log.d(
+                TAG,
+                "game scan: read rssi of ${Utils.toHexString(deviceId)}, last read: $millisPassed"
+            )
             device.addRssi(rssi)
             val deviceData = BluetoothData.fromDevice(device, myDeviceId)
             if (!isHost())
@@ -284,7 +291,25 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     @kotlin.ExperimentalUnsignedTypes
-    fun updateTargetShape() {
+    fun notifyGameRestart() {
+        if (host == null) {
+            Log.d(
+                TAG,
+                "send game reset notification to ${devices.size} players and send new target shape"
+            )
+
+            gattServer.indicateHostUpdate(
+                BluetoothData(
+                    RESET_GAME_ID,
+                    myDeviceId,
+                    floatArrayOf(0F, 0F)
+                )
+            )
+        }
+    }
+
+    @kotlin.ExperimentalUnsignedTypes
+    fun updateAndSendTargetShape() {
         if (host == null) {
             Log.d(TAG, "generating target shapes for ${devices.size + 1} players")
             val targetShape = Geometry.generateGeometricObject(devices.size + 1)
