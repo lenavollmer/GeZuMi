@@ -62,21 +62,25 @@ class ClientFragment : Fragment() {
             _gameViewModel.game.hostId = _availableHostDevices[it].deviceId
 
             val gattClientCallback = GattClientCallback()
-            _gattClient.connect(_availableHostDevices[it].bluetoothDevice!!, gattClientCallback)
+            if(_gattClient.connect(_availableHostDevices[it].bluetoothDevice!!, gattClientCallback) == true){
+                _connected = true
+                _gameViewModel.gameJoinUICallback = gameJoinUICallback
+                _gameViewModel.gameLeaveUICallback = gameLeaveUICallback
+                _gameViewModel.gattClient = _gattClient
 
-            _gameViewModel.gameJoinUICallback = gameJoinUICallback
-            _gameViewModel.gameLeaveUICallback = gameLeaveUICallback
-            _gameViewModel.gattClient = _gattClient
+                _popupBinding.joinText.text = getString(R.string.join_wait)
+                _popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0)
+                _popupWindow.dimBehind()
 
-            _popupBinding.joinText.text = getString(R.string.join_wait)
-            _popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0)
-            _popupWindow.dimBehind()
 
-            _connected = true
-            _gameViewModel.bluetoothController.stopScan(HOST_SCAN_KEY)
-            _binding.buttonScan.isEnabled = false
-            _availableHostDevices.clear()
-            updateBtDeviceListAdapter()
+                _gameViewModel.bluetoothController.stopScan(HOST_SCAN_KEY)
+                _binding.buttonScan.isEnabled = false
+                _availableHostDevices.clear()
+                updateBtDeviceListAdapter()
+            }else {
+                _availableHostDevices.clear()
+                updateBtDeviceListAdapter()
+            }
         }catch (e : IndexOutOfBoundsException){
             _availableHostDevices.clear()
             updateBtDeviceListAdapter()

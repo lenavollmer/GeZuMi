@@ -15,10 +15,11 @@ class GattClient(private val _context: Context) {
 
     private var _gatt: BluetoothGatt? = null
 
-    fun connect(hostDevice: BluetoothDevice, gattClientCallback: GattClientCallback) {
+    fun connect(hostDevice: BluetoothDevice, gattClientCallback: GattClientCallback) : Boolean? {
         _gatt = hostDevice.connectGatt(_context, false, gattClientCallback)
         val success = _gatt?.connect()
         Log.d(TAG, "connected to gatt: $success")
+        return success
     }
 
     fun disconnect() {
