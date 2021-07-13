@@ -42,7 +42,7 @@ class Geometry {
         /**
          * Centers [points] horizontally and vertically on a canvas with the given [height] and [width].
          */
-        fun center(points: List<Vec>, height: Int = 1000, width: Int = 1000): List<Vec> {
+        private fun center(points: List<Vec>, height: Int = 1000, width: Int = 1000): List<Vec> {
             val translatedPoints = moveTopLeft(points)
             val maxX = translatedPoints.map { it.x }.maxOrNull() ?: 0
             val maxY = translatedPoints.map { it.y }.maxOrNull() ?: 0
@@ -80,11 +80,11 @@ class Geometry {
         private fun rotatePoint(point: Vec, o: Vec, angle: Float): Vec {
             val s = sin(angle)
             val c = cos(angle)
-            // translate point back to origin:
+            // translate point back to origin
             val cp = point - o
             // rotate point
             val new = Vec(cp.x * c - cp.y * s, cp.x * s + cp.y * c)
-            // translate point back:
+            // translate point back
             return new + o
         }
 
@@ -98,7 +98,6 @@ class Geometry {
         fun determineMatch(gamePositions: GamePositions): Boolean {
             val tolerance = 0.5 // the max distance in meter between the points to be a match
             val foundPoints = gamePositions.players.map { a ->
-                // TODO two or more player points could match to the same target point
                 gamePositions.targets.find { b ->
                     (b - a).length() <= tolerance
                 }
@@ -123,14 +122,14 @@ class Geometry {
         }
 
         /**
-         * Arranges [playerPositions] and [targetPositions] on a canvas with the given [height] and [width].
+         * Arranges playerPositions and targetPositions from [gamePositions] on a canvas with the given height and width.
          */
         fun arrangeGamePositions(
             gamePositions: GamePositions,
         ): GamePositions {
             // use closest point to host of target shape as base point of the target shape
             val hostPosition = gamePositions.players[0]
-            var targets = gamePositions.targets.toList();
+            var targets = gamePositions.targets.toList()
 
             // translate player positions to target shape
             var players = gamePositions.players.map { it + targets[0] - hostPosition }

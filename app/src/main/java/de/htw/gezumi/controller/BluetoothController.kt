@@ -131,10 +131,6 @@ class BluetoothController {
         return _bluetoothManager.openGattServer(_context, gattServerCallback)
     }
 
-    fun isBluetoothEnabled(): Boolean {
-        return _bluetoothAdapter.isEnabled
-    }
-
     fun setContext(context: Context) {
         _context = context
         _bluetoothManager = _context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
