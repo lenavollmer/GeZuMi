@@ -10,7 +10,7 @@ import java.nio.ByteBuffer
 class BluetoothData(val id: ByteArray, val senderId: ByteArray, val values: FloatArray) {
 
     init {
-        require(values.size <= 2) { "Too much data for one packet" }
+        require(values.size <= 2) { "Too much data for one package" }
     }
 
     fun toByteArray(): ByteArray {

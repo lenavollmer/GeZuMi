@@ -14,13 +14,12 @@ import java.util.*
 
 private const val TAG = "ClientGattCallback"
 
-class GattClientCallback() : BluetoothGattCallback() {
+class GattClientCallback : BluetoothGattCallback() {
 
     @kotlin.ExperimentalUnsignedTypes
     override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
         if (newState == BluetoothProfile.STATE_CONNECTED) {
-            Log.d(TAG, "callback: connected")
-            Log.d(TAG, "discover services")
+            Log.d(TAG, "callback: connected, discover services")
             gatt?.discoverServices()
         }
     }
@@ -50,7 +49,6 @@ class GattClientCallback() : BluetoothGattCallback() {
                 val randomIdPart =
                     characteristic.value.sliceArray(0 until RANDOM_GAME_ID_PART_LENGTH)
                 GameViewModel.instance.gameId = GameService.GAME_ID_PREFIX + randomIdPart
-                // TODO: also set GameService vars? for sure: decode gameName and display
                 Log.d(
                     TAG,
                     "callback: characteristic read successfully, gameId: ${GameViewModel.instance.gameId}"
@@ -164,6 +162,8 @@ class GattClientCallback() : BluetoothGattCallback() {
                     GameViewModel.instance.game.updateTargetShape(
                         Vec(bluetoothData.values[0], bluetoothData.values[1])
                     )
+                } else if (bluetoothData.id contentEquals Constants.RESET_GAME_ID) {
+                    GameViewModel.instance.game.restart()
                 } else {
                     GameViewModel.instance.game.updatePlayer(
                         bluetoothData.id,

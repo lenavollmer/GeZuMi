@@ -26,8 +26,8 @@ import de.htw.gezumi.gatt.GattServer
 import de.htw.gezumi.model.BluetoothData
 import de.htw.gezumi.model.Device
 import de.htw.gezumi.model.Game
+import de.htw.gezumi.util.Constants.RESET_GAME_ID
 import de.htw.gezumi.util.Constants.TARGET_SHAPE_ID
-import de.htw.gezumi.util.FileStorage
 import java.util.*
 
 private const val TAG = "GameViewModel"
@@ -68,16 +68,15 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     private lateinit var _distances: Array<FloatArray>
     private var _positions: List<Vec> = listOf()
 
-    var host: Device? =
-        null // is null for host themselves // is currently not the same object as host in _devices (and has default txpower)
-
+    // is currently not the same object as host in _devices (and has default txpower)
+    var host: Device? = null // is null for host themselves
     val game = Game()
 
     // the game id consists of a fixed host prefix (4 bytes) and a random id part (4 bytes)
     var gameId: ByteArray = ByteArray(0)
         get() {
             require(field.size <= GAME_ID_LENGTH) { "Wrong game id" }
-            return field + ByteArray(GAME_ID_LENGTH - field.size) // fill with zeros if
+            return field + ByteArray(GAME_ID_LENGTH - field.size)
         }
 
     init {
@@ -107,8 +106,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                     onGameScanResult(deviceId, playerName, result.rssi, txPower)
                 }
                 ScanSettings.CALLBACK_TYPE_MATCH_LOST -> {
-                    Log.d(TAG, "lost " + result.device.name)
-                    // when do we delete a device?
+                    Log.d(TAG, "lost match" + result.device.name)
                 }
             }
         }
@@ -184,7 +182,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun onGameStart() {
-        Log.d(TAG, "I'm in onGameStart: $game")
+        Log.d(TAG, "onGameStart: $game")
         bluetoothController.stopScan(HOST_SCAN_KEY)
         gameJoinUICallback.gameStarted()
     }
@@ -196,15 +194,14 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         bluetoothController.stopAdvertising()
         bluetoothController.stopScan(GAME_SCAN_KEY)
         if (gameLeaveUICallback != null) gameLeaveUICallback?.gameLeft() // it crashes otherwise
-        // TODO: test game leave and join new game
-        // TODO: go back to join activity if game already started
-        // TODO: differentiate between game left and game terminated by host (terminated by host does not work)
-        // Handler(Looper.getMainLooper()).post{}
         clearModel()
         if (isHost()) {
             // restart advertising on a new game id
             makeGameId()
-            bluetoothController.startAdvertising(gameId, GameService.gameName.toByteArray(Charsets.UTF_8))
+            bluetoothController.startAdvertising(
+                gameId,
+                GameService.gameName.toByteArray(Charsets.UTF_8)
+            )
             bluetoothController.startScan(gameScanCallback, gameId)
         }
     }
@@ -224,14 +221,11 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun clearModel() {
-        // TODO lifecycle: add stuff here
         devices.clear()
         playerName = null
     }
 
-    fun isJoined(): Boolean = gameId.isNotEmpty()
-
-    private fun isHost(): Boolean = host == null
+    fun isHost(): Boolean = host == null
 
     private var _playerListAdapter: ApprovedDevicesAdapter? = null
 
@@ -248,7 +242,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         // extend distance matrix for new player
         _distances = Array(devices.size + 1) { FloatArray(devices.size + 1) } // +1 for self
         // refresh host screen, if is host
-        Handler(Looper.getMainLooper()).post { _playerListAdapter?.notifyDataSetChanged() } // TODO: use intent here
+        Handler(Looper.getMainLooper()).post { _playerListAdapter?.notifyDataSetChanged() }
     }
 
     private fun getLastRssiMillis(device: Device): Long {
@@ -282,27 +276,40 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         val millisPassed = getLastRssiMillis(device)
 
         if (millisPassed > RSSI_READ_INTERVAL) {
-            Log.d(TAG, "game scan: read rssi of ${Utils.toHexString(deviceId)}, last read: $millisPassed")
+            Log.d(
+                TAG,
+                "game scan: read rssi of ${Utils.toHexString(deviceId)}, last read: $millisPassed"
+            )
             device.addRssi(rssi)
             val deviceData = BluetoothData.fromDevice(device, myDeviceId)
             if (!isHost())
                 gattClient.sendPlayerUpdate(deviceData)
-            else // also take own data in account
+            else // also take own data into account
                 playerUpdateCallback.onPlayerUpdate(deviceData)
             device.lastSeen = System.currentTimeMillis()
         }
     }
 
-    fun writeRSSILog() {
-        FileStorage.writeFile(
-            getApplication<Application>().applicationContext,
-            "${Calendar.getInstance().time}_distance_log.txt",
-            devices.iterator().next().rssiHistory.toString()
-        )
+    @kotlin.ExperimentalUnsignedTypes
+    fun notifyGameRestart() {
+        if (host == null) {
+            Log.d(
+                TAG,
+                "send game reset notification to ${devices.size} players and send new target shape"
+            )
+
+            gattServer.indicateHostUpdate(
+                BluetoothData(
+                    RESET_GAME_ID,
+                    myDeviceId,
+                    floatArrayOf(0F, 0F)
+                )
+            )
+        }
     }
 
     @kotlin.ExperimentalUnsignedTypes
-    fun updateTargetShape() {
+    fun updateAndSendTargetShape() {
         if (host == null) {
             Log.d(TAG, "generating target shapes for ${devices.size + 1} players")
             val targetShape = Geometry.generateGeometricObject(devices.size + 1)

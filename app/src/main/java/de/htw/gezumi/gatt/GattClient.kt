@@ -17,10 +17,6 @@ class GattClient(private val _context: Context) {
 
     fun connect(hostDevice: BluetoothDevice, gattClientCallback: GattClientCallback) {
         _gatt = hostDevice.connectGatt(_context, false, gattClientCallback)
-        reconnect()
-    }
-
-    fun reconnect() {
         val success = _gatt?.connect()
         Log.d(TAG, "connected to gatt: $success")
     }

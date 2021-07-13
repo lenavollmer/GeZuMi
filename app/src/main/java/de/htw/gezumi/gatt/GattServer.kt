@@ -15,22 +15,14 @@ import java.nio.ByteBuffer
 
 private const val TAG = "GattServer"
 
-class GattServer(private val _context: Context, private val _bluetoothController: BluetoothController, private val _connectCallback : HostFragment.GattConnectCallback) {
+class GattServer(_context: Context, private val _bluetoothController: BluetoothController, private val _connectCallback : HostFragment.GattConnectCallback) {
 
     var bluetoothGattServer: BluetoothGattServer? = null
     private val _bluetoothManager = _context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
 
     val subscribedDevices = mutableSetOf<BluetoothDevice>()
 
-
-    init {
-        if (!_bluetoothController.isBluetoothEnabled())
-            Log.d(TAG, "Bluetooth is currently disabled")
-    }
-
     fun startServer(gameService: BluetoothGattService) {
-        //_bluetoothController.startAdvertising(ParcelUuid(GameService.HOST_UUID))
-
         Log.d(TAG, "start gatt server")
         bluetoothGattServer = _bluetoothController.openGattServer(GattServerCallback( this, _connectCallback))
 
@@ -98,7 +90,7 @@ class GattServer(private val _context: Context, private val _bluetoothController
 
     @kotlin.ExperimentalUnsignedTypes
     fun indicateHostUpdate(bluetoothData: BluetoothData) {
-        Log.d(TAG, "índicate host update sender: ${Utils.toHexString(bluetoothData.senderId)}")
+        Log.d(TAG, "indicate host update sender: ${Utils.toHexString(bluetoothData.senderId)}")
         val responseHostUpdateCharacteristic = bluetoothGattServer?.getService(GameService.HOST_UUID)?.getCharacteristic(GameService.RESPONSE_HOST_UPDATE_UUID)
         responseHostUpdateCharacteristic?.value = bluetoothData.toByteArray()
         for (device in subscribedDevices) {

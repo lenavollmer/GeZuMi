@@ -25,7 +25,7 @@ class Device(val deviceId: ByteArray, var txPower: Short, var bluetoothDevice: B
 
     var lastSeen: Long = System.currentTimeMillis()
 
-    val rssiHistory = mutableListOf<Int>()
+    private val rssiHistory = mutableListOf<Int>()
 
     @kotlin.ExperimentalUnsignedTypes
     fun addRssi(rssi: Int) {
@@ -33,20 +33,14 @@ class Device(val deviceId: ByteArray, var txPower: Short, var bluetoothDevice: B
         Log.d(TAG, "Adding RSSI for device: ${Utils.logDeviceId(deviceId)}")
         val unfilteredDistance = Conversions.rssiToDistance(rssi.toFloat(), txPower)
         _distance.postValue(_filter.applyFilter(unfilteredDistance))
-
-        // TODO we don't know how often the device is discovered by the scan, so it might be good to limit the execution of the distance calculation
     }
-    /*
-    fun getDeviceData(): DeviceData {
-        return DeviceData(
-            deviceId,
-            GameViewModel.instance.myDeviceId,
-            floatArrayOf(_distance.value!!.toFloat()/* add up to 1 more values here*/)
-        )
-    }*/
 
     override fun equals(other: Any?): Boolean {
         return deviceId contentEquals (other as Device).deviceId
+    }
+
+    override fun hashCode(): Int {
+        return deviceId.contentHashCode()
     }
 
 }

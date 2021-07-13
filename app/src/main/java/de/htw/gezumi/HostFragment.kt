@@ -52,15 +52,10 @@ class HostFragment : Fragment() {
     private val _connectedDevices: MutableList<BluetoothDevice> =
         mutableListOf() // devices that are connected, but neither approved nor declined
     private val _joinNames: MutableList<String> = mutableListOf() // depends on connectedDevices
-
-    //private val _approvedDevices: ArrayList<Device> = ArrayList()
-    // for displayed list
     private lateinit var _playerListAdapter: ApprovedDevicesAdapter
-
     // for bottom sheet
     private val _connectedListAdapter = ConnectedPlayerDeviceAdapter(_joinNames) { position, status ->
         if (status == ConnectedPlayerDeviceAdapter.STATUS.APPROVED) {
-            //_approvedDevices.add(_connectedDevices[position])
             _gattServer.notifyJoinApproved(_connectedDevices[position], true)
             _currentPlayers++
             _binding.noPlayers.visibility = View.GONE
@@ -83,7 +78,7 @@ class HostFragment : Fragment() {
         fun onGattDisconnect(bluetoothDevice: BluetoothDevice)
     }
 
-    // TODO refactor GattConnectCallback
+
     @kotlin.ExperimentalUnsignedTypes
     private val connectCallback = object : GattConnectCallback {
         override fun onJoinRequest(bluetoothDevice: BluetoothDevice, joinName: String?) {
@@ -108,11 +103,10 @@ class HostFragment : Fragment() {
             }
             _gattServer.subscribedDevices.remove(bluetoothDevice)
 
-            // remove device TODO: remove player
             val device = GameViewModel.instance.devices.find { it.bluetoothDevice == bluetoothDevice }
             if (device != null) {
                 // device was already a player of the game
-                Log.d(TAG, "remove device: $device")
+                Log.d(TAG, "remove device from game: $device")
                 GameViewModel.instance.devices.remove(device)
                 _currentPlayers--
                 if (_currentPlayers == 0) {
@@ -207,7 +201,6 @@ class HostFragment : Fragment() {
 
         _binding.editTextGameName.setOnEditorActionListener { textView, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_GO) {
-                Log.d(TAG, "game name changed")
                 onGameNameChanged(textView.text.toString())
                 val imm: InputMethodManager =
                     requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
