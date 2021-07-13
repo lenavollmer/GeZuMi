@@ -20,7 +20,7 @@ class Painter(private val _context: Context, private val _pointSize: Float) {
         )
     }
 
-    fun drawFigure(
+    private fun drawFigure(
         canvas: Canvas,
         points: List<Vec>,
         lineStroke: Paint,

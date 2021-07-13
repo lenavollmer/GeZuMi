@@ -18,7 +18,7 @@ fun Context.getColorFromAttr(
 }
 
 class Paints(
-    private val _context: Context,
+    _context: Context,
     private val _pointSize: Float,
     ) {
     private val _colorPrimary = _context.getColorFromAttr(R.attr.colorPrimary)

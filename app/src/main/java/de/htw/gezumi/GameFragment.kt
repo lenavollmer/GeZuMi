@@ -43,7 +43,7 @@ class GameFragment : Fragment() {
     private val gameLeaveUICallback = object : GameLeaveUICallback {
         override fun gameLeft() {
             Handler(Looper.getMainLooper()).post {
-                Log.d(TAG, "game ended by host")
+                Log.d(TAG, "game terminated by host")
                 if (_firstLeave) {
                     val bundle = bundleOf("gameEnded" to true)
                     findNavController().navigate(R.id.action_Game_to_MainMenuFragment, bundle)
@@ -60,8 +60,7 @@ class GameFragment : Fragment() {
             val minutes = seconds % 3600 / 60
             val secs = seconds % 60
 
-            // Format the seconds into hours, minutes,
-            // and seconds.
+            // Format time
             val time: String = java.lang.String
                 .format(
                     Locale.getDefault(),
@@ -151,7 +150,7 @@ class GameFragment : Fragment() {
             _gameViewModel.game.restart()
         }
 
-        (activity as AppCompatActivity?)!!.supportActionBar?.hide() // Hide Bar
+        (activity as AppCompatActivity?)!!.supportActionBar?.hide() // Hide Appbar
 
     }
 

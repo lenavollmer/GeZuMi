@@ -7,10 +7,9 @@ import de.htw.gezumi.calculation.Vec
 
 private const val TAG = "Game"
 
-class Game() {
+class Game {
     var hostId: ByteArray? = null
 
-    // contains a player for myself
     private val _players = MutableLiveData<MutableList<Player>>(
         mutableListOf()
     )
@@ -24,7 +23,6 @@ class Game() {
     val shapeMatched: MutableLiveData<Boolean> get() = _shapeMatched
 
     var time = 0
-
     var running = false
 
     fun setShapeMatched(matchedShape: Boolean) {
@@ -39,7 +37,6 @@ class Game() {
         running = true
         time = 0
         _targetShape.postValue(mutableListOf())
-        // TODO generate new target shape and send to clients
         _shapeMatched.value = false
     }
 
@@ -64,7 +61,7 @@ class Game() {
 
             if (deviceId contentEquals hostId) {
                 (_players.value as MutableList<Player>).add(0, Player(deviceId))
-                Log.d(TAG, "Added host at beggining, hostid: $hostId first player id:${_players.value!![0].deviceId}")
+                Log.d(TAG, "Added host at beginning, hostid: $hostId first player id:${_players.value!![0].deviceId}")
             }
             (_players.value as MutableList<Player>).add(Player(deviceId))
         }

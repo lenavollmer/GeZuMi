@@ -181,7 +181,7 @@ class ClientFragment : Fragment() {
             _gameViewModel.bluetoothController.stopScan(HOST_SCAN_KEY)
             _availableHostDevices.clear()
             updateBtDeviceListAdapter()
-            _gameViewModel.bluetoothController.startHostScan(_gameViewModel.hostScanCallback)// ParcelUuid(GameService.getGameId()), true) <- doesn't work, why???
+            _gameViewModel.bluetoothController.startHostScan(_gameViewModel.hostScanCallback)
         }
 
         if(arguments?.getString("playerName") != null){

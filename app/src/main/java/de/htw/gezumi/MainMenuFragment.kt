@@ -60,10 +60,6 @@ class MainMenuFragment : Fragment() {
             val bundle = bundleOf("playerName" to getInputText())
             findNavController().navigate(R.id.action_MainMenuFragment_to_Client, bundle)
         }
-        view.findViewById<Button>(R.id.button_game).setOnClickListener {
-            findNavController().navigate(R.id.action_MainMenuFragment_to_MockedGame)
-        }
-
     }
 
     private fun getInputText() : String{
