@@ -1,4 +1,4 @@
-name: Lint
+name: Lint and test
 on:
   pull_request:
   workflow_dispatch:
@@ -12,5 +12,9 @@ jobs:
       # Lint app
       - name: Lint app
         run: ./gradlew lintDebug
+
+      # Run unit tests
+      - name: Run unit tests
+        run: ./gradlew test
 
 
