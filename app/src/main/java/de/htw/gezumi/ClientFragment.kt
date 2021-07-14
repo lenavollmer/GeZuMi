@@ -195,7 +195,7 @@ class ClientFragment : Fragment() {
         _binding.buttonScan.setOnClickListener {
             resetConnection()
             _gameViewModel.onPlayerNameChanged(_playerName)
-            _gameViewModel.bluetoothController.startHostScan(_gameViewModel.hostScanCallback)// ParcelUuid(GameService.getGameId()), true) <- doesn't work, why???
+            _gameViewModel.bluetoothController.startHostScan(_gameViewModel.hostScanCallback)
         }
 
         if (arguments?.getString("playerName") != null) {
