@@ -127,7 +127,6 @@ class Geometry {
         fun arrangeGamePositions(
             gamePositions: GamePositions,
         ): GamePositions {
-            // use closest point to host of target shape as base point of the target shape
             val hostPosition = gamePositions.players[0]
             var targets = gamePositions.targets.toList()
 

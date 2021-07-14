@@ -40,4 +40,61 @@ class GeometryTest {
         )
     }
 
+
+    @Test
+    fun generateGeometricObject_isCorrect() {
+        val shape = Geometry.generateGeometricObject(3)
+        Assert.assertEquals(shape.size, 3)
+    }
+
+    @Test
+    fun arrangeGamePositions_isCorrect() {
+        val gamePositions = Geometry.arrangeGamePositions(
+            GamePositions(
+                listOf(
+                    Vec(2, 2),
+                    Vec(1, 1),
+                    Vec(2, 1),
+                ), listOf(
+                    Vec(-1, 0),
+                    Vec(0, -1),
+                    Vec(0, 0),
+                )
+            )
+        )
+        Assert.assertEquals(
+            gamePositions.players, gamePositions.targets
+        )
+    }
+
+    @Test
+    fun scaleGamePositions_isCorrect() {
+        val gamePositions = Geometry.scaleGamePositions(
+            GamePositions(
+                listOf(
+                    Vec(0, 0),
+                    Vec(10, 10),
+                    Vec(5, 5),
+                ),
+                listOf(
+                    Vec(0, 0),
+                    Vec(10, 10),
+                    Vec(5, 5),
+                ),
+            ),
+            100,
+            100,
+            0
+        )
+        Assert.assertEquals(
+            gamePositions.players, gamePositions.targets
+        )
+        Assert.assertEquals(
+            gamePositions.players,  listOf(
+                Vec(0, 0),
+                Vec(100, 100),
+                Vec(50, 50),
+            )
+        )
+    }
 }
