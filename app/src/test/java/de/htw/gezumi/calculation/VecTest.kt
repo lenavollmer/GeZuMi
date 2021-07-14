@@ -14,7 +14,7 @@ class VecTest {
     @Test
     fun length_isCorrect() {
         val length = Vec(6f, -2.5f).length()
-        Assert.assertEquals(length, 6.5f)
+        Assert.assertEquals(length, 6.6f)
     }
 
     @Test
