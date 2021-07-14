@@ -32,9 +32,8 @@ import de.htw.gezumi.gatt.GattClient
 import de.htw.gezumi.gatt.GattClientCallback
 import de.htw.gezumi.model.Device
 import de.htw.gezumi.util.CSVReader
-import de.htw.gezumi.viewmodel.GameViewModel
 import de.htw.gezumi.util.dimBehind
-import java.lang.IndexOutOfBoundsException
+import de.htw.gezumi.viewmodel.GameViewModel
 
 private const val TAG = "ClientFragment"
 
@@ -57,12 +56,12 @@ class ClientFragment : Fragment() {
     @kotlin.ExperimentalUnsignedTypes
     private val _hostDeviceListAdapter: JoinGameListAdapter = JoinGameListAdapter(_availableHostDevices) {
 
-        try{
+        try {
             _gameViewModel.host = _availableHostDevices[it]
             _gameViewModel.game.hostId = _availableHostDevices[it].deviceId
 
             val gattClientCallback = GattClientCallback()
-            if(_gattClient.connect(_availableHostDevices[it].bluetoothDevice!!, gattClientCallback) == true){
+            if (_gattClient.connect(_availableHostDevices[it].bluetoothDevice!!, gattClientCallback) == true) {
                 _connected = true
                 _gameViewModel.gameJoinUICallback = gameJoinUICallback
                 _gameViewModel.gameLeaveUICallback = gameLeaveUICallback
@@ -77,12 +76,12 @@ class ClientFragment : Fragment() {
                 _binding.buttonScan.isEnabled = false
                 _availableHostDevices.clear()
                 updateBtDeviceListAdapter()
-            }else {
+            } else {
                 _availableHostDevices.clear()
                 updateBtDeviceListAdapter()
                 Log.d(TAG, "Data was not send correctly")
             }
-        }catch (e : IndexOutOfBoundsException){
+        } catch (e: IndexOutOfBoundsException) {
             _availableHostDevices.clear()
             updateBtDeviceListAdapter()
             Log.d(TAG, "Game did not exist")
@@ -199,7 +198,7 @@ class ClientFragment : Fragment() {
             _gameViewModel.bluetoothController.startHostScan(_gameViewModel.hostScanCallback)// ParcelUuid(GameService.getGameId()), true) <- doesn't work, why???
         }
 
-        if(arguments?.getString("playerName") != null){
+        if (arguments?.getString("playerName") != null) {
             _playerName = arguments?.getString("playerName")!!
         }
 
@@ -217,12 +216,12 @@ class ClientFragment : Fragment() {
     }
 
     @kotlin.ExperimentalUnsignedTypes
-    private fun  resetConnection(){
+    private fun resetConnection() {
         _popupWindow.dismiss()
         _availableHostDevices.clear()
         updateBtDeviceListAdapter()
 
-        if(_connected) _gattClient.disconnect()
+        if (_connected) _gattClient.disconnect()
 
         _gameViewModel.bluetoothController.stopScan(HOST_SCAN_KEY)
         _gameViewModel.bluetoothController.stopAdvertising()
