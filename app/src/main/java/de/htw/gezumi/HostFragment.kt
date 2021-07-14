@@ -40,7 +40,6 @@ class HostFragment : Fragment() {
     private val _gameViewModel: GameViewModel by activityViewModels()
     private val _minimumPlayers = 2
     private val _maxPlayers = 3
-    private var _currentPlayers = 0 // use variable to not use threaded methods for device calculation
 
     private lateinit var _gameService: BluetoothGattService
     private lateinit var _binding: FragmentHostBinding
@@ -57,10 +56,9 @@ class HostFragment : Fragment() {
     private val _connectedListAdapter = ConnectedPlayerDeviceAdapter(_joinNames) { position, status ->
         if (status == ConnectedPlayerDeviceAdapter.STATUS.APPROVED) {
             _gattServer.notifyJoinApproved(_connectedDevices[position], true)
-            _currentPlayers++
             _binding.noPlayers.visibility = View.GONE
             _binding.recyclerPlayers.visibility = View.VISIBLE
-            if (_currentPlayers >= (_minimumPlayers - 1) && _currentPlayers <= (_maxPlayers - 1)) {
+            if (_gameViewModel.devices.size >= (_minimumPlayers - 1) && _gameViewModel.devices.size <= (_maxPlayers - 1)) {
                 _binding.startGame.isEnabled = true
             }
         } else {
@@ -99,7 +97,6 @@ class HostFragment : Fragment() {
                 val idx = _connectedDevices.indexOf(bluetoothDevice)
                 _joinNames.removeAt(idx)
                 _connectedDevices.remove(bluetoothDevice) // is only present if currently neither approved nor declined
-                Handler(Looper.getMainLooper()).post { updateAdapters() }
             }
             _gattServer.subscribedDevices.remove(bluetoothDevice)
 
@@ -108,13 +105,6 @@ class HostFragment : Fragment() {
                 // device was already a player of the game
                 Log.d(TAG, "remove device from game: $device")
                 GameViewModel.instance.devices.remove(device)
-                _currentPlayers--
-                if (_currentPlayers == 0) {
-                    Handler(Looper.getMainLooper()).post {
-                        _binding.noPlayers.visibility = View.VISIBLE
-                        _binding.recyclerPlayers.visibility = View.GONE
-                    }
-                }
                 if (_gameStarted) {
                     // could come here (HostFragment) even if game is running
                     _gattServer.notifyGameEnding()
@@ -123,11 +113,16 @@ class HostFragment : Fragment() {
             }
             // update UI
             Handler(Looper.getMainLooper()).post {
-                if (_currentPlayers <= (_minimumPlayers - 1) && _currentPlayers < (_maxPlayers - 1)) {
+                if (_gameViewModel.devices.size >= (_minimumPlayers - 1) && _gameViewModel.devices.size < (_maxPlayers - 1)) {
                     _binding.startGame.isEnabled = false
                 }
-                if (_gameViewModel.devices.size == 0)
+                if( _gameViewModel.devices.size == 0) {
+                    _binding.noPlayers.visibility = View.VISIBLE
+                    _binding.recyclerPlayers.visibility = View.GONE
+                }
+                if (_gameViewModel.devices.size == 0) {
                     _bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+                }
                 updateAdapters()
             }
         }
@@ -142,9 +137,6 @@ class HostFragment : Fragment() {
 
         if (_gameViewModel.txPower == null)
             _gameViewModel.txPower = CSVReader.getTxPower(Build.DEVICE, requireContext())
-
-        _gameService = GameService.createHostService()
-        _gameViewModel.makeGameId()
     }
 
     override fun onCreateView(
@@ -251,6 +243,11 @@ class HostFragment : Fragment() {
                 _gattServer.notifyJoinApproved(it, false)
             }
 
+            _connectedDevices.clear()
+            _joinNames.clear()
+
+            _binding.startGame.isEnabled = false
+
             _gattServer.notifyGameEnding()
             stopScanAndAdvertise()
             _gameViewModel.clearModel()
@@ -263,6 +260,9 @@ class HostFragment : Fragment() {
     override fun onStart() {
         super.onStart()
         Log.d(TAG, "start gatt server and game service")
+        _gameService = GameService.createHostService()
+        _gameViewModel.makeGameId()
+
         _gattServer = GattServer(requireContext(), _gameViewModel.bluetoothController, connectCallback)
         _gameViewModel.gattServer = _gattServer
         _gattServer.startServer(_gameService)
